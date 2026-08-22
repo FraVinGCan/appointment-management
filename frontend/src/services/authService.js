@@ -1,5 +1,7 @@
 import api from './api'
 
+import { errorMessage as getErrorMessage, validationErrors as getValidationErrors } from './error'
+
 const backendBaseUrl = () => (api.defaults.baseURL || '').replace(/\/api\/?$/, '')
 
 export async function csrfCookie() {
@@ -28,9 +30,9 @@ export async function logout() {
 }
 
 export function validationErrors(error) {
-  return error.response?.data?.errors || {}
+  return getValidationErrors(error)
 }
 
 export function errorMessage(error) {
-  return error.response?.data?.message || 'Something went wrong. Please try again.'
+  return getErrorMessage(error)
 }

@@ -11,6 +11,11 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AppConfirm: typeof import('./src/components/AppConfirm.vue')['default']
+    AppEmpty: typeof import('./src/components/AppEmpty.vue')['default']
+    AppError: typeof import('./src/components/AppError.vue')['default']
+    AppLoading: typeof import('./src/components/AppLoading.vue')['default']
+    NotificationStack: typeof import('./src/components/NotificationStack.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
   }
