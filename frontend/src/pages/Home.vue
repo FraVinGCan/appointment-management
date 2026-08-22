@@ -23,7 +23,17 @@ async function signOut() {
         </div>
         <button class="rounded-lg border border-slate-700 px-4 py-2 text-sm hover:border-cyan-400" @click="signOut">Log out</button>
       </div>
-      <p class="mt-10 rounded-xl border border-dashed border-slate-700 p-6 text-slate-400">Your {{ auth.isStaff ? 'appointment management' : 'booking' }} tools will appear here in the next phase.</p>
+      <div v-if="auth.isClient" class="mt-10 grid gap-4 sm:grid-cols-2">
+        <RouterLink class="rounded-xl border border-cyan-900 bg-cyan-950/30 p-5 hover:border-cyan-400" to="/book">
+          <span class="font-semibold text-cyan-300">Book an appointment</span>
+          <span class="mt-2 block text-sm text-slate-400">Request a time from the available services.</span>
+        </RouterLink>
+        <RouterLink class="rounded-xl border border-slate-700 p-5 hover:border-cyan-400" to="/client/appointments">
+          <span class="font-semibold text-slate-200">My appointments</span>
+          <span class="mt-2 block text-sm text-slate-400">View and manage your booking requests.</span>
+        </RouterLink>
+      </div>
+      <p v-else class="mt-10 rounded-xl border border-dashed border-slate-700 p-6 text-slate-400">Your appointment management tools are available from the navigation.</p>
     </section>
   </main>
 </template>

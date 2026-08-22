@@ -72,6 +72,12 @@ export const useAppointmentStore = defineStore('appointments', {
       return this.mutate(() => appointmentService.cancelClient(id))
     },
 
+    updateItem(item) {
+      const index = this.items.findIndex((current) => current.id === item.id)
+      if (index >= 0) this.items.splice(index, 1, item)
+      if (this.current?.id === item.id) this.current = item
+    },
+
     async run(action) {
       this.isLoading = true
       this.clearError()

@@ -12,6 +12,7 @@
 </template>
 
 <script setup>
+defineProps({
   open: Boolean,
   title: { type: String, default: 'Confirm action' },
   message: { type: String, default: 'Are you sure you want to continue?' },

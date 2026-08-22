@@ -11,7 +11,7 @@ const form = reactive({ name: '', email: '', phone: '', password: '', password_c
 async function submit() {
   try {
     await auth.register(form)
-    router.push('/')
+    router.push(router.currentRoute.value.query.redirect || '/')
   } catch {
     // The store exposes the message and field errors to the template.
   }

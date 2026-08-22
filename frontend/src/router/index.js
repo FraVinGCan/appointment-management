@@ -6,6 +6,8 @@ import Home from '../pages/Home.vue'
 import Login from '../pages/Login.vue'
 import Register from '../pages/Register.vue'
 import ComingSoon from '../pages/ComingSoon.vue'
+import BookAppointment from '../pages/BookAppointment.vue'
+import ClientAppointments from '../pages/ClientAppointments.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -16,8 +18,8 @@ const router = createRouter({
     { path: '/appointments', name: 'staff-appointments', component: ComingSoon, meta: { requiresAuth: true, requiresStaff: true, title: 'Appointments' } },
     { path: '/clients', name: 'staff-clients', component: ComingSoon, meta: { requiresAuth: true, requiresStaff: true, title: 'Clients' } },
     { path: '/services', name: 'staff-services', component: ComingSoon, meta: { requiresAuth: true, requiresStaff: true, title: 'Services' } },
-    { path: '/book', name: 'client-book', component: ComingSoon, meta: { requiresAuth: true, requiresClient: true, title: 'Book an appointment' } },
-    { path: '/client/appointments', name: 'client-appointments', component: ComingSoon, meta: { requiresAuth: true, requiresClient: true, title: 'My appointments' } },
+    { path: '/book', name: 'client-book', component: BookAppointment, meta: { requiresAuth: true, requiresClient: true, title: 'Book an appointment' } },
+    { path: '/client/appointments', name: 'client-appointments', component: ClientAppointments, meta: { requiresAuth: true, requiresClient: true, title: 'My appointments' } },
   ],
 })
 
