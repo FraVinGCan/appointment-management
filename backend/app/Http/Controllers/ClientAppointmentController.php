@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Enums\AppointmentStatus;
+use App\Exceptions\AppointmentWorkflowException;
 use App\Http\Requests\BookingRequest;
 use App\Http\Resources\AppointmentResource;
 use App\Models\Appointment;
+use App\Services\AppointmentWorkflowService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -50,18 +52,21 @@ class ClientAppointmentController extends Controller
             ->setStatusCode(201);
     }
 
-    public function cancel(Request $request, Appointment $appointment): JsonResponse|AppointmentResource
-    {
+    public function cancel(
+        Request $request,
+        Appointment $appointment,
+        AppointmentWorkflowService $workflow,
+    ): JsonResponse|AppointmentResource {
         if ($appointment->client_id !== $request->user()->client->id) {
             return response()->json(['message' => 'Appointment not found.'], 404);
         }
 
-        if (! in_array($appointment->status, [AppointmentStatus::Requested, AppointmentStatus::Confirmed], true)) {
-            return response()->json(['message' => 'This appointment cannot be cancelled.'], 409);
+        try {
+            $appointment = $workflow->cancel($appointment);
+        } catch (AppointmentWorkflowException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 409);
         }
 
-        $appointment->update(['status' => AppointmentStatus::Cancelled]);
-
-        return new AppointmentResource($appointment->fresh()->load(['client.user', 'service']));
+        return new AppointmentResource($appointment);
     }
 }

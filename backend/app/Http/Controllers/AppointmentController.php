@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Enums\AppointmentStatus;
+use App\Exceptions\AppointmentWorkflowException;
 use App\Http\Requests\StoreAppointmentRequest;
 use App\Http\Requests\UpdateAppointmentRequest;
 use App\Http\Resources\AppointmentResource;
 use App\Models\Appointment;
+use App\Services\AppointmentWorkflowService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -88,6 +90,35 @@ class AppointmentController extends Controller
         $appointment->delete();
 
         return response()->json(null, 204);
+    }
+
+    public function confirm(Appointment $appointment, AppointmentWorkflowService $workflow): JsonResponse
+    {
+        return $this->transition($appointment, $workflow, 'confirm');
+    }
+
+    public function complete(Appointment $appointment, AppointmentWorkflowService $workflow): JsonResponse
+    {
+        return $this->transition($appointment, $workflow, 'complete');
+    }
+
+    public function cancel(Appointment $appointment, AppointmentWorkflowService $workflow): JsonResponse
+    {
+        return $this->transition($appointment, $workflow, 'cancel');
+    }
+
+    private function transition(
+        Appointment $appointment,
+        AppointmentWorkflowService $workflow,
+        string $action,
+    ): JsonResponse {
+        try {
+            $updatedAppointment = $workflow->{$action}($appointment);
+        } catch (AppointmentWorkflowException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 409);
+        }
+
+        return (new AppointmentResource($updatedAppointment))->response();
     }
 
     /**
