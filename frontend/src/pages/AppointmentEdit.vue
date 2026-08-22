@@ -25,22 +25,14 @@ function saved() {
   <section class="space-y-6">
     <AppBreadcrumbs :items="[{ label: 'Appointments', to: '/appointments' }, { label: 'View', to: `/appointments/${route.params.id}` }, { label: 'Edit' }]" />
     <div>
-      <p
-        class="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-400">
+      <p class="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-400">
         Staff workspace
       </p>
-      <h1 class="mt-2 text-3xl font-semibold">Edit appointment</h1>
+      <h1 class="mt-2 text-2xl sm:text-3xl font-semibold">Edit appointment</h1>
     </div>
-    <AppLoading
-      v-if="appointments.isLoading"
-      message="Loading appointment..." /><AppError
-      v-else-if="appointments.error && appointments.errorStatus !== 404"
-      :message="appointments.error" /><AppNotFound
-      v-else-if="appointments.errorStatus === 404"
-      resource="Appointment"
-      back-to="/appointments" /><AppointmentForm
-      v-else-if="appointments.current"
-      :appointment="appointments.current"
-      @saved="saved" />
+    <AppLoading v-if="appointments.isLoading" message="Loading appointment..." />
+    <AppError v-else-if="appointments.error && appointments.errorStatus !== 404" :message="appointments.error" />
+    <AppNotFound v-else-if="appointments.errorStatus === 404" resource="Appointment" back-to="/appointments" />
+    <AppointmentForm v-else-if="appointments.current" :appointment="appointments.current" @saved="saved" />
   </section>
 </template>

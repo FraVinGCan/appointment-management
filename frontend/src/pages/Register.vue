@@ -19,10 +19,10 @@ async function submit() {
 </script>
 
 <template>
-  <main class="min-h-screen bg-slate-950 px-6 py-12 text-slate-100">
+  <main class="min-h-screen bg-slate-950 px-4 py-10 sm:px-6 sm:py-12 text-slate-100">
     <UCard class="mx-auto max-w-md" variant="subtle">
       <p class="text-sm font-semibold uppercase tracking-[0.25em] text-cyan-400">Appointment Desk</p>
-      <h1 class="mt-4 text-3xl font-semibold">Create client account</h1>
+      <h1 class="mt-4 text-2xl sm:text-3xl font-semibold">Create client account</h1>
       <p class="mt-2 text-slate-400">Register to request and manage your appointments.</p>
 
       <UForm class="mt-8 space-y-4" :state="form" @submit="submit">

@@ -5,6 +5,7 @@ import AppConfirm from '../components/AppConfirm.vue'
 import AppEmpty from '../components/AppEmpty.vue'
 import AppError from '../components/AppError.vue'
 import AppLoading from '../components/AppLoading.vue'
+import AppPagination from '../components/AppPagination.vue'
 import { useAppointmentStore } from '../stores/appointments'
 import { useNotificationStore } from '../stores/notifications'
 
@@ -43,10 +44,10 @@ async function cancelAppointment() {
     <div class="flex flex-wrap items-end justify-between gap-4">
       <div>
         <p class="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-400">Client workspace</p>
-        <h1 class="mt-2 text-3xl font-semibold">My appointments</h1>
+        <h1 class="mt-2 text-2xl sm:text-3xl font-semibold">My appointments</h1>
         <p class="mt-2 text-slate-400">Review your booking requests and confirmed visits.</p>
       </div>
-      <UButton to="/book" trailing-icon="i-lucide-arrow-right">Book an appointment</UButton>
+      <UButton to="/book" trailing-icon="i-lucide-arrow-right" class="w-full sm:w-auto">Book an appointment</UButton>
     </div>
 
     <AppLoading v-if="appointments.isLoading" message="Loading your appointments..." />
@@ -58,7 +59,7 @@ async function cancelAppointment() {
       <article v-for="appointment in appointments.items" :key="appointment.id" class="rounded-2xl border border-slate-800 bg-slate-900 p-5">
         <div class="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h2 class="text-lg font-semibold">{{ appointment.service?.name || 'Appointment' }}</h2>
+            <h2 class="text-lg font-semibold truncate">{{ appointment.service?.name || 'Appointment' }}</h2>
             <p class="mt-1 text-sm text-slate-400">{{ formatDate(appointment.appointmentDate) }} · {{ appointment.startTime }} - {{ appointment.endTime }}</p>
           </div>
           <UBadge :color="appointment.status === 'Cancelled' ? 'neutral' : 'primary'" variant="subtle">{{ appointment.status }}</UBadge>
@@ -69,11 +70,12 @@ async function cancelAppointment() {
         </div>
       </article>
 
-      <div v-if="appointments.pagination?.last_page > 1" class="flex items-center justify-between text-sm text-slate-400">
-        <UButton color="neutral" variant="outline" :disabled="appointments.pagination.current_page <= 1 || appointments.isLoading" @click="goToPage(appointments.pagination.current_page - 1)">Previous</UButton>
-        <span>Page {{ appointments.pagination.current_page }} of {{ appointments.pagination.last_page }}</span>
-        <UButton color="neutral" variant="outline" :disabled="appointments.pagination.current_page >= appointments.pagination.last_page || appointments.isLoading" @click="goToPage(appointments.pagination.current_page + 1)">Next</UButton>
-      </div>
+      <AppPagination
+        :current-page="appointments.pagination?.current_page"
+        :last-page="appointments.pagination?.last_page"
+        :is-loading="appointments.isLoading"
+        @change="goToPage"
+      />
     </div>
 
     <AppConfirm :open="Boolean(appointmentToCancel)" title="Cancel appointment?" message="This booking request will be marked as cancelled and cannot be restored." confirm-label="Cancel appointment" :loading="appointments.isSaving" @cancel="appointmentToCancel = null" @confirm="cancelAppointment" />

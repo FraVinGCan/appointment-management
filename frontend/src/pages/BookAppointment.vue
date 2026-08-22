@@ -43,14 +43,14 @@ async function submit() {
   <section class="space-y-6">
     <div>
       <p class="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-400">Client workspace</p>
-      <h1 class="mt-2 text-3xl font-semibold">Book an appointment</h1>
+      <h1 class="mt-2 text-2xl sm:text-3xl font-semibold">Book an appointment</h1>
       <p class="mt-2 text-slate-400">Choose a service and request a time that works for you.</p>
     </div>
 
     <AppLoading v-if="services.isLoading" message="Loading available services..." />
     <AppError v-else-if="services.error" :message="services.error" :retry="true" @retry="services.fetchActive()" />
     <UForm v-else class="max-w-2xl space-y-5" :state="form" @submit="submit">
-      <UCard variant="subtle"><div class="space-y-6">
+      <UCard variant="subtle" class="p-4 sm:p-6"><div class="space-y-6">
       <UFormField label="Service" name="serviceId" required :error="fieldError('serviceId')"><USelect v-model="form.serviceId" placeholder="Select a service" value-key="value" :items="services.items.map((service) => ({ label: `${service.name} (${service.durationMinutes} min)`, value: String(service.id) }))" class="w-full" /></UFormField>
 
       <div class="grid gap-5 sm:grid-cols-2">
@@ -63,7 +63,7 @@ async function submit() {
       <UFormField label="Notes" name="notes" hint="Optional" :error="fieldError('notes')"><UTextarea v-model="form.notes" :rows="4" class="w-full" /></UFormField>
 
       <UAlert v-if="appointments.error" color="error" variant="soft" :description="appointments.error" />
-      <div class="flex flex-wrap gap-3"><UButton type="submit" :loading="appointments.isSaving">Submit booking request</UButton></div>
+      <div class="flex flex-wrap gap-3"><UButton type="submit" class="w-full sm:w-auto" :loading="appointments.isSaving">Submit booking request</UButton></div>
       </div>
       </UCard>
     </UForm>

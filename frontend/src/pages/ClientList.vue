@@ -7,6 +7,7 @@ import AppConfirm from "../components/AppConfirm.vue";
 import AppEmpty from "../components/AppEmpty.vue";
 import AppError from "../components/AppError.vue";
 import AppLoading from "../components/AppLoading.vue";
+import AppPagination from "../components/AppPagination.vue";
 import ClientActiveToggle from "../components/ClientActiveToggle.vue";
 import ClientTableActions from "../components/ClientTableActions.vue";
 import { useClientStore } from "../stores/clients";
@@ -20,12 +21,12 @@ const selected = ref(null);
 let timer;
 const rows = computed(() => clients.items);
 const columns = [
-  { accessorKey: "name", header: "Name" },
-  { accessorKey: "email", header: "Email" },
+  { accessorKey: "name", header: "Name", cell: ({ row }) => h("div", { class: "min-w-0 truncate" }, row.original.name) },
+  { accessorKey: "email", header: "Email", cell: ({ row }) => h("div", { class: "min-w-0 truncate break-all" }, row.original.email) },
   {
     accessorKey: "phone",
     header: "Phone",
-    cell: ({ row }) => row.original.phone || "Not provided",
+    cell: ({ row }) => h("div", { class: "min-w-0 truncate" }, row.original.phone || "Not provided"),
   },
   {
     id: "active",
@@ -85,65 +86,68 @@ function selectRow(_event, row) {
 
 <template>
   <section class="space-y-6">
-    <AppBreadcrumbs
-      :items="[{ label: 'Dashboard', to: '/' }, { label: 'Clients' }]" />
+    <AppBreadcrumbs :items="[{ label: 'Dashboard', to: '/' }, { label: 'Clients' }]" />
     <div class="flex flex-wrap items-end justify-between gap-4">
       <div>
-        <p
-          class="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-400">
+        <p class="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-400">
           Staff workspace
         </p>
-        <h1 class="mt-2 text-3xl font-semibold">Clients</h1>
+        <h1 class="mt-2 text-2xl sm:text-3xl font-semibold">Clients</h1>
       </div>
-      <UButton to="/clients/create" trailing-icon="i-lucide-plus"
-        >Add client</UButton
-      >
+      <UButton to="/clients/create" trailing-icon="i-lucide-plus" class="w-full sm:w-auto">Add client</UButton>
     </div>
-    <UInput
-      v-model="search"
-      icon="i-lucide-search"
-      placeholder="Search clients"
-      class="w-full max-w-xl" /><AppLoading
-      v-if="clients.isLoading"
-      message="Loading clients..." /><AppError
-      v-else-if="clients.error"
-      :message="clients.error"
-      :retry="true"
-      @retry="clients.fetchList()" /><AppEmpty
-      v-else-if="!clients.items.length"
-      message="No clients found." />
-    <div
-      v-else
-      class="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900 p-2">
-      <UTable
-        :data="rows"
-        :columns="columns"
-        :on-select="selectRow"
-        class="min-w-full" />
-      <div
-        v-if="clients.pagination?.last_page > 1"
-        class="flex items-center justify-between px-3 py-4 text-sm text-muted">
-        <UButton
-          color="neutral"
-          variant="outline"
-          :disabled="clients.pagination.current_page <= 1 || clients.isLoading"
-          @click="page(clients.pagination.current_page - 1)"
-          >Previous</UButton
-        ><span
-          >Page {{ clients.pagination.current_page }} of
-          {{ clients.pagination.last_page }}</span
-        ><UButton
-          color="neutral"
-          variant="outline"
-          :disabled="
-            clients.pagination.current_page >= clients.pagination.last_page ||
-            clients.isLoading
-          "
-          @click="page(clients.pagination.current_page + 1)"
-          >Next</UButton
-        >
+    <UInput v-model="search" icon="i-lucide-search" placeholder="Search clients" class="w-full max-w-xl" />
+    <AppLoading v-if="clients.isLoading" message="Loading clients..." />
+    <AppError v-else-if="clients.error" :message="clients.error" :retry="true" @retry="clients.fetchList()" />
+    <AppEmpty v-else-if="!clients.items.length" message="No clients found." />
+
+    <div v-else class="space-y-4">
+      <div class="hidden sm:block overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900 p-2">
+        <UTable :data="rows" :columns="columns" :on-select="selectRow" class="min-w-full" />
       </div>
+
+      <div class="sm:hidden space-y-3">
+        <div v-for="client in clients.items" :key="client.id" class="rounded-xl border border-slate-800 bg-slate-900 p-4">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div class="min-w-0 flex-1">
+              <p class="font-medium truncate">{{ client.name }}</p>
+              <p class="mt-1 text-sm text-slate-400 truncate break-all">{{ client.email }}</p>
+              <p class="mt-1 text-sm text-slate-400">{{ client.phone || "Not provided" }}</p>
+              <ClientActiveToggle
+                :model-value="client.active"
+                :disabled="clients.isSaving"
+                @toggle="toggleActive(client, $event)"
+              />
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <UButton
+                size="sm"
+                variant="outline"
+                @click.stop="selectRow(null, { original: client })"
+              >
+                View
+              </UButton>
+              <UButton
+                size="sm"
+                color="error"
+                variant="outline"
+                @click.stop="toggleActive(client, false)"
+              >
+                Deactivate
+              </UButton>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <AppPagination
+        :current-page="clients.pagination?.current_page"
+        :last-page="clients.pagination?.last_page"
+        :is-loading="clients.isLoading"
+        @change="page"
+      />
     </div>
+
     <AppConfirm
       :open="Boolean(selected)"
       title="Deactivate client?"
@@ -151,6 +155,7 @@ function selectRow(_event, row) {
       confirm-label="Deactivate"
       :loading="clients.isSaving"
       @cancel="selected = null"
-      @confirm="updateActive(selected, false)" />
+      @confirm="updateActive(selected, false)"
+    />
   </section>
 </template>

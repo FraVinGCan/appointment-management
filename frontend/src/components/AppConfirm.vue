@@ -1,7 +1,12 @@
 <template>
   <UModal :open="open" :title="title" :description="message" :dismissible="!loading" @update:open="(value) => !value && $emit('cancel')">
     <template #body><div /></template>
-    <template #footer><div class="flex w-full justify-end gap-3"><UButton color="neutral" variant="outline" :disabled="loading" @click="$emit('cancel')">Cancel</UButton><UButton color="error" :loading="loading" @click="$emit('confirm')">{{ confirmLabel }}</UButton></div></template>
+    <template #footer>
+      <div class="flex w-full flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">
+        <UButton color="neutral" variant="outline" class="w-full sm:w-auto" :disabled="loading" @click="$emit('cancel')">Cancel</UButton>
+        <UButton color="error" class="w-full sm:w-auto" :loading="loading" @click="$emit('confirm')">{{ confirmLabel }}</UButton>
+      </div>
+    </template>
   </UModal>
 </template>
 

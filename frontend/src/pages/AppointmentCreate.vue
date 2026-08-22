@@ -15,11 +15,10 @@ function saved() {
 <template>
   <section class="space-y-6">
     <div>
-      <p
-        class="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-400">
+      <p class="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-400">
         Staff workspace
       </p>
-      <h1 class="mt-2 text-3xl font-semibold">Create appointment</h1>
+      <h1 class="mt-2 text-2xl sm:text-3xl font-semibold">Create appointment</h1>
     </div>
     <AppointmentForm @saved="saved" />
   </section>
