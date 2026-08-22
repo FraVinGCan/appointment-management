@@ -4,6 +4,8 @@ import { useRoute } from "vue-router";
 import AppError from "../components/AppError.vue";
 import AppLoading from "../components/AppLoading.vue";
 import AppNotFound from "../components/AppNotFound.vue";
+import AppBreadcrumbs from "../components/AppBreadcrumbs.vue";
+import EnumBadge from "../components/EnumBadge.vue";
 import { useClientStore } from "../stores/clients";
 const route = useRoute();
 const clients = useClientStore();
@@ -11,6 +13,7 @@ onMounted(() => clients.fetch(route.params.id));
 </script>
 <template>
   <section class="space-y-6">
+    <AppBreadcrumbs :items="[{ label: 'Clients', to: '/clients' }, { label: 'View' }]" />
     <div class="flex flex-wrap items-end justify-between gap-4">
       <div>
         <p
@@ -19,12 +22,7 @@ onMounted(() => clients.fetch(route.params.id));
         </p>
         <h1 class="mt-2 text-3xl font-semibold">Client details</h1>
       </div>
-      <RouterLink
-        v-if="clients.current"
-        class="rounded-lg border border-slate-700 px-4 py-2 text-sm"
-        :to="`/clients/${clients.current.id}/edit`"
-        >Edit</RouterLink
-      >
+      <UButton v-if="clients.current" color="neutral" variant="outline" :to="`/clients/${clients.current.id}/edit`">Edit</UButton>
     </div>
     <AppLoading v-if="clients.isLoading" message="Loading client..." /><AppError
       v-else-if="clients.error && clients.errorStatus !== 404"
@@ -49,7 +47,7 @@ onMounted(() => clients.fetch(route.params.id));
         <div>
           <dt class="text-xs uppercase tracking-wide text-slate-500">Status</dt>
           <dd class="mt-1">
-            {{ clients.current.active === false ? "Inactive" : "Active" }}
+            <EnumBadge :value="clients.current.active === false ? 'Inactive' : 'Active'" kind="active" />
           </dd>
         </div>
       </dl>

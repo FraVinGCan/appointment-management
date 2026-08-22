@@ -1,8 +1,7 @@
 <template>
-  <div class="rounded-xl border border-rose-900/70 bg-rose-950/50 p-4 text-sm text-rose-200" role="alert">
-    <p>{{ message }}</p>
-    <button v-if="retry" class="mt-3 font-semibold text-rose-300 underline" type="button" @click="$emit('retry')">Try again</button>
-  </div>
+  <UAlert color="error" variant="soft" title="Something went wrong" :description="message" icon="i-lucide-circle-alert">
+    <template v-if="retry" #actions><UButton color="error" variant="outline" size="sm" @click="$emit('retry')">Try again</UButton></template>
+  </UAlert>
 </template>
 
 <script setup>

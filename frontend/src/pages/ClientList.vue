@@ -1,18 +1,48 @@
 <script setup>
-import { onMounted, ref, watch } from "vue";
+import { computed, h, onMounted, ref, watch } from "vue";
+import { useRouter } from "vue-router";
 
+import AppBreadcrumbs from "../components/AppBreadcrumbs.vue";
 import AppConfirm from "../components/AppConfirm.vue";
 import AppEmpty from "../components/AppEmpty.vue";
 import AppError from "../components/AppError.vue";
 import AppLoading from "../components/AppLoading.vue";
+import ClientActiveToggle from "../components/ClientActiveToggle.vue";
+import ClientTableActions from "../components/ClientTableActions.vue";
 import { useClientStore } from "../stores/clients";
 import { useNotificationStore } from "../stores/notifications";
 
 const clients = useClientStore();
 const notifications = useNotificationStore();
+const router = useRouter();
 const search = ref("");
 const selected = ref(null);
 let timer;
+const rows = computed(() => clients.items);
+const columns = [
+  { accessorKey: "name", header: "Name" },
+  { accessorKey: "email", header: "Email" },
+  {
+    accessorKey: "phone",
+    header: "Phone",
+    cell: ({ row }) => row.original.phone || "Not provided",
+  },
+  {
+    id: "active",
+    header: "Active",
+    cell: ({ row }) =>
+      h(ClientActiveToggle, {
+        modelValue: row.original.active,
+        disabled: clients.isSaving,
+        onToggle: (value) => toggleActive(row.original, value),
+      }),
+  },
+  {
+    id: "actions",
+    header: "Actions",
+    cell: ({ row }) => h(ClientTableActions, { id: row.original.id }),
+  },
+];
 onMounted(() => clients.fetchList());
 watch(search, (value) => {
   window.clearTimeout(timer);
@@ -21,28 +51,42 @@ watch(search, (value) => {
     250,
   );
 });
-async function deactivate() {
+const pendingActive = ref(true);
+async function toggleActive(client, value) {
+  if (!value) {
+    selected.value = client;
+    pendingActive.value = false;
+    return;
+  }
+  await updateActive(client, true);
+}
+async function updateActive(client, value) {
   try {
-    await clients.deactivate(selected.value.id);
-    const item = clients.current;
-    const index = clients.items.findIndex((client) => client.id === item.id);
-    if (index >= 0) clients.items.splice(index, 1, item);
-    notifications.notify("Client deactivated.");
+    const item = await (value
+      ? clients.activate(client.id)
+      : clients.deactivate(client.id));
+    clients.updateItem(item);
+    notifications.notify(`Client ${value ? "activated" : "deactivated"}.`);
     selected.value = null;
   } catch {
     /* Store state is rendered below. */
   }
 }
-async function page(page) {
+async function page(value) {
   await clients.fetchList({
-    page,
+    page: value,
     ...(search.value ? { search: search.value } : {}),
   });
+}
+function selectRow(_event, row) {
+  router.push(`/clients/${row.original.id}`);
 }
 </script>
 
 <template>
   <section class="space-y-6">
+    <AppBreadcrumbs
+      :items="[{ label: 'Dashboard', to: '/' }, { label: 'Clients' }]" />
     <div class="flex flex-wrap items-end justify-between gap-4">
       <div>
         <p
@@ -51,17 +95,15 @@ async function page(page) {
         </p>
         <h1 class="mt-2 text-3xl font-semibold">Clients</h1>
       </div>
-      <RouterLink
-        class="rounded-lg bg-cyan-400 px-4 py-2 text-sm font-semibold text-slate-950"
-        to="/clients/create"
-        >Add client</RouterLink
+      <UButton to="/clients/create" trailing-icon="i-lucide-plus"
+        >Add client</UButton
       >
     </div>
-    <input
+    <UInput
       v-model="search"
-      type="search"
+      icon="i-lucide-search"
       placeholder="Search clients"
-      class="w-full max-w-xl rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-cyan-400" /><AppLoading
+      class="w-full max-w-xl" /><AppLoading
       v-if="clients.isLoading"
       message="Loading clients..." /><AppError
       v-else-if="clients.error"
@@ -72,80 +114,34 @@ async function page(page) {
       message="No clients found." />
     <div
       v-else
-      class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900">
-      <div class="overflow-x-auto">
-        <table class="min-w-full text-left text-sm">
-          <thead
-            class="border-b border-slate-800 text-xs uppercase tracking-wide text-slate-500">
-            <tr>
-              <th class="px-5 py-4">Name</th>
-              <th class="px-5 py-4">Email</th>
-              <th class="px-5 py-4">Phone</th>
-              <th class="px-5 py-4">Status</th>
-              <th class="px-5 py-4">Actions</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-800">
-            <tr v-for="client in clients.items" :key="client.id">
-              <td class="px-5 py-4 font-semibold">{{ client.name }}</td>
-              <td class="px-5 py-4 text-slate-400">{{ client.email }}</td>
-              <td class="px-5 py-4 text-slate-400">
-                {{ client.phone || "Not provided" }}
-              </td>
-              <td class="px-5 py-4">
-                <span
-                  :class="
-                    client.active === false
-                      ? 'text-slate-500'
-                      : 'text-emerald-300'
-                  "
-                  >{{ client.active === false ? "Inactive" : "Active" }}</span
-                >
-              </td>
-              <td class="px-5 py-4">
-                <div class="flex gap-3 text-xs">
-                  <RouterLink
-                    class="font-semibold text-cyan-300"
-                    :to="`/clients/${client.id}`"
-                    >View</RouterLink
-                  ><RouterLink
-                    class="font-semibold text-slate-300"
-                    :to="`/clients/${client.id}/edit`"
-                    >Edit</RouterLink
-                  ><button
-                    v-if="client.active !== false"
-                    class="font-semibold text-rose-300"
-                    type="button"
-                    @click="selected = client">
-                    Deactivate
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      class="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900 p-2">
+      <UTable
+        :data="rows"
+        :columns="columns"
+        :on-select="selectRow"
+        class="min-w-full" />
       <div
         v-if="clients.pagination?.last_page > 1"
-        class="flex items-center justify-between border-t border-slate-800 px-5 py-4 text-sm text-slate-400">
-        <button
-          class="rounded-lg border border-slate-700 px-3 py-2 disabled:opacity-40"
-          type="button"
+        class="flex items-center justify-between px-3 py-4 text-sm text-muted">
+        <UButton
+          color="neutral"
+          variant="outline"
           :disabled="clients.pagination.current_page <= 1 || clients.isLoading"
-          @click="page(clients.pagination.current_page - 1)">
-          Previous</button
+          @click="page(clients.pagination.current_page - 1)"
+          >Previous</UButton
         ><span
           >Page {{ clients.pagination.current_page }} of
           {{ clients.pagination.last_page }}</span
-        ><button
-          class="rounded-lg border border-slate-700 px-3 py-2 disabled:opacity-40"
-          type="button"
+        ><UButton
+          color="neutral"
+          variant="outline"
           :disabled="
-            clients.pagination.current_page >= clients.pagination.last_page || clients.isLoading
+            clients.pagination.current_page >= clients.pagination.last_page ||
+            clients.isLoading
           "
-          @click="page(clients.pagination.current_page + 1)">
-          Next
-        </button>
+          @click="page(clients.pagination.current_page + 1)"
+          >Next</UButton
+        >
       </div>
     </div>
     <AppConfirm
@@ -155,6 +151,6 @@ async function page(page) {
       confirm-label="Deactivate"
       :loading="clients.isSaving"
       @cancel="selected = null"
-      @confirm="deactivate" />
+      @confirm="updateActive(selected, false)" />
   </section>
 </template>

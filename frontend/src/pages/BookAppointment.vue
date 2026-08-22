@@ -49,43 +49,23 @@ async function submit() {
 
     <AppLoading v-if="services.isLoading" message="Loading available services..." />
     <AppError v-else-if="services.error" :message="services.error" :retry="true" @retry="services.fetchActive()" />
-    <form v-else class="max-w-2xl space-y-5 rounded-2xl border border-slate-800 bg-slate-900 p-6" @submit.prevent="submit">
-      <label class="block text-sm font-medium">Service
-        <select v-model="form.serviceId" required class="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100 outline-none focus:border-cyan-400">
-          <option disabled value="">Select a service</option>
-          <option v-for="service in services.items" :key="service.id" :value="service.id">{{ service.name }} ({{ service.durationMinutes }} min)</option>
-        </select>
-        <span v-if="fieldError('serviceId')" class="mt-1 block text-sm text-rose-400">{{ fieldError('serviceId') }}</span>
-      </label>
+    <UForm v-else class="max-w-2xl space-y-5" :state="form" @submit="submit">
+      <UCard variant="subtle"><div class="space-y-6">
+      <UFormField label="Service" name="serviceId" required :error="fieldError('serviceId')"><USelect v-model="form.serviceId" placeholder="Select a service" value-key="value" :items="services.items.map((service) => ({ label: `${service.name} (${service.durationMinutes} min)`, value: String(service.id) }))" class="w-full" /></UFormField>
 
       <div class="grid gap-5 sm:grid-cols-2">
-        <label class="block text-sm font-medium">Date
-          <input v-model="form.appointmentDate" required type="date" :min="today" class="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100 outline-none focus:border-cyan-400" />
-          <span v-if="fieldError('appointmentDate')" class="mt-1 block text-sm text-rose-400">{{ fieldError('appointmentDate') }}</span>
-        </label>
-        <label class="block text-sm font-medium">Priority
-          <select v-model="form.priority" required class="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100 outline-none focus:border-cyan-400">
-            <option>Low</option><option>Medium</option><option>High</option>
-          </select>
-          <span v-if="fieldError('priority')" class="mt-1 block text-sm text-rose-400">{{ fieldError('priority') }}</span>
-        </label>
-        <label class="block text-sm font-medium">Start time
-          <input v-model="form.startTime" required type="time" class="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100 outline-none focus:border-cyan-400" />
-          <span v-if="fieldError('startTime')" class="mt-1 block text-sm text-rose-400">{{ fieldError('startTime') }}</span>
-        </label>
-        <label class="block text-sm font-medium">End time
-          <input v-model="form.endTime" required type="time" class="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100 outline-none focus:border-cyan-400" />
-          <span v-if="fieldError('endTime')" class="mt-1 block text-sm text-rose-400">{{ fieldError('endTime') }}</span>
-        </label>
+        <UFormField label="Date" name="appointmentDate" required :error="fieldError('appointmentDate')"><UInput v-model="form.appointmentDate" type="date" :min="today" class="w-full" /></UFormField>
+        <UFormField label="Priority" name="priority" required :error="fieldError('priority')"><USelect v-model="form.priority" :items="['Low', 'Medium', 'High']" class="w-full" /></UFormField>
+        <UFormField label="Start time" name="startTime" required :error="fieldError('startTime')"><UInput v-model="form.startTime" type="time" class="w-full" /></UFormField>
+        <UFormField label="End time" name="endTime" required :error="fieldError('endTime')"><UInput v-model="form.endTime" type="time" class="w-full" /></UFormField>
       </div>
 
-      <label class="block text-sm font-medium">Notes <span class="font-normal text-slate-500">(optional)</span>
-        <textarea v-model="form.notes" rows="4" class="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100 outline-none focus:border-cyan-400" />
-        <span v-if="fieldError('notes')" class="mt-1 block text-sm text-rose-400">{{ fieldError('notes') }}</span>
-      </label>
+      <UFormField label="Notes" name="notes" hint="Optional" :error="fieldError('notes')"><UTextarea v-model="form.notes" :rows="4" class="w-full" /></UFormField>
 
-      <p v-if="appointments.error" class="rounded-lg bg-rose-950/60 px-3 py-2 text-sm text-rose-300">{{ appointments.error }}</p>
-      <button class="w-full rounded-lg bg-cyan-400 px-4 py-3 font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto" type="submit" :disabled="appointments.isSaving">{{ appointments.isSaving ? 'Submitting request...' : 'Submit booking request' }}</button>
-    </form>
+      <UAlert v-if="appointments.error" color="error" variant="soft" :description="appointments.error" />
+      <div class="flex flex-wrap gap-3"><UButton type="submit" :loading="appointments.isSaving">Submit booking request</UButton></div>
+      </div>
+      </UCard>
+    </UForm>
   </section>
 </template>

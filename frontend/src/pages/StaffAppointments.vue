@@ -1,24 +1,48 @@
 <script setup>
-import { onMounted, ref, watch } from "vue";
+import { computed, h, onMounted, ref, watch } from "vue";
+import { useRouter } from "vue-router";
 
 import AppEmpty from "../components/AppEmpty.vue";
 import AppError from "../components/AppError.vue";
 import AppLoading from "../components/AppLoading.vue";
+import AppBreadcrumbs from "../components/AppBreadcrumbs.vue";
+import AppointmentTableActions from "../components/AppointmentTableActions.vue";
+import EnumBadge from "../components/EnumBadge.vue";
 import { useAppointmentStore } from "../stores/appointments";
 
 const appointments = useAppointmentStore();
+const router = useRouter();
 const search = ref("");
+const status = ref("");
+const priority = ref("");
 let searchTimer;
+const tableRows = computed(() => appointments.items.map((appointment) => ({
+  appointment: `${formatDate(appointment.appointmentDate)} ${appointment.startTime} - ${appointment.endTime}`,
+  client: appointment.client?.name || "Unknown client",
+  service: appointment.service?.name || "Unknown service",
+  priority: appointment.priority,
+  status: appointment.status,
+  id: appointment.id,
+})));
+const columns = [
+  { accessorKey: "appointment", header: "Appointment" },
+  { accessorKey: "client", header: "Client" },
+  { accessorKey: "service", header: "Service" },
+  { accessorKey: "status", header: "Status", cell: ({ row }) => h(EnumBadge, { value: row.original.status, kind: "status" }) },
+  { accessorKey: "priority", header: "Priority", cell: ({ row }) => h(EnumBadge, { value: row.original.priority, kind: "priority" }) },
+  { id: "actions", header: "Actions", cell: ({ row }) => h(AppointmentTableActions, { id: row.original.id }) },
+];
 
 onMounted(() => appointments.fetchList());
 
 watch(search, (value) => {
   window.clearTimeout(searchTimer);
   searchTimer = window.setTimeout(
-    () => appointments.fetchList({ search: value, page: 1 }),
+  () => appointments.fetchList(query(1)),
     250,
   );
 });
+watch([status, priority], () => appointments.fetchList(query(1)));
 
 function canConfirm(appointment) {
   return appointment.status === "Requested";
@@ -35,15 +59,19 @@ function formatDate(date) {
   );
 }
 function query(page) {
-  return { page, ...(search.value ? { search: search.value } : {}) };
+  return { page, ...(search.value ? { search: search.value } : {}), ...(status.value ? { status: status.value } : {}), ...(priority.value ? { priority: priority.value } : {}) };
 }
 async function goToPage(page) {
   await appointments.fetchList(query(page));
+}
+function selectRow(_event, row) {
+  router.push(`/appointments/${row.original.id}`);
 }
 </script>
 
 <template>
   <section class="space-y-6">
+    <AppBreadcrumbs :items="[{ label: 'Dashboard', to: '/' }, { label: 'Appointments' }]" />
     <div class="flex flex-wrap items-end justify-between gap-4">
       <div>
         <p
@@ -52,21 +80,14 @@ async function goToPage(page) {
         </p>
         <h1 class="mt-2 text-3xl font-semibold">Appointments</h1>
       </div>
-      <RouterLink
-        class="rounded-lg bg-cyan-400 px-4 py-2 text-sm font-semibold text-slate-950"
-        to="/appointments/create"
-        >Create appointment</RouterLink
-      >
+      <UButton to="/appointments/create" trailing-icon="i-lucide-plus">Create appointment</UButton>
     </div>
 
     <label class="block max-w-xl text-sm font-medium"
       >Search appointments
-      <input
-        v-model="search"
-        type="search"
-        placeholder="Client, service, status, or priority"
-        class="mt-2 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-cyan-400" />
+      <UInput v-model="search" icon="i-lucide-search" placeholder="Client, service, status, or priority" class="mt-2 w-full" />
     </label>
+    <div class="flex flex-wrap items-end gap-4"><UFormField label="Status"><USelect v-model="status" placeholder="All statuses" :items="['Requested', 'Confirmed', 'Completed', 'Cancelled']" class="w-48" /></UFormField><UFormField label="Priority"><USelect v-model="priority" placeholder="All priorities" :items="['Low', 'Medium', 'High']" class="w-48" /></UFormField><UButton v-if="status || priority" color="neutral" variant="ghost" @click="status = ''; priority = ''">Clear filters</UButton></div>
 
     <AppLoading
       v-if="appointments.isLoading"
@@ -83,101 +104,28 @@ async function goToPage(page) {
     <AppEmpty
       v-else-if="!appointments.items.length"
       message="No appointments found."
-      ><RouterLink
-        class="mt-4 inline-block font-semibold text-cyan-400"
-        to="/appointments/create"
-        >Create appointment</RouterLink
-      ></AppEmpty
+      ><UButton class="mt-4" to="/appointments/create" variant="link">Create appointment</UButton></AppEmpty
     >
-    <div
-      v-else
-      class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900">
-      <div class="overflow-x-auto">
-        <table class="min-w-full text-left text-sm">
-          <thead
-            class="border-b border-slate-800 text-xs uppercase tracking-wide text-slate-500">
-            <tr>
-              <th class="px-5 py-4">Appointment</th>
-              <th class="px-5 py-4">Client</th>
-              <th class="px-5 py-4">Service</th>
-              <th class="px-5 py-4">Priority</th>
-              <th class="px-5 py-4">Status</th>
-              <th class="px-5 py-4">Actions</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-800">
-            <tr
-              v-for="appointment in appointments.items"
-              :key="appointment.id"
-              class="text-slate-300">
-              <td class="whitespace-nowrap px-5 py-4">
-                <div>{{ formatDate(appointment.appointmentDate) }}</div>
-                <div class="text-xs text-slate-500">
-                  {{ appointment.startTime }} - {{ appointment.endTime }}
-                </div>
-              </td>
-              <td class="px-5 py-4">
-                {{ appointment.client?.name || "Unknown client" }}
-              </td>
-              <td class="px-5 py-4">
-                {{ appointment.service?.name || "Unknown service" }}
-              </td>
-              <td class="px-5 py-4">{{ appointment.priority }}</td>
-              <td class="px-5 py-4">
-                <span
-                  class="rounded-full bg-slate-800 px-3 py-1 text-xs font-semibold"
-                  >{{ appointment.status }}</span
-                >
-              </td>
-              <td class="whitespace-nowrap px-5 py-4">
-                <div class="flex flex-wrap gap-2 text-xs">
-                  <RouterLink
-                    class="font-semibold text-cyan-300"
-                    :to="`/appointments/${appointment.id}`"
-                    >View</RouterLink
-                  ><RouterLink
-                    class="font-semibold text-slate-300"
-                    :to="`/appointments/${appointment.id}/edit`"
-                    >Edit</RouterLink
-                  ><span v-if="canConfirm(appointment)" class="text-slate-600"
-                    >Confirm in details</span
-                  ><span
-                    v-else-if="
-                      canComplete(appointment) || canCancel(appointment)
-                    "
-                    class="text-slate-600"
-                    >Manage in details</span
-                  >
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <div v-else class="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900 p-2"><UTable :data="tableRows" :columns="columns" :on-select="selectRow" class="min-w-full" />
       <div
         v-if="appointments.pagination?.last_page > 1"
         class="flex items-center justify-between border-t border-slate-800 px-5 py-4 text-sm text-slate-400">
-        <button
-          class="rounded-lg border border-slate-700 px-3 py-2 disabled:opacity-40"
-          type="button"
+        <UButton color="neutral" variant="outline"
           :disabled="
             appointments.pagination.current_page <= 1 || appointments.isLoading
           "
           @click="goToPage(appointments.pagination.current_page - 1)">
-          Previous</button
+          Previous</UButton
         ><span
           >Page {{ appointments.pagination.current_page }} of
           {{ appointments.pagination.last_page }}</span
-        ><button
-          class="rounded-lg border border-slate-700 px-3 py-2 disabled:opacity-40"
-          type="button"
+        ><UButton color="neutral" variant="outline"
           :disabled="
             appointments.pagination.current_page >=
               appointments.pagination.last_page || appointments.isLoading
           "
           @click="goToPage(appointments.pagination.current_page + 1)">
-          Next
-        </button>
+          Next</UButton>
       </div>
     </div>
   </section>

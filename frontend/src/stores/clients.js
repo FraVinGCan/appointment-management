@@ -36,6 +36,7 @@ export const useClientStore = defineStore('clients', {
     async create(payload) { return this.mutate(() => clientService.create(payload)) },
     async update(id, payload) { return this.mutate(() => clientService.update(id, payload)) },
     async deactivate(id) { return this.mutate(() => clientService.deactivate(id)) },
+    async activate(id) { return this.mutate(() => clientService.activate(id)) },
     async run(action) {
       this.isLoading = true
       this.clearError()

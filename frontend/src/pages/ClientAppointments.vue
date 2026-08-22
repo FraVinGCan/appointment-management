@@ -46,13 +46,13 @@ async function cancelAppointment() {
         <h1 class="mt-2 text-3xl font-semibold">My appointments</h1>
         <p class="mt-2 text-slate-400">Review your booking requests and confirmed visits.</p>
       </div>
-      <RouterLink class="rounded-lg bg-cyan-400 px-4 py-2 text-sm font-semibold text-slate-950" to="/book">Book an appointment</RouterLink>
+      <UButton to="/book" trailing-icon="i-lucide-arrow-right">Book an appointment</UButton>
     </div>
 
     <AppLoading v-if="appointments.isLoading" message="Loading your appointments..." />
     <AppError v-else-if="appointments.error" :message="appointments.error" :retry="true" @retry="appointments.fetchClientList()" />
     <AppEmpty v-else-if="!appointments.items.length" message="You do not have any appointments yet.">
-      <RouterLink class="mt-4 inline-block font-semibold text-cyan-400" to="/book">Request your first appointment</RouterLink>
+      <UButton class="mt-4" to="/book" variant="link">Request your first appointment</UButton>
     </AppEmpty>
     <div v-else class="space-y-4">
       <article v-for="appointment in appointments.items" :key="appointment.id" class="rounded-2xl border border-slate-800 bg-slate-900 p-5">
@@ -61,18 +61,18 @@ async function cancelAppointment() {
             <h2 class="text-lg font-semibold">{{ appointment.service?.name || 'Appointment' }}</h2>
             <p class="mt-1 text-sm text-slate-400">{{ formatDate(appointment.appointmentDate) }} · {{ appointment.startTime }} - {{ appointment.endTime }}</p>
           </div>
-          <span class="rounded-full bg-slate-800 px-3 py-1 text-xs font-semibold" :class="appointment.status === 'Cancelled' ? 'text-slate-500' : 'text-cyan-300'">{{ appointment.status }}</span>
+          <UBadge :color="appointment.status === 'Cancelled' ? 'neutral' : 'primary'" variant="subtle">{{ appointment.status }}</UBadge>
         </div>
         <div class="mt-4 flex flex-wrap items-center justify-between gap-4 border-t border-slate-800 pt-4 text-sm">
           <div class="text-slate-400">Priority: <span class="text-slate-200">{{ appointment.priority }}</span></div>
-          <button v-if="canCancel(appointment)" class="rounded-lg border border-rose-800 px-3 py-2 font-semibold text-rose-300 hover:bg-rose-950/50" type="button" @click="appointmentToCancel = appointment">Cancel appointment</button>
+          <UButton v-if="canCancel(appointment)" color="error" variant="outline" size="sm" @click="appointmentToCancel = appointment">Cancel appointment</UButton>
         </div>
       </article>
 
       <div v-if="appointments.pagination?.last_page > 1" class="flex items-center justify-between text-sm text-slate-400">
-        <button class="rounded-lg border border-slate-700 px-3 py-2 disabled:opacity-40" type="button" :disabled="appointments.pagination.current_page <= 1 || appointments.isLoading" @click="goToPage(appointments.pagination.current_page - 1)">Previous</button>
+        <UButton color="neutral" variant="outline" :disabled="appointments.pagination.current_page <= 1 || appointments.isLoading" @click="goToPage(appointments.pagination.current_page - 1)">Previous</UButton>
         <span>Page {{ appointments.pagination.current_page }} of {{ appointments.pagination.last_page }}</span>
-        <button class="rounded-lg border border-slate-700 px-3 py-2 disabled:opacity-40" type="button" :disabled="appointments.pagination.current_page >= appointments.pagination.last_page || appointments.isLoading" @click="goToPage(appointments.pagination.current_page + 1)">Next</button>
+        <UButton color="neutral" variant="outline" :disabled="appointments.pagination.current_page >= appointments.pagination.last_page || appointments.isLoading" @click="goToPage(appointments.pagination.current_page + 1)">Next</UButton>
       </div>
     </div>
 

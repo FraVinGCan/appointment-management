@@ -32,10 +32,8 @@ async function deactivate() {
         </p>
         <h1 class="mt-2 text-3xl font-semibold">Services</h1>
       </div>
-      <RouterLink
-        class="rounded-lg bg-cyan-400 px-4 py-2 text-sm font-semibold text-slate-950"
-        to="/services/create"
-        >Add service</RouterLink
+      <UButton to="/services/create" trailing-icon="i-lucide-plus"
+        >Add service</UButton
       >
     </div>
     <AppLoading
@@ -48,42 +46,41 @@ async function deactivate() {
       v-else-if="!services.items.length"
       message="No services found." />
     <div v-else class="grid gap-4 md:grid-cols-2">
-      <article
+      <UCard
         v-for="service in services.items"
         :key="service.id"
-        class="rounded-2xl border border-slate-800 bg-slate-900 p-5">
-        <div class="flex items-start justify-between gap-3">
+        variant="subtle"
+        ><div class="flex items-start justify-between gap-3">
           <h2 class="font-semibold">{{ service.name }}</h2>
-          <span
-            :class="service.active ? 'text-emerald-300' : 'text-slate-500'"
-            class="text-xs"
-            >{{ service.active ? "Active" : "Inactive" }}</span
+          <UBadge
+            :color="service.active ? 'success' : 'neutral'"
+            variant="subtle"
+            >{{ service.active ? "Active" : "Inactive" }}</UBadge
           >
         </div>
-        <p class="mt-2 text-sm text-slate-400">
+        <p class="mt-3 text-sm text-muted">
           {{ service.description || "No description" }}
         </p>
-        <p class="mt-4 text-sm text-slate-300">
-          {{ service.durationMinutes }} minutes
-        </p>
-        <div class="mt-5 flex gap-3 text-xs">
-          <RouterLink
-            class="font-semibold text-cyan-300"
-            :to="`/services/${service.id}`"
-            >View</RouterLink
-          ><RouterLink
-            class="font-semibold text-slate-300"
+        <p class="mt-4 text-sm">{{ service.durationMinutes }} minutes</p>
+        <div class="mt-5 flex gap-2">
+          <UButton size="sm" variant="link" :to="`/services/${service.id}`"
+            >View</UButton
+          ><UButton
+            size="sm"
+            color="neutral"
+            variant="link"
             :to="`/services/${service.id}/edit`"
-            >Edit</RouterLink
-          ><button
+            >Edit</UButton
+          ><UButton
             v-if="service.active"
-            class="font-semibold text-rose-300"
-            type="button"
-            @click="selected = service">
-            Deactivate
-          </button>
-        </div>
-      </article>
+            size="sm"
+            color="error"
+            variant="link"
+            @click="selected = service"
+            >Deactivate</UButton
+          >
+        </div></UCard
+      >
     </div>
     <AppConfirm
       :open="Boolean(selected)"

@@ -90,6 +90,28 @@ test('appointment validation rejects status, invalid times, and overlapping acti
     ]))->assertCreated();
 });
 
+test('appointment listing supports status and priority filters', function () {
+    $staff = staffUser();
+    $requested = Appointment::factory()->create([
+        'status' => AppointmentStatus::Requested,
+        'priority' => AppointmentPriority::High,
+    ]);
+    Appointment::factory()->create([
+        'status' => AppointmentStatus::Confirmed,
+        'priority' => AppointmentPriority::Low,
+        'appointment_date' => '2026-09-03',
+    ]);
+
+    $this->actingAs($staff)->getJson('/api/appointments?status=Requested&priority=High')
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $requested->id);
+
+    $this->actingAs($staff)->getJson('/api/appointments?status=Unknown')
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['status']);
+});
+
 test('public services only include active services and clients can book them', function () {
     $activeService = Service::factory()->create(['active' => true]);
     $inactiveService = Service::factory()->inactive()->create();
@@ -150,11 +172,16 @@ test('staff can manage and deactivate clients and services', function () {
         'name' => 'Updated Client',
         'email' => $client->user->email,
         'phone' => '555-0100',
+        'active' => true,
     ])->assertOk()->assertJsonPath('data.name', 'Updated Client');
 
     $this->actingAs($staff)->patchJson('/api/clients/'.$client->id.'/deactivate')
         ->assertOk()
         ->assertJsonPath('data.active', false);
+
+    $this->actingAs($staff)->patchJson('/api/clients/'.$client->id.'/activate')
+        ->assertOk()
+        ->assertJsonPath('data.active', true);
 
     $this->actingAs($staff)->putJson('/api/services/'.$service->id, [
         'name' => 'Updated Service',

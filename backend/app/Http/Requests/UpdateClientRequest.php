@@ -25,6 +25,7 @@ class UpdateClientRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($userId)],
             'phone' => ['nullable', 'string', 'max:50'],
+            'active' => ['required', 'boolean'],
         ];
     }
 }

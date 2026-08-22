@@ -55,7 +55,11 @@ class ClientController extends Controller
     public function update(UpdateClientRequest $request, Client $client): ClientResource
     {
         $data = $request->validated();
-        $client->update(['name' => $data['name'], 'phone' => $data['phone'] ?? null]);
+        $client->update([
+            'name' => $data['name'],
+            'phone' => $data['phone'] ?? null,
+            'active' => $data['active'],
+        ]);
         $client->user->update(['name' => $data['name'], 'email' => $data['email']]);
 
         return new ClientResource($client->fresh()->load('user'));
@@ -64,6 +68,13 @@ class ClientController extends Controller
     public function deactivate(Client $client): ClientResource
     {
         $client->update(['active' => false]);
+
+        return new ClientResource($client->fresh()->load('user'));
+    }
+
+    public function activate(Client $client): ClientResource
+    {
+        $client->update(['active' => true]);
 
         return new ClientResource($client->fresh()->load('user'));
     }

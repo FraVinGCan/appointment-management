@@ -22,6 +22,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::post('/appointments/{appointment}/cancel', [AppointmentController::class, 'cancel']);
         Route::apiResource('clients', ClientController::class)->except(['destroy']);
         Route::patch('/clients/{client}/deactivate', [ClientController::class, 'deactivate']);
+        Route::patch('/clients/{client}/activate', [ClientController::class, 'activate']);
         Route::apiResource('services', ServiceController::class)->except(['destroy', 'index']);
         Route::get('/management/services', [ServiceController::class, 'index']);
         Route::patch('/services/{service}/deactivate', [ServiceController::class, 'deactivate']);

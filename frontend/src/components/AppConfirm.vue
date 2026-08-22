@@ -1,14 +1,8 @@
 <template>
-  <div v-if="open" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-6" role="dialog" aria-modal="true">
-    <div class="w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-2xl">
-      <h2 class="text-lg font-semibold text-slate-100">{{ title }}</h2>
-      <p class="mt-2 text-sm text-slate-400">{{ message }}</p>
-      <div class="mt-6 flex justify-end gap-3">
-        <button class="rounded-lg border border-slate-700 px-4 py-2 text-sm text-slate-200" type="button" :disabled="loading" @click="$emit('cancel')">Cancel</button>
-        <button class="rounded-lg bg-rose-500 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50" type="button" :disabled="loading" @click="$emit('confirm')">{{ loading ? 'Working...' : confirmLabel }}</button>
-      </div>
-    </div>
-  </div>
+  <UModal :open="open" :title="title" :description="message" :dismissible="!loading" @update:open="(value) => !value && $emit('cancel')">
+    <template #body><div /></template>
+    <template #footer><div class="flex w-full justify-end gap-3"><UButton color="neutral" variant="outline" :disabled="loading" @click="$emit('cancel')">Cancel</UButton><UButton color="error" :loading="loading" @click="$emit('confirm')">{{ confirmLabel }}</UButton></div></template>
+  </UModal>
 </template>
 
 <script setup>

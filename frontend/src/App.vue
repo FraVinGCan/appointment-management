@@ -1,8 +1,10 @@
 <template>
-  <component v-if="layout" :is="layout">
-    <RouterView />
-  </component>
-  <RouterView v-else />
+  <UApp>
+    <component v-if="layout" :is="layout">
+      <RouterView />
+    </component>
+    <RouterView v-else />
+  </UApp>
   <NotificationStack />
 </template>
 

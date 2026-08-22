@@ -4,6 +4,8 @@ import { useRoute } from "vue-router";
 import AppError from "../components/AppError.vue";
 import AppLoading from "../components/AppLoading.vue";
 import AppNotFound from "../components/AppNotFound.vue";
+import AppBreadcrumbs from "../components/AppBreadcrumbs.vue";
+import EnumBadge from "../components/EnumBadge.vue";
 import { useServiceStore } from "../stores/services";
 const route = useRoute();
 const services = useServiceStore();
@@ -11,6 +13,7 @@ onMounted(() => services.fetch(route.params.id));
 </script>
 <template>
   <section class="space-y-6">
+    <AppBreadcrumbs :items="[{ label: 'Services', to: '/services' }, { label: 'View' }]" />
     <div class="flex flex-wrap items-end justify-between gap-4">
       <div>
         <p
@@ -19,12 +22,7 @@ onMounted(() => services.fetch(route.params.id));
         </p>
         <h1 class="mt-2 text-3xl font-semibold">Service details</h1>
       </div>
-      <RouterLink
-        v-if="services.current"
-        class="rounded-lg border border-slate-700 px-4 py-2 text-sm"
-        :to="`/services/${services.current.id}/edit`"
-        >Edit</RouterLink
-      >
+      <UButton v-if="services.current" color="neutral" variant="outline" :to="`/services/${services.current.id}/edit`">Edit</UButton>
     </div>
     <AppLoading
       v-if="services.isLoading"
@@ -44,7 +42,7 @@ onMounted(() => services.fetch(route.params.id));
           :class="
             services.current.active ? 'text-emerald-300' : 'text-slate-500'
           "
-          >{{ services.current.active ? "Active" : "Inactive" }}</span
+          ><EnumBadge :value="services.current.active ? 'Active' : 'Inactive'" kind="active" /></span
         >
       </div>
       <p class="mt-5 text-slate-400">

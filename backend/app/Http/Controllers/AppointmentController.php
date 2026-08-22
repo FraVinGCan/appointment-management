@@ -4,19 +4,20 @@ namespace App\Http\Controllers;
 
 use App\Enums\AppointmentStatus;
 use App\Exceptions\AppointmentWorkflowException;
+use App\Http\Requests\AppointmentIndexRequest;
 use App\Http\Requests\StoreAppointmentRequest;
 use App\Http\Requests\UpdateAppointmentRequest;
 use App\Http\Resources\AppointmentResource;
 use App\Models\Appointment;
 use App\Services\AppointmentWorkflowService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class AppointmentController extends Controller
 {
-    public function index(Request $request): JsonResponse
+    public function index(AppointmentIndexRequest $request): JsonResponse
     {
-        $search = trim((string) $request->query('search', ''));
+        $filters = $request->validated();
+        $search = trim((string) ($filters['search'] ?? ''));
 
         $appointments = Appointment::query()
             ->with(['client.user', 'service'])
@@ -28,9 +29,11 @@ class AppointmentController extends Controller
                         ->orWhereHas('service', fn ($query) => $query->where('name', 'like', "%{$search}%"));
                 });
             })
+            ->when(isset($filters['status']), fn ($query) => $query->where('status', $filters['status']))
+            ->when(isset($filters['priority']), fn ($query) => $query->where('priority', $filters['priority']))
             ->orderBy('appointment_date')
             ->orderBy('start_time')
-            ->paginate((int) $request->query('per_page', 10));
+            ->paginate((int) ($filters['per_page'] ?? 10));
 
         return AppointmentResource::collection($appointments)->response();
     }

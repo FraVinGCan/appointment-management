@@ -6,6 +6,8 @@ import AppConfirm from "../components/AppConfirm.vue";
 import AppError from "../components/AppError.vue";
 import AppLoading from "../components/AppLoading.vue";
 import AppNotFound from "../components/AppNotFound.vue";
+import AppBreadcrumbs from "../components/AppBreadcrumbs.vue";
+import EnumBadge from "../components/EnumBadge.vue";
 import { useAppointmentStore } from "../stores/appointments";
 import { useNotificationStore } from "../stores/notifications";
 
@@ -44,6 +46,7 @@ async function remove() {
 
 <template>
   <section class="space-y-6">
+    <AppBreadcrumbs :items="[{ label: 'Appointments', to: '/appointments' }, { label: 'View' }]" />
     <div class="flex flex-wrap items-end justify-between gap-4">
       <div>
         <p
@@ -53,16 +56,7 @@ async function remove() {
         <h1 class="mt-2 text-3xl font-semibold">Appointment details</h1>
       </div>
       <div v-if="appointment" class="flex gap-2">
-        <RouterLink
-          class="rounded-lg border border-slate-700 px-4 py-2 text-sm"
-          :to="`/appointments/${appointment.id}/edit`"
-          >Edit</RouterLink
-        ><button
-          class="rounded-lg border border-rose-800 px-4 py-2 text-sm text-rose-300"
-          type="button"
-          @click="confirmation = 'delete'">
-          Delete
-        </button>
+        <UButton color="neutral" variant="outline" :to="`/appointments/${appointment.id}/edit`">Edit</UButton><UButton color="error" variant="outline" @click="confirmation = 'delete'">Delete</UButton>
       </div>
     </div>
     <AppLoading
@@ -84,10 +78,7 @@ async function remove() {
             {{ appointment.startTime }} - {{ appointment.endTime }}
           </p>
         </div>
-        <span
-          class="rounded-full bg-slate-800 px-3 py-1 text-sm font-semibold text-cyan-300"
-          >{{ appointment.status }}</span
-        >
+        <EnumBadge :value="appointment.status" kind="status" />
       </div>
       <dl class="mt-8 grid gap-5 border-t border-slate-800 pt-6 sm:grid-cols-2">
         <div>
@@ -98,7 +89,7 @@ async function remove() {
           <dt class="text-xs uppercase tracking-wide text-slate-500">
             Priority
           </dt>
-          <dd class="mt-1">{{ appointment.priority }}</dd>
+          <dd class="mt-1"><EnumBadge :value="appointment.priority" kind="priority" /></dd>
         </div>
         <div>
           <dt class="text-xs uppercase tracking-wide text-slate-500">
@@ -114,28 +105,7 @@ async function remove() {
         </div>
       </dl>
       <div class="mt-8 flex flex-wrap gap-3 border-t border-slate-800 pt-6">
-        <button
-          v-if="canConfirm"
-          class="rounded-lg bg-cyan-400 px-4 py-2 text-sm font-semibold text-slate-950 disabled:opacity-50"
-          type="button"
-          :disabled="appointments.isSaving"
-          @click="workflow('confirm')">
-          Confirm</button
-        ><button
-          v-if="canComplete"
-          class="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 disabled:opacity-50"
-          type="button"
-          :disabled="appointments.isSaving"
-          @click="workflow('complete')">
-          Complete</button
-        ><button
-          v-if="canCancel"
-          class="rounded-lg border border-rose-800 px-4 py-2 text-sm font-semibold text-rose-300 disabled:opacity-50"
-          type="button"
-          :disabled="appointments.isSaving"
-          @click="confirmation = 'cancel'">
-          Cancel appointment
-        </button>
+        <UButton v-if="canConfirm" :loading="appointments.isSaving" @click="workflow('confirm')">Confirm</UButton><UButton v-if="canComplete" color="success" :loading="appointments.isSaving" @click="workflow('complete')">Complete</UButton><UButton v-if="canCancel" color="error" variant="outline" :loading="appointments.isSaving" @click="confirmation = 'cancel'">Cancel appointment</UButton>
       </div>
     </div>
     <AppConfirm

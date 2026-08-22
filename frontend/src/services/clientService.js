@@ -24,3 +24,8 @@ export async function deactivate(id) {
   const { data } = await api.patch(`/clients/${id}/deactivate`)
   return data.data
 }
+
+export async function activate(id) {
+  const { data } = await api.patch(`/clients/${id}/activate`)
+  return data.data
+}

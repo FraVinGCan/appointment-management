@@ -5,6 +5,7 @@ import ClientForm from "../components/ClientForm.vue";
 import AppError from "../components/AppError.vue";
 import AppLoading from "../components/AppLoading.vue";
 import AppNotFound from "../components/AppNotFound.vue";
+import AppBreadcrumbs from "../components/AppBreadcrumbs.vue";
 import { useClientStore } from "../stores/clients";
 import { useNotificationStore } from "../stores/notifications";
 const route = useRoute();
@@ -19,6 +20,7 @@ function saved() {
 </script>
 <template>
   <section class="space-y-6">
+    <AppBreadcrumbs :items="[{ label: 'Clients', to: '/clients' }, { label: 'View', to: `/clients/${route.params.id}` }, { label: 'Edit' }]" />
     <div>
       <p
         class="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-400">
