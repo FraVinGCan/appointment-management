@@ -15,8 +15,11 @@ declare module 'vue' {
     AppEmpty: typeof import('./src/components/AppEmpty.vue')['default']
     AppError: typeof import('./src/components/AppError.vue')['default']
     AppLoading: typeof import('./src/components/AppLoading.vue')['default']
+    AppointmentForm: typeof import('./src/components/AppointmentForm.vue')['default']
+    ClientForm: typeof import('./src/components/ClientForm.vue')['default']
     NotificationStack: typeof import('./src/components/NotificationStack.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    ServiceForm: typeof import('./src/components/ServiceForm.vue')['default']
   }
 }

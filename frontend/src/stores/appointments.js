@@ -78,6 +78,11 @@ export const useAppointmentStore = defineStore('appointments', {
       if (this.current?.id === item.id) this.current = item
     },
 
+    removeItem(id) {
+      this.items = this.items.filter((item) => item.id !== id)
+      if (this.current?.id === id) this.current = null
+    },
+
     async run(action) {
       this.isLoading = true
       this.clearError()
