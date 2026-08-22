@@ -9,11 +9,18 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['user_id', 'name', 'phone'])]
+#[Fillable(['user_id', 'name', 'phone', 'active'])]
 class Client extends Model
 {
     /** @use HasFactory<ClientFactory> */
     use HasFactory;
+
+    protected function casts(): array
+    {
+        return [
+            'active' => 'boolean',
+        ];
+    }
 
     public function user(): BelongsTo
     {

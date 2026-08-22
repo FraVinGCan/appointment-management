@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->unique()->constrained()->restrictOnDelete();
             $table->string('name');
             $table->string('phone', 50)->nullable();
+            $table->boolean('active')->default(true);
             $table->timestamps();
         });
     }

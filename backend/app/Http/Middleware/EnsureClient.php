@@ -19,7 +19,7 @@ class EnsureClient
             return response()->json(['message' => 'Authentication is required.'], 401);
         }
 
-        if (! $request->user()->client) {
+        if (! $request->user()->client || ! $request->user()->client->active) {
             return response()->json(['message' => 'Client access is required.'], 403);
         }
 
