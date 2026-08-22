@@ -11,6 +11,7 @@ export const useServiceStore = defineStore('services', {
     isSaving: false,
     error: null,
     validationErrors: {},
+    errorStatus: 0,
   }),
 
   actions: {
@@ -64,10 +65,12 @@ export const useServiceStore = defineStore('services', {
     clearError() {
       this.error = null
       this.validationErrors = {}
+      this.errorStatus = 0
     },
     setError(error) {
       this.error = errorMessage(error)
       this.validationErrors = validationErrors(error)
+      this.errorStatus = error.status || error.response?.status || 0
     },
   },
 })

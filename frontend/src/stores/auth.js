@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 
 import * as authService from '../services/authService'
+import { useNotificationStore } from './notifications'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -9,6 +10,7 @@ export const useAuthStore = defineStore('auth', {
     isInitialized: false,
     error: null,
     validationErrors: {},
+    errorStatus: 0,
   }),
 
   getters: {
@@ -32,11 +34,15 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async login(credentials) {
-      return this.mutate(() => authService.login(credentials))
+      const user = await this.mutate(() => authService.login(credentials))
+      useNotificationStore().notify('Signed in successfully.')
+      return user
     },
 
     async register(payload) {
-      return this.mutate(() => authService.registerClient(payload))
+      const user = await this.mutate(() => authService.registerClient(payload))
+      useNotificationStore().notify('Your client account was created successfully.')
+      return user
     },
 
     async logout() {
@@ -46,6 +52,7 @@ export const useAuthStore = defineStore('auth', {
       try {
         await authService.logout()
         this.user = null
+        useNotificationStore().notify('You have been signed out.')
       } catch (error) {
         this.error = authService.errorMessage(error)
         throw error
@@ -58,6 +65,7 @@ export const useAuthStore = defineStore('auth', {
       this.isLoading = true
       this.error = null
       this.validationErrors = {}
+      this.errorStatus = 0
 
       try {
         this.user = await action()
@@ -66,6 +74,7 @@ export const useAuthStore = defineStore('auth', {
       } catch (error) {
         this.error = authService.errorMessage(error)
         this.validationErrors = authService.validationErrors(error)
+        this.errorStatus = error.status || error.response?.status || 0
         throw error
       } finally {
         this.isLoading = false

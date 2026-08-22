@@ -12,12 +12,16 @@ export const useAppointmentStore = defineStore('appointments', {
     isSaving: false,
     error: null,
     validationErrors: {},
+    errorStatus: 0,
+    requestVersion: 0,
   }),
 
   actions: {
     async fetchList(params = {}) {
+      const version = ++this.requestVersion
       return this.run(async () => {
         const response = await appointmentService.list(params)
+        if (version !== this.requestVersion) return this.items
         this.items = response.data
         this.pagination = response.meta
         return this.items
@@ -25,8 +29,10 @@ export const useAppointmentStore = defineStore('appointments', {
     },
 
     async fetchClientList(params = {}) {
+      const version = ++this.requestVersion
       return this.run(async () => {
         const response = await appointmentService.listClient(params)
+        if (version !== this.requestVersion) return this.items
         this.items = response.data
         this.pagination = response.meta
         return this.items
@@ -116,11 +122,13 @@ export const useAppointmentStore = defineStore('appointments', {
     clearError() {
       this.error = null
       this.validationErrors = {}
+      this.errorStatus = 0
     },
 
     setError(error) {
       this.error = errorMessage(error)
       this.validationErrors = validationErrors(error)
+      this.errorStatus = error.status || error.response?.status || 0
     },
   },
 })

@@ -42,7 +42,9 @@ async function deactivate() {
       v-if="services.isLoading"
       message="Loading services..." /><AppError
       v-else-if="services.error"
-      :message="services.error" /><AppEmpty
+      :message="services.error"
+      :retry="true"
+      @retry="services.fetchAll()" /><AppEmpty
       v-else-if="!services.items.length"
       message="No services found." />
     <div v-else class="grid gap-4 md:grid-cols-2">

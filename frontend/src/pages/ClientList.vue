@@ -131,7 +131,7 @@ async function page(page) {
         <button
           class="rounded-lg border border-slate-700 px-3 py-2 disabled:opacity-40"
           type="button"
-          :disabled="clients.pagination.current_page <= 1"
+          :disabled="clients.pagination.current_page <= 1 || clients.isLoading"
           @click="page(clients.pagination.current_page - 1)">
           Previous</button
         ><span
@@ -141,7 +141,7 @@ async function page(page) {
           class="rounded-lg border border-slate-700 px-3 py-2 disabled:opacity-40"
           type="button"
           :disabled="
-            clients.pagination.current_page >= clients.pagination.last_page
+            clients.pagination.current_page >= clients.pagination.last_page || clients.isLoading
           "
           @click="page(clients.pagination.current_page + 1)">
           Next

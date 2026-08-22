@@ -3,6 +3,7 @@ import { onMounted } from "vue";
 import { useRoute } from "vue-router";
 import AppError from "../components/AppError.vue";
 import AppLoading from "../components/AppLoading.vue";
+import AppNotFound from "../components/AppNotFound.vue";
 import { useServiceStore } from "../stores/services";
 const route = useRoute();
 const services = useServiceStore();
@@ -28,8 +29,12 @@ onMounted(() => services.fetch(route.params.id));
     <AppLoading
       v-if="services.isLoading"
       message="Loading service..." /><AppError
-      v-else-if="services.error"
+      v-else-if="services.error && services.errorStatus !== 404"
       :message="services.error" />
+    <AppNotFound
+      v-else-if="services.errorStatus === 404"
+      resource="Service"
+      back-to="/services" />
     <div
       v-else-if="services.current"
       class="max-w-2xl rounded-2xl border border-slate-800 bg-slate-900 p-6">

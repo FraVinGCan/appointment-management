@@ -3,6 +3,7 @@ import { onMounted } from "vue";
 import { useRoute } from "vue-router";
 import AppError from "../components/AppError.vue";
 import AppLoading from "../components/AppLoading.vue";
+import AppNotFound from "../components/AppNotFound.vue";
 import { useClientStore } from "../stores/clients";
 const route = useRoute();
 const clients = useClientStore();
@@ -26,8 +27,12 @@ onMounted(() => clients.fetch(route.params.id));
       >
     </div>
     <AppLoading v-if="clients.isLoading" message="Loading client..." /><AppError
-      v-else-if="clients.error"
+      v-else-if="clients.error && clients.errorStatus !== 404"
       :message="clients.error" />
+    <AppNotFound
+      v-else-if="clients.errorStatus === 404"
+      resource="Client"
+      back-to="/clients" />
     <div
       v-else-if="clients.current"
       class="max-w-2xl rounded-2xl border border-slate-800 bg-slate-900 p-6">

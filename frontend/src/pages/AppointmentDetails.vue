@@ -5,6 +5,7 @@ import { useRoute, useRouter } from "vue-router";
 import AppConfirm from "../components/AppConfirm.vue";
 import AppError from "../components/AppError.vue";
 import AppLoading from "../components/AppLoading.vue";
+import AppNotFound from "../components/AppNotFound.vue";
 import { useAppointmentStore } from "../stores/appointments";
 import { useNotificationStore } from "../stores/notifications";
 
@@ -67,8 +68,9 @@ async function remove() {
     <AppLoading
       v-if="appointments.isLoading"
       message="Loading appointment..." /><AppError
-      v-else-if="appointments.error"
+      v-else-if="appointments.error && appointments.errorStatus !== 404"
       :message="appointments.error" />
+    <AppNotFound v-else-if="appointments.errorStatus === 404" resource="Appointment" back-to="/appointments" />
     <div
       v-else-if="appointment"
       class="max-w-3xl rounded-2xl border border-slate-800 bg-slate-900 p-6">

@@ -3,6 +3,7 @@ import { onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import AppError from "../components/AppError.vue";
 import AppLoading from "../components/AppLoading.vue";
+import AppNotFound from "../components/AppNotFound.vue";
 import ServiceForm from "../components/ServiceForm.vue";
 import { useNotificationStore } from "../stores/notifications";
 import { useServiceStore } from "../stores/services";
@@ -28,8 +29,11 @@ function saved() {
     <AppLoading
       v-if="services.isLoading"
       message="Loading service..." /><AppError
-      v-else-if="services.error"
-      :message="services.error" /><ServiceForm
+      v-else-if="services.error && services.errorStatus !== 404"
+      :message="services.error" /><AppNotFound
+      v-else-if="services.errorStatus === 404"
+      resource="Service"
+      back-to="/services" /><ServiceForm
       v-else-if="services.current"
       :service="services.current"
       @saved="saved" />

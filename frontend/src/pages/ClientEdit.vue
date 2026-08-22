@@ -4,6 +4,7 @@ import { useRoute, useRouter } from "vue-router";
 import ClientForm from "../components/ClientForm.vue";
 import AppError from "../components/AppError.vue";
 import AppLoading from "../components/AppLoading.vue";
+import AppNotFound from "../components/AppNotFound.vue";
 import { useClientStore } from "../stores/clients";
 import { useNotificationStore } from "../stores/notifications";
 const route = useRoute();
@@ -26,8 +27,11 @@ function saved() {
       <h1 class="mt-2 text-3xl font-semibold">Edit client</h1>
     </div>
     <AppLoading v-if="clients.isLoading" message="Loading client..." /><AppError
-      v-else-if="clients.error"
-      :message="clients.error" /><ClientForm
+      v-else-if="clients.error && clients.errorStatus !== 404"
+      :message="clients.error" /><AppNotFound
+      v-else-if="clients.errorStatus === 404"
+      resource="Client"
+      back-to="/clients" /><ClientForm
       v-else-if="clients.current"
       :client="clients.current"
       @saved="saved" />

@@ -15,6 +15,7 @@ declare module 'vue' {
     AppEmpty: typeof import('./src/components/AppEmpty.vue')['default']
     AppError: typeof import('./src/components/AppError.vue')['default']
     AppLoading: typeof import('./src/components/AppLoading.vue')['default']
+    AppNotFound: typeof import('./src/components/AppNotFound.vue')['default']
     AppointmentForm: typeof import('./src/components/AppointmentForm.vue')['default']
     ClientForm: typeof import('./src/components/ClientForm.vue')['default']
     NotificationStack: typeof import('./src/components/NotificationStack.vue')['default']

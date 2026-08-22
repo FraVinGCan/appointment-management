@@ -5,6 +5,7 @@ import { useRoute, useRouter } from "vue-router";
 import AppointmentForm from "../components/AppointmentForm.vue";
 import AppError from "../components/AppError.vue";
 import AppLoading from "../components/AppLoading.vue";
+import AppNotFound from "../components/AppNotFound.vue";
 import { useAppointmentStore } from "../stores/appointments";
 import { useNotificationStore } from "../stores/notifications";
 
@@ -31,8 +32,11 @@ function saved() {
     <AppLoading
       v-if="appointments.isLoading"
       message="Loading appointment..." /><AppError
-      v-else-if="appointments.error"
-      :message="appointments.error" /><AppointmentForm
+      v-else-if="appointments.error && appointments.errorStatus !== 404"
+      :message="appointments.error" /><AppNotFound
+      v-else-if="appointments.errorStatus === 404"
+      resource="Appointment"
+      back-to="/appointments" /><AppointmentForm
       v-else-if="appointments.current"
       :appointment="appointments.current"
       @saved="saved" />
