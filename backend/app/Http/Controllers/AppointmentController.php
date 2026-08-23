@@ -22,7 +22,7 @@ class AppointmentController extends Controller
         $search = trim((string) ($filters['search'] ?? ''));
 
         $appointments = Appointment::query()
-            ->with(['client.user', 'service'])
+            ->withDetails()
             ->when($search !== '', function ($query) use ($search): void {
                 $query->where(function ($query) use ($search): void {
                     $query->where('status', $search)
@@ -44,7 +44,7 @@ class AppointmentController extends Controller
     {
         $this->authorize('view', $appointment);
 
-        return new AppointmentResource($appointment->load(['client.user', 'service']));
+        return new AppointmentResource($appointment->loadDetails());
     }
 
     public function store(StoreAppointmentRequest $request): JsonResponse
@@ -53,7 +53,9 @@ class AppointmentController extends Controller
 
         $data = $request->validated();
 
-        if ($this->hasConflict($data)) {
+        if (Appointment::query()
+            ->conflicting($data['serviceId'], $data['appointmentDate'], $data['startTime'], $data['endTime'])
+            ->exists()) {
             return $this->conflictResponse();
         }
 
@@ -68,7 +70,7 @@ class AppointmentController extends Controller
             'end_time' => $data['endTime'],
         ]);
 
-        return (new AppointmentResource($appointment->load(['client.user', 'service'])))
+        return (new AppointmentResource($appointment->loadDetails()))
             ->response()
             ->setStatusCode(201);
     }
@@ -79,7 +81,9 @@ class AppointmentController extends Controller
 
         $data = $request->validated();
 
-        if ($this->hasConflict($data, $appointment->id)) {
+        if (Appointment::query()
+            ->conflicting($data['serviceId'], $data['appointmentDate'], $data['startTime'], $data['endTime'], $appointment->id)
+            ->exists()) {
             return $this->conflictResponse();
         }
 
@@ -93,7 +97,7 @@ class AppointmentController extends Controller
             'end_time' => $data['endTime'],
         ]);
 
-        return (new AppointmentResource($appointment->fresh()->load(['client.user', 'service'])))->response();
+        return (new AppointmentResource($appointment->fresh()->loadDetails()))->response();
     }
 
     public function destroy(Appointment $appointment): JsonResponse
@@ -134,21 +138,6 @@ class AppointmentController extends Controller
         }
 
         return (new AppointmentResource($updatedAppointment))->response();
-    }
-
-    /**
-     * @param  array<string, mixed>  $data
-     */
-    public function hasConflict(array $data, ?int $ignoreAppointmentId = null): bool
-    {
-        return Appointment::query()
-            ->where('service_id', $data['serviceId'])
-            ->whereDate('appointment_date', $data['appointmentDate'])
-            ->where('status', '!=', AppointmentStatus::Cancelled->value)
-            ->when($ignoreAppointmentId !== null, fn ($query) => $query->where('id', '!=', $ignoreAppointmentId))
-            ->where('start_time', '<', $data['endTime'])
-            ->where('end_time', '>', $data['startTime'])
-            ->exists();
     }
 
     private function conflictResponse(): JsonResponse

@@ -12,7 +12,7 @@ class ClientPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $this->isStaff($user);
+        return $user->isStaff();
     }
 
     /**
@@ -20,7 +20,7 @@ class ClientPolicy
      */
     public function view(User $user, Client $client): bool
     {
-        return $this->isStaff($user);
+        return $user->isStaff();
     }
 
     /**
@@ -28,7 +28,7 @@ class ClientPolicy
      */
     public function create(User $user): bool
     {
-        return $this->isStaff($user);
+        return $user->isStaff();
     }
 
     /**
@@ -36,7 +36,7 @@ class ClientPolicy
      */
     public function update(User $user, Client $client): bool
     {
-        return $this->isStaff($user);
+        return $user->isStaff();
     }
 
     /**
@@ -44,7 +44,7 @@ class ClientPolicy
      */
     public function activate(User $user, Client $client): bool
     {
-        return $this->isStaff($user);
+        return $user->isStaff();
     }
 
     /**
@@ -52,11 +52,6 @@ class ClientPolicy
      */
     public function deactivate(User $user, Client $client): bool
     {
-        return $this->isStaff($user);
-    }
-
-    private function isStaff(User $user): bool
-    {
-        return $user->is_staff;
+        return $user->isStaff();
     }
 }

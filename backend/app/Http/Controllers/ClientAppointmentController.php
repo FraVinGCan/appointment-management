@@ -16,7 +16,7 @@ class ClientAppointmentController extends Controller
     public function index(Request $request): JsonResponse
     {
         $appointments = Appointment::query()
-            ->with(['client.user', 'service'])
+            ->withDetails()
             ->where('client_id', $request->user()->client->id)
             ->orderByDesc('appointment_date')
             ->orderByDesc('start_time')
@@ -25,14 +25,16 @@ class ClientAppointmentController extends Controller
         return AppointmentResource::collection($appointments)->response();
     }
 
-    public function store(BookingRequest $request, AppointmentController $appointments): JsonResponse
+    public function store(BookingRequest $request): JsonResponse
     {
         $this->authorize('create', Appointment::class);
 
         $data = $request->validated();
         $data['clientId'] = $request->user()->client->id;
 
-        if ($appointments->hasConflict($data)) {
+        if (Appointment::query()
+            ->conflicting($data['serviceId'], $data['appointmentDate'], $data['startTime'], $data['endTime'])
+            ->exists()) {
             return response()->json([
                 'message' => 'The selected service is already booked during the requested time.',
             ], 409);
@@ -49,7 +51,7 @@ class ClientAppointmentController extends Controller
             'end_time' => $data['endTime'],
         ]);
 
-        return (new AppointmentResource($appointment->load(['client.user', 'service'])))
+        return (new AppointmentResource($appointment->loadDetails()))
             ->response()
             ->setStatusCode(201);
     }

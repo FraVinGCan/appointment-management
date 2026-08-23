@@ -26,6 +26,11 @@ class User extends Authenticatable
         return $this->hasOne(Client::class);
     }
 
+    public function isStaff(): bool
+    {
+        return $this->is_staff;
+    }
+
     /**
      * Get the attributes that should be cast.
      *

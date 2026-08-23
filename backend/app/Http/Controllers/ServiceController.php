@@ -14,7 +14,7 @@ class ServiceController extends Controller
     public function index(Request $request): JsonResponse
     {
         $services = Service::query()
-            ->when(! $request->user()?->is_staff, fn ($query) => $query->where('active', true))
+            ->when(! $request->user()?->isStaff(), fn ($query) => $query->where('active', true))
             ->orderBy('name')
             ->get();
 

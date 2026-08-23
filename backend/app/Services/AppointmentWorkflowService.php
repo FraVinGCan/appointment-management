@@ -42,7 +42,7 @@ class AppointmentWorkflowService
 
             $lockedAppointment->update(['status' => $nextStatus]);
 
-            return $lockedAppointment->fresh()->load(['client.user', 'service']);
+            return $lockedAppointment->fresh()->loadDetails();
         });
     }
 }

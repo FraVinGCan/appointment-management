@@ -12,7 +12,7 @@ class ServicePolicy
      */
     public function view(User $user, Service $service): bool
     {
-        return $this->isStaff($user);
+        return $user->isStaff();
     }
 
     /**
@@ -20,7 +20,7 @@ class ServicePolicy
      */
     public function create(User $user): bool
     {
-        return $this->isStaff($user);
+        return $user->isStaff();
     }
 
     /**
@@ -28,7 +28,7 @@ class ServicePolicy
      */
     public function update(User $user, Service $service): bool
     {
-        return $this->isStaff($user);
+        return $user->isStaff();
     }
 
     /**
@@ -36,11 +36,6 @@ class ServicePolicy
      */
     public function deactivate(User $user, Service $service): bool
     {
-        return $this->isStaff($user);
-    }
-
-    private function isStaff(User $user): bool
-    {
-        return $user->is_staff;
+        return $user->isStaff();
     }
 }

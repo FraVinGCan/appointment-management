@@ -12,7 +12,7 @@ class AppointmentPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $this->isStaff($user);
+        return $user->isStaff();
     }
 
     /**
@@ -20,7 +20,7 @@ class AppointmentPolicy
      */
     public function view(User $user, Appointment $appointment): bool
     {
-        return $this->isStaff($user) || $this->isOwnedBy($user, $appointment);
+        return $user->isStaff() || $appointment->isOwnedBy($user);
     }
 
     /**
@@ -28,7 +28,7 @@ class AppointmentPolicy
      */
     public function create(User $user): bool
     {
-        return $this->isStaff($user) || (bool) $user->client?->active;
+        return $user->isStaff() || (bool) $user->client?->active;
     }
 
     /**
@@ -36,7 +36,7 @@ class AppointmentPolicy
      */
     public function update(User $user, Appointment $appointment): bool
     {
-        return $this->isStaff($user);
+        return $user->isStaff();
     }
 
     /**
@@ -44,7 +44,7 @@ class AppointmentPolicy
      */
     public function delete(User $user, Appointment $appointment): bool
     {
-        return $this->isStaff($user);
+        return $user->isStaff();
     }
 
     /**
@@ -52,7 +52,7 @@ class AppointmentPolicy
      */
     public function confirm(User $user, Appointment $appointment): bool
     {
-        return $this->isStaff($user);
+        return $user->isStaff();
     }
 
     /**
@@ -60,7 +60,7 @@ class AppointmentPolicy
      */
     public function complete(User $user, Appointment $appointment): bool
     {
-        return $this->isStaff($user);
+        return $user->isStaff();
     }
 
     /**
@@ -68,16 +68,6 @@ class AppointmentPolicy
      */
     public function cancel(User $user, Appointment $appointment): bool
     {
-        return $this->isStaff($user) || $this->isOwnedBy($user, $appointment);
-    }
-
-    private function isStaff(User $user): bool
-    {
-        return $user->is_staff;
-    }
-
-    private function isOwnedBy(User $user, Appointment $appointment): bool
-    {
-        return $appointment->client?->user_id === $user->id;
+        return $user->isStaff() || $appointment->isOwnedBy($user);
     }
 }

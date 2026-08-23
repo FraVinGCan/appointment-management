@@ -19,7 +19,7 @@ class EnsureStaff
             return response()->json(['message' => 'Authentication is required.'], 401);
         }
 
-        if (! $request->user()->is_staff) {
+        if (! $request->user()->isStaff()) {
             return response()->json(['message' => 'Staff access is required.'], 403);
         }
 
