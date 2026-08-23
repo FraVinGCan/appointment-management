@@ -1,7 +1,9 @@
 <script setup>
+import { CalendarDate, Time } from "@internationalized/date";
 import { computed, onMounted, reactive } from "vue";
 import { useRouter } from "vue-router";
 
+import AppDatePicker from "../components/AppDatePicker.vue";
 import AppError from "../components/AppError.vue";
 import AppLoading from "../components/AppLoading.vue";
 import { useAppointmentStore } from "../stores/appointments";
@@ -14,13 +16,19 @@ const notifications = useNotificationStore();
 const router = useRouter();
 const form = reactive({
   serviceId: "",
-  priority: "Medium",
-  appointmentDate: "",
-  startTime: "",
-  endTime: "",
+  appointmentDate: null,
+  startTime: null,
+  endTime: null,
   notes: "",
 });
-const today = computed(() => new Date().toISOString().slice(0, 10));
+const today = computed(
+  () =>
+    new CalendarDate(
+      new Date().getFullYear(),
+      new Date().getMonth() + 1,
+      new Date().getDate(),
+    ),
+);
 
 onMounted(() => services.fetchActive());
 
@@ -28,9 +36,19 @@ function fieldError(field) {
   return appointments.validationErrors[field]?.[0];
 }
 
+function formatTime(time) {
+  return `${String(time.hour).padStart(2, "0")}:${String(time.minute).padStart(2, "0")}`;
+}
+
 async function submit() {
   try {
-    await appointments.createBooking({ ...form });
+    await appointments.createBooking({
+      ...form,
+      serviceId: Number(form.serviceId),
+      appointmentDate: form.appointmentDate?.toString() || "",
+      startTime: form.startTime ? formatTime(form.startTime) : "",
+      endTime: form.endTime ? formatTime(form.endTime) : "",
+    });
     notifications.notify("Booking request submitted successfully.");
     router.push({ name: "client-appointments" });
   } catch {
@@ -92,35 +110,29 @@ async function submit() {
               name="appointmentDate"
               required
               :error="fieldError('appointmentDate')"
-              ><UInput
+              ><AppDatePicker
                 v-model="form.appointmentDate"
-                type="date"
-                :min="today"
-                class="w-full"
-            /></UFormField>
-            <UFormField
-              label="Priority"
-              name="priority"
-              required
-              :error="fieldError('priority')"
-              ><USelect
-                v-model="form.priority"
-                :items="['Low', 'Medium', 'High']"
-                class="w-full"
-            /></UFormField>
+                :min-value="today"
+              /></UFormField>
             <UFormField
               label="Start time"
               name="startTime"
               required
               :error="fieldError('startTime')"
-              ><UInput v-model="form.startTime" type="time" class="w-full"
+              ><UInputTime
+                v-model="form.startTime"
+                hide-time-zone
+                class="w-full"
             /></UFormField>
             <UFormField
               label="End time"
               name="endTime"
               required
               :error="fieldError('endTime')"
-              ><UInput v-model="form.endTime" type="time" class="w-full"
+              ><UInputTime
+                v-model="form.endTime"
+                hide-time-zone
+                class="w-full"
             /></UFormField>
           </div>
 

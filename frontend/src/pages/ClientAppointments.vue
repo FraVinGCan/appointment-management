@@ -105,13 +105,15 @@ async function cancelAppointment() {
             >{{ appointment.status }}</UBadge
           >
         </div>
-        <div
-          class="mt-4 flex flex-wrap items-center justify-between gap-4 border-t border-slate-800 pt-4 text-sm"
+        <p
+          v-if="appointment.notes"
+          class="mt-3 whitespace-pre-line text-sm text-slate-300"
         >
-          <div class="text-slate-400">
-            Priority:
-            <span class="text-slate-200">{{ appointment.priority }}</span>
-          </div>
+          {{ appointment.notes }}
+        </p>
+        <div
+          class="mt-4 flex flex-wrap items-center justify-end gap-4 border-t border-slate-800 pt-4 text-sm"
+        >
           <UButton
             v-if="canCancel(appointment)"
             color="error"

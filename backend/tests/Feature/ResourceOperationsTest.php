@@ -128,15 +128,28 @@ test('public services only include active services and clients can book them', f
 
     $this->actingAs($client->user)->postJson('/api/booking-requests', [
         'serviceId' => $activeService->id,
-        'priority' => AppointmentPriority::Low->value,
+        'priority' => AppointmentPriority::High->value,
         'appointmentDate' => '2026-09-02',
         'startTime' => '11:00',
         'endTime' => '11:30',
-    ])->assertCreated()->assertJsonPath('data.clientId', $client->id);
+    ])->assertUnprocessable()->assertJsonValidationErrors(['priority']);
+
+    $this->actingAs($client->user)->postJson('/api/booking-requests', [
+        'serviceId' => $activeService->id,
+        'appointmentDate' => '2026-09-02',
+        'startTime' => '11:00',
+        'endTime' => '11:30',
+    ])->assertCreated()->assertJsonPath('data.clientId', $client->id)
+        ->assertJsonMissingPath('data.priority');
+    $this->assertDatabaseHas('appointments', [
+        'client_id' => $client->id,
+        'service_id' => $activeService->id,
+        'start_time' => '11:00',
+        'priority' => AppointmentPriority::Medium->value,
+    ]);
 
     $this->actingAs($client->user)->postJson('/api/booking-requests', [
         'serviceId' => $inactiveService->id,
-        'priority' => AppointmentPriority::Low->value,
         'appointmentDate' => '2026-09-02',
         'startTime' => '12:00',
         'endTime' => '12:30',
@@ -153,7 +166,8 @@ test('clients can only view and cancel their own eligible appointments', functio
     $this->actingAs($firstClient->user)->getJson('/api/client/appointments')
         ->assertOk()
         ->assertJsonCount(1, 'data')
-        ->assertJsonPath('data.0.id', $appointment->id);
+        ->assertJsonPath('data.0.id', $appointment->id)
+        ->assertJsonMissingPath('data.0.priority');
 
     $this->actingAs($firstClient->user)->patchJson('/api/client/appointments/'.$otherAppointment->id.'/cancel')
         ->assertNotFound();

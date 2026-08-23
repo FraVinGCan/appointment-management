@@ -1,6 +1,8 @@
 <script setup>
+import { CalendarDate, Time } from "@internationalized/date";
 import { computed, onMounted, reactive } from "vue";
 
+import AppDatePicker from "./AppDatePicker.vue";
 import AppError from "./AppError.vue";
 import AppLoading from "./AppLoading.vue";
 import { useAppointmentStore } from "../stores/appointments";
@@ -16,9 +18,9 @@ const form = reactive({
   clientId: "",
   serviceId: "",
   priority: "Medium",
-  appointmentDate: "",
-  startTime: "",
-  endTime: "",
+  appointmentDate: null,
+  startTime: null,
+  endTime: null,
   notes: "",
 });
 const isEditing = computed(() => Boolean(props.appointment));
@@ -33,26 +35,40 @@ onMounted(async () => {
     clients.fetchList({ per_page: 100 }),
     services.fetchAll(),
   ]);
-  if (props.appointment)
+  if (props.appointment) {
+    const [year, month, day] = props.appointment.appointmentDate
+      .split("-")
+      .map(Number);
+    const toTime = (value) => {
+      const [hour, minute] = value.split(":").map(Number);
+      return new Time(hour, minute);
+    };
     Object.assign(form, {
       clientId: String(props.appointment.clientId),
       serviceId: String(props.appointment.serviceId),
       priority: props.appointment.priority,
-      appointmentDate: props.appointment.appointmentDate,
-      startTime: props.appointment.startTime,
-      endTime: props.appointment.endTime,
+      appointmentDate: new CalendarDate(year, month, day),
+      startTime: toTime(props.appointment.startTime),
+      endTime: toTime(props.appointment.endTime),
       notes: props.appointment.notes || "",
     });
+  }
 });
 
 function fieldError(field) {
   return appointments.validationErrors[field]?.[0];
+}
+function formatTime(time) {
+  return `${String(time.hour).padStart(2, "0")}:${String(time.minute).padStart(2, "0")}`;
 }
 async function submit() {
   const payload = {
     ...form,
     clientId: Number(form.clientId),
     serviceId: Number(form.serviceId),
+    appointmentDate: form.appointmentDate?.toString() || "",
+    startTime: form.startTime ? formatTime(form.startTime) : "",
+    endTime: form.endTime ? formatTime(form.endTime) : "",
   };
   try {
     emit(
@@ -130,25 +146,26 @@ async function submit() {
             name="appointmentDate"
             required
             :error="fieldError('appointmentDate')"
-            ><UInput
-              v-model="form.appointmentDate"
-              type="date"
-              class="w-full" /></UFormField
+            ><AppDatePicker v-model="form.appointmentDate" /></UFormField
           ><UFormField
             label="Start time"
             name="startTime"
             required
             :error="fieldError('startTime')"
-            ><UInput
+            ><UInputTime
               v-model="form.startTime"
-              type="time"
-              class="w-full" /></UFormField
+              hide-time-zone
+              class="w-full"
+          /></UFormField
           ><UFormField
             label="End time"
             name="endTime"
             required
             :error="fieldError('endTime')"
-            ><UInput v-model="form.endTime" type="time" class="w-full"
+            ><UInputTime
+              v-model="form.endTime"
+              hide-time-zone
+              class="w-full"
           /></UFormField>
         </div>
         <UFormField

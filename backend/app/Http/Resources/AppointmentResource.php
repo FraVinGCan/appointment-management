@@ -18,7 +18,7 @@ class AppointmentResource extends JsonResource
             'serviceId' => $this->service_id,
             'notes' => $this->notes,
             'status' => $this->status?->value,
-            'priority' => $this->priority?->value,
+            'priority' => $this->when($request->user()?->isAdmin(), $this->priority?->value),
             'appointmentDate' => $this->appointment_date?->format('Y-m-d'),
             'startTime' => $this->start_time,
             'endTime' => $this->end_time,

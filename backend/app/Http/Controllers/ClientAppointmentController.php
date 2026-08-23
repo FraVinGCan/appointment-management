@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\AppointmentPriority;
 use App\Enums\AppointmentStatus;
 use App\Exceptions\AppointmentWorkflowException;
 use App\Http\Requests\BookingRequest;
@@ -45,7 +46,7 @@ class ClientAppointmentController extends Controller
             'service_id' => $data['serviceId'],
             'notes' => $data['notes'] ?? null,
             'status' => AppointmentStatus::Requested,
-            'priority' => $data['priority'],
+            'priority' => AppointmentPriority::Medium,
             'appointment_date' => $data['appointmentDate'],
             'start_time' => $data['startTime'],
             'end_time' => $data['endTime'],
