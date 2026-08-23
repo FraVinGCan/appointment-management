@@ -7,6 +7,7 @@ import AppError from "../components/AppError.vue";
 import AppLoading from "../components/AppLoading.vue";
 import AppNotFound from "../components/AppNotFound.vue";
 import AppBreadcrumbs from "../components/AppBreadcrumbs.vue";
+import AppPageHeader from "../components/AppPageHeader.vue";
 import { useAppointmentStore } from "../stores/appointments";
 import { useNotificationStore } from "../stores/notifications";
 
@@ -23,21 +24,14 @@ function saved() {
 
 <template>
   <section class="space-y-6">
-    <AppBreadcrumbs
-      :items="[
+    <AppPageHeader
+      :breadcrumbs="[
         { label: 'Appointments', to: '/appointments' },
         { label: 'View', to: `/appointments/${route.params.id}` },
         { label: 'Edit' },
       ]"
+      title="Edit appointment"
     />
-    <div>
-      <p
-        class="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-400"
-      >
-        Admin workspace
-      </p>
-      <h1 class="mt-2 text-2xl sm:text-3xl font-semibold">Edit appointment</h1>
-    </div>
     <AppLoading
       v-if="appointments.isLoading"
       message="Loading appointment..."

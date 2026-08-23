@@ -7,6 +7,7 @@ import AppConfirm from "../components/AppConfirm.vue";
 import AppEmpty from "../components/AppEmpty.vue";
 import AppError from "../components/AppError.vue";
 import AppLoading from "../components/AppLoading.vue";
+import AppPageHeader from "../components/AppPageHeader.vue";
 import AppPagination from "../components/AppPagination.vue";
 import ClientActiveToggle from "../components/ClientActiveToggle.vue";
 import ClientTableActions from "../components/ClientTableActions.vue";
@@ -101,25 +102,19 @@ function selectRow(_event, row) {
 
 <template>
   <section class="space-y-6">
-    <AppBreadcrumbs
-      :items="[{ label: 'Dashboard', to: '/' }, { label: 'Clients' }]"
-    />
-    <div class="flex flex-wrap items-end justify-between gap-4">
-      <div>
-        <p
-          class="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-400"
+    <AppPageHeader
+      :breadcrumbs="[{ label: 'Dashboard', to: '/' }, { label: 'Clients' }]"
+      title="Clients"
+    >
+      <template #actions>
+        <UButton
+          to="/clients/create"
+          trailing-icon="i-lucide-plus"
+          class="w-full sm:w-auto"
+          >Add client</UButton
         >
-          Admin workspace
-        </p>
-        <h1 class="mt-2 text-2xl sm:text-3xl font-semibold">Clients</h1>
-      </div>
-      <UButton
-        to="/clients/create"
-        trailing-icon="i-lucide-plus"
-        class="w-full sm:w-auto"
-        >Add client</UButton
-      >
-    </div>
+      </template>
+    </AppPageHeader>
     <UInput
       v-model="search"
       icon="i-lucide-search"
@@ -143,6 +138,7 @@ function selectRow(_event, row) {
           :data="rows"
           :columns="columns"
           :on-select="selectRow"
+          :ui="{ tr: 'cursor-pointer' }"
           class="min-w-full"
         />
       </div>

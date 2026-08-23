@@ -20,6 +20,7 @@ declare module 'vue' {
     AppNotFound: typeof import('./src/components/AppNotFound.vue')['default']
     AppointmentForm: typeof import('./src/components/AppointmentForm.vue')['default']
     AppointmentTableActions: typeof import('./src/components/AppointmentTableActions.vue')['default']
+    AppPageHeader: typeof import('./src/components/AppPageHeader.vue')['default']
     AppPagination: typeof import('./src/components/AppPagination.vue')['default']
     ClientActiveToggle: typeof import('./src/components/ClientActiveToggle.vue')['default']
     ClientForm: typeof import('./src/components/ClientForm.vue')['default']

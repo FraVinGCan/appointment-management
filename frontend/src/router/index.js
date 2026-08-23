@@ -23,9 +23,24 @@ import ServiceEdit from "../pages/ServiceEdit.vue";
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    { path: "/", name: "home", component: Home, meta: { requiresAuth: true } },
-    { path: "/login", component: Login, meta: { guestOnly: true } },
-    { path: "/register", component: Register, meta: { guestOnly: true } },
+    {
+      path: "/",
+      name: "home",
+      component: Home,
+      meta: { requiresAuth: true, title: "Dashboard" },
+    },
+    {
+      path: "/login",
+      name: "login",
+      component: Login,
+      meta: { guestOnly: true, title: "Sign in" },
+    },
+    {
+      path: "/register",
+      name: "register",
+      component: Register,
+      meta: { guestOnly: true, title: "Register" },
+    },
     {
       path: "/appointments",
       name: "admin-appointments",
@@ -151,6 +166,12 @@ router.beforeEach(async (to) => {
     return { path: "/login", query: { redirect: to.fullPath } };
   if (to.meta.requiresAdmin && !auth.isAdmin) return { name: "home" };
   if (to.meta.requiresClient && !auth.isClient) return { name: "home" };
+});
+
+router.afterEach((to) => {
+  document.title = to.meta.title
+    ? `${to.meta.title} · Appointment Desk`
+    : "Appointment Desk";
 });
 
 export default router;

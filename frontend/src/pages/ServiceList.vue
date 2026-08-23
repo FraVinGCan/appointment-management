@@ -4,6 +4,7 @@ import AppConfirm from "../components/AppConfirm.vue";
 import AppEmpty from "../components/AppEmpty.vue";
 import AppError from "../components/AppError.vue";
 import AppLoading from "../components/AppLoading.vue";
+import AppPageHeader from "../components/AppPageHeader.vue";
 import { useNotificationStore } from "../stores/notifications";
 import { useServiceStore } from "../stores/services";
 const services = useServiceStore();
@@ -24,22 +25,19 @@ async function deactivate() {
 </script>
 <template>
   <section class="space-y-6">
-    <div class="flex flex-wrap items-end justify-between gap-4">
-      <div>
-        <p
-          class="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-400"
+    <AppPageHeader
+      :breadcrumbs="[{ label: 'Dashboard', to: '/' }, { label: 'Services' }]"
+      title="Services"
+    >
+      <template #actions>
+        <UButton
+          to="/services/create"
+          trailing-icon="i-lucide-plus"
+          class="w-full sm:w-auto"
+          >Add service</UButton
         >
-          Admin workspace
-        </p>
-        <h1 class="mt-2 text-2xl sm:text-3xl font-semibold">Services</h1>
-      </div>
-      <UButton
-        to="/services/create"
-        trailing-icon="i-lucide-plus"
-        class="w-full sm:w-auto"
-        >Add service</UButton
-      >
-    </div>
+      </template>
+    </AppPageHeader>
     <AppLoading v-if="services.isLoading" message="Loading services..." />
     <AppError
       v-else-if="services.error"

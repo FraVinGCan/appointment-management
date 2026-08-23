@@ -7,6 +7,7 @@ import AppError from "../components/AppError.vue";
 import AppLoading from "../components/AppLoading.vue";
 import AppNotFound from "../components/AppNotFound.vue";
 import AppBreadcrumbs from "../components/AppBreadcrumbs.vue";
+import AppPageHeader from "../components/AppPageHeader.vue";
 import EnumBadge from "../components/EnumBadge.vue";
 import { useAppointmentStore } from "../stores/appointments";
 import { useNotificationStore } from "../stores/notifications";
@@ -80,24 +81,14 @@ async function runConfirmation() {
 
 <template>
   <section class="space-y-6">
-    <AppBreadcrumbs
-      :items="[
+    <AppPageHeader
+      :breadcrumbs="[
         { label: 'Appointments', to: '/appointments' },
         { label: 'View' },
       ]"
-    />
-    <div class="flex flex-wrap items-end justify-between gap-4">
-      <div>
-        <p
-          class="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-400"
-        >
-          Admin workspace
-        </p>
-        <h1 class="mt-2 text-2xl sm:text-3xl font-semibold">
-          Appointment details
-        </h1>
-      </div>
-      <div v-if="appointment" class="flex flex-wrap gap-2">
+      title="Appointment details"
+    >
+      <template v-if="appointment" #actions>
         <UButton
           color="neutral"
           variant="outline"
@@ -112,8 +103,8 @@ async function runConfirmation() {
           @click="confirmation = 'delete'"
           >Delete</UButton
         >
-      </div>
-    </div>
+      </template>
+    </AppPageHeader>
     <AppLoading
       v-if="appointments.isLoading"
       message="Loading appointment..."

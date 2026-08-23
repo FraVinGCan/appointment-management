@@ -6,6 +6,7 @@ import { useRouter } from "vue-router";
 import AppDatePicker from "../components/AppDatePicker.vue";
 import AppError from "../components/AppError.vue";
 import AppLoading from "../components/AppLoading.vue";
+import AppPageHeader from "../components/AppPageHeader.vue";
 import { useAppointmentStore } from "../stores/appointments";
 import { useNotificationStore } from "../stores/notifications";
 import { useServiceStore } from "../stores/services";
@@ -59,19 +60,10 @@ async function submit() {
 
 <template>
   <section class="space-y-6">
-    <div>
-      <p
-        class="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-400"
-      >
-        Client workspace
-      </p>
-      <h1 class="mt-2 text-2xl sm:text-3xl font-semibold">
-        Book an appointment
-      </h1>
-      <p class="mt-2 text-slate-400">
-        Choose a service and request a time that works for you.
-      </p>
-    </div>
+    <AppPageHeader
+      title="Book an appointment"
+      description="Choose a service and request a time that works for you."
+    />
 
     <AppLoading
       v-if="services.isLoading"

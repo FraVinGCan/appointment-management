@@ -5,6 +5,7 @@ import AppConfirm from "../components/AppConfirm.vue";
 import AppEmpty from "../components/AppEmpty.vue";
 import AppError from "../components/AppError.vue";
 import AppLoading from "../components/AppLoading.vue";
+import AppPageHeader from "../components/AppPageHeader.vue";
 import AppPagination from "../components/AppPagination.vue";
 import { useAppointmentStore } from "../stores/appointments";
 import { useNotificationStore } from "../stores/notifications";
@@ -45,25 +46,19 @@ async function cancelAppointment() {
 
 <template>
   <section class="space-y-6">
-    <div class="flex flex-wrap items-end justify-between gap-4">
-      <div>
-        <p
-          class="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-400"
+    <AppPageHeader
+      title="My appointments"
+      description="Review your booking requests and confirmed visits."
+    >
+      <template #actions>
+        <UButton
+          to="/book"
+          trailing-icon="i-lucide-arrow-right"
+          class="w-full sm:w-auto"
+          >Book an appointment</UButton
         >
-          Client workspace
-        </p>
-        <h1 class="mt-2 text-2xl sm:text-3xl font-semibold">My appointments</h1>
-        <p class="mt-2 text-slate-400">
-          Review your booking requests and confirmed visits.
-        </p>
-      </div>
-      <UButton
-        to="/book"
-        trailing-icon="i-lucide-arrow-right"
-        class="w-full sm:w-auto"
-        >Book an appointment</UButton
-      >
-    </div>
+      </template>
+    </AppPageHeader>
 
     <AppLoading
       v-if="appointments.isLoading"

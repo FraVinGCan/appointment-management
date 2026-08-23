@@ -5,6 +5,7 @@ import AppError from "../components/AppError.vue";
 import AppLoading from "../components/AppLoading.vue";
 import AppNotFound from "../components/AppNotFound.vue";
 import AppBreadcrumbs from "../components/AppBreadcrumbs.vue";
+import AppPageHeader from "../components/AppPageHeader.vue";
 import EnumBadge from "../components/EnumBadge.vue";
 import { useClientStore } from "../stores/clients";
 const route = useRoute();
@@ -16,24 +17,17 @@ onMounted(() => clients.fetch(route.params.id));
     <AppBreadcrumbs
       :items="[{ label: 'Clients', to: '/clients' }, { label: 'View' }]"
     />
-    <div class="flex flex-wrap items-end justify-between gap-4">
-      <div>
-        <p
-          class="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-400"
+    <AppPageHeader title="Client details">
+      <template v-if="clients.current" #actions>
+        <UButton
+          color="neutral"
+          variant="outline"
+          class="w-full sm:w-auto"
+          :to="`/clients/${clients.current.id}/edit`"
+          >Edit</UButton
         >
-          Admin workspace
-        </p>
-        <h1 class="mt-2 text-2xl sm:text-3xl font-semibold">Client details</h1>
-      </div>
-      <UButton
-        v-if="clients.current"
-        color="neutral"
-        variant="outline"
-        class="w-full sm:w-auto"
-        :to="`/clients/${clients.current.id}/edit`"
-        >Edit</UButton
-      >
-    </div>
+      </template>
+    </AppPageHeader>
     <AppLoading v-if="clients.isLoading" message="Loading client..." />
     <AppError
       v-else-if="clients.error && clients.errorStatus !== 404"

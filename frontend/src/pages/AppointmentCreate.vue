@@ -1,6 +1,7 @@
 <script setup>
 import { useRouter } from "vue-router";
 
+import AppPageHeader from "../components/AppPageHeader.vue";
 import AppointmentForm from "../components/AppointmentForm.vue";
 import { useNotificationStore } from "../stores/notifications";
 
@@ -14,16 +15,13 @@ function saved() {
 
 <template>
   <section class="space-y-6">
-    <div>
-      <p
-        class="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-400"
-      >
-        Admin workspace
-      </p>
-      <h1 class="mt-2 text-2xl sm:text-3xl font-semibold">
-        Create appointment
-      </h1>
-    </div>
+    <AppPageHeader
+      :breadcrumbs="[
+        { label: 'Appointments', to: '/appointments' },
+        { label: 'Create' },
+      ]"
+      title="Create appointment"
+    />
     <AppointmentForm @saved="saved" />
   </section>
 </template>

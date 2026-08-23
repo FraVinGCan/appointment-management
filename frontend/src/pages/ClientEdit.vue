@@ -6,6 +6,7 @@ import AppError from "../components/AppError.vue";
 import AppLoading from "../components/AppLoading.vue";
 import AppNotFound from "../components/AppNotFound.vue";
 import AppBreadcrumbs from "../components/AppBreadcrumbs.vue";
+import AppPageHeader from "../components/AppPageHeader.vue";
 import { useClientStore } from "../stores/clients";
 import { useNotificationStore } from "../stores/notifications";
 const route = useRoute();
@@ -27,14 +28,7 @@ function saved() {
         { label: 'Edit' },
       ]"
     />
-    <div>
-      <p
-        class="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-400"
-      >
-        Admin workspace
-      </p>
-      <h1 class="mt-2 text-2xl sm:text-3xl font-semibold">Edit client</h1>
-    </div>
+    <AppPageHeader title="Edit client" />
     <AppLoading v-if="clients.isLoading" message="Loading client..." />
     <AppError
       v-else-if="clients.error && clients.errorStatus !== 404"

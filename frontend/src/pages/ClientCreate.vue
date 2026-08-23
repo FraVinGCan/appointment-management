@@ -1,5 +1,6 @@
 <script setup>
 import { useRouter } from "vue-router";
+import AppPageHeader from "../components/AppPageHeader.vue";
 import ClientForm from "../components/ClientForm.vue";
 import { useNotificationStore } from "../stores/notifications";
 const router = useRouter();
@@ -11,14 +12,10 @@ function saved() {
 </script>
 <template>
   <section class="space-y-6">
-    <div>
-      <p
-        class="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-400"
-      >
-        Admin workspace
-      </p>
-      <h1 class="mt-2 text-2xl sm:text-3xl font-semibold">Add client</h1>
-    </div>
+    <AppPageHeader
+      :breadcrumbs="[{ label: 'Clients', to: '/clients' }, { label: 'Add' }]"
+      title="Add client"
+    />
     <ClientForm @saved="saved" />
   </section>
 </template>

@@ -8,6 +8,7 @@ import AppError from "../components/AppError.vue";
 import AppLoading from "../components/AppLoading.vue";
 import AppBreadcrumbs from "../components/AppBreadcrumbs.vue";
 import AppPagination from "../components/AppPagination.vue";
+import AppPageHeader from "../components/AppPageHeader.vue";
 import AppointmentTableActions from "../components/AppointmentTableActions.vue";
 import EnumBadge from "../components/EnumBadge.vue";
 import { useAppointmentStore } from "../stores/appointments";
@@ -166,22 +167,16 @@ function selectRow(_event, row) {
     <AppBreadcrumbs
       :items="[{ label: 'Dashboard', to: '/' }, { label: 'Appointments' }]"
     />
-    <div class="flex flex-wrap items-end justify-between gap-4">
-      <div>
-        <p
-          class="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-400"
+    <AppPageHeader title="Appointments">
+      <template #actions>
+        <UButton
+          to="/appointments/create"
+          trailing-icon="i-lucide-plus"
+          class="w-full sm:w-auto"
+          >Create appointment</UButton
         >
-          Admin workspace
-        </p>
-        <h1 class="mt-2 text-2xl sm:text-3xl font-semibold">Appointments</h1>
-      </div>
-      <UButton
-        to="/appointments/create"
-        trailing-icon="i-lucide-plus"
-        class="w-full sm:w-auto"
-        >Create appointment</UButton
-      >
-    </div>
+      </template>
+    </AppPageHeader>
 
     <label class="block max-w-xl text-sm font-medium">
       Search appointments
@@ -253,6 +248,7 @@ function selectRow(_event, row) {
           :data="tableRows"
           :columns="columns"
           :on-select="selectRow"
+          :ui="{ tr: 'cursor-pointer' }"
           class="min-w-full"
         />
       </div>

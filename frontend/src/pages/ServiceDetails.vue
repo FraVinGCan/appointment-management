@@ -5,6 +5,7 @@ import AppError from "../components/AppError.vue";
 import AppLoading from "../components/AppLoading.vue";
 import AppNotFound from "../components/AppNotFound.vue";
 import AppBreadcrumbs from "../components/AppBreadcrumbs.vue";
+import AppPageHeader from "../components/AppPageHeader.vue";
 import EnumBadge from "../components/EnumBadge.vue";
 import { useServiceStore } from "../stores/services";
 const route = useRoute();
@@ -16,24 +17,17 @@ onMounted(() => services.fetch(route.params.id));
     <AppBreadcrumbs
       :items="[{ label: 'Services', to: '/services' }, { label: 'View' }]"
     />
-    <div class="flex flex-wrap items-end justify-between gap-4">
-      <div>
-        <p
-          class="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-400"
+    <AppPageHeader title="Service details">
+      <template v-if="services.current" #actions>
+        <UButton
+          color="neutral"
+          variant="outline"
+          class="w-full sm:w-auto"
+          :to="`/services/${services.current.id}/edit`"
+          >Edit</UButton
         >
-          Admin workspace
-        </p>
-        <h1 class="mt-2 text-2xl sm:text-3xl font-semibold">Service details</h1>
-      </div>
-      <UButton
-        v-if="services.current"
-        color="neutral"
-        variant="outline"
-        class="w-full sm:w-auto"
-        :to="`/services/${services.current.id}/edit`"
-        >Edit</UButton
-      >
-    </div>
+      </template>
+    </AppPageHeader>
     <AppLoading v-if="services.isLoading" message="Loading service..." />
     <AppError
       v-else-if="services.error && services.errorStatus !== 404"
