@@ -55,13 +55,14 @@ test('admins can create, view, update, search, paginate, and delete appointments
     $this->assertDatabaseMissing('appointments', ['id' => $appointmentId]);
 });
 
-test('appointment validation rejects status, invalid times, and overlapping active bookings', function () {
+test('appointment validation rejects status, invalid times, and overlapping confirmed bookings', function () {
     $admin = adminUser();
     $client = Client::factory()->create();
     $service = Service::factory()->create();
     $existing = Appointment::factory()->create([
         'client_id' => $client->id,
         'service_id' => $service->id,
+        'status' => AppointmentStatus::Confirmed,
         'appointment_date' => '2026-09-01',
         'start_time' => '09:00',
         'end_time' => '10:00',
@@ -83,10 +84,16 @@ test('appointment validation rejects status, invalid times, and overlapping acti
         'endTime' => '10:30',
     ]))->assertConflict();
 
-    $existing->update(['status' => AppointmentStatus::Cancelled]);
+    $existing->update(['status' => AppointmentStatus::Requested]);
     $this->actingAs($admin)->postJson('/api/appointments', appointmentPayload($client, $service, [
         'startTime' => '09:30',
         'endTime' => '10:30',
+    ]))->assertCreated();
+
+    $existing->update(['status' => AppointmentStatus::Cancelled]);
+    $this->actingAs($admin)->postJson('/api/appointments', appointmentPayload($client, $service, [
+        'startTime' => '11:00',
+        'endTime' => '11:30',
     ]))->assertCreated();
 });
 

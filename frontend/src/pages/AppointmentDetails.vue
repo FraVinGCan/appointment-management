@@ -23,17 +23,47 @@ const canComplete = computed(() => appointment.value?.status === "Confirmed");
 const canCancel = computed(() =>
   ["Requested", "Confirmed"].includes(appointment.value?.status),
 );
+const confirmationCopy = {
+  confirm: {
+    title: "Confirm appointment?",
+    message: "The client will see this booking as confirmed.",
+    confirmLabel: "Confirm appointment",
+  },
+  complete: {
+    title: "Complete appointment?",
+    message:
+      "This marks the appointment as completed and cannot be changed afterwards.",
+    confirmLabel: "Complete appointment",
+  },
+  cancel: {
+    title: "Cancel appointment?",
+    message:
+      "This appointment will be marked as cancelled and cannot be restored.",
+    confirmLabel: "Cancel appointment",
+  },
+  delete: {
+    title: "Delete appointment?",
+    message: "This appointment will be permanently deleted.",
+    confirmLabel: "Delete",
+  },
+};
+const confirmationConfig = computed(
+  () => confirmationCopy[confirmation.value] ?? null,
+);
 function formatDate(date) {
   return new Intl.DateTimeFormat(undefined, { dateStyle: "long" }).format(
     new Date(`${date}T00:00:00`),
   );
 }
+const actionPastTense = {
+  confirm: "confirmed",
+  complete: "completed",
+  cancel: "cancelled",
+};
 async function workflow(action) {
   const updated = await appointments[action](appointment.value.id);
   appointments.updateItem(updated);
-  notifications.notify(
-    `Appointment ${action === "cancel" ? "cancelled" : `${action}d`} successfully.`,
-  );
+  notifications.notify(`Appointment ${actionPastTense[action]} successfully.`);
   confirmation.value = null;
 }
 async function remove() {
@@ -41,6 +71,10 @@ async function remove() {
   appointments.removeItem(appointment.value.id);
   notifications.notify("Appointment deleted.");
   router.push("/appointments");
+}
+async function runConfirmation() {
+  if (confirmation.value === "delete") await remove();
+  else await workflow(confirmation.value);
 }
 </script>
 
@@ -139,16 +173,14 @@ async function remove() {
         <UButton
           v-if="canConfirm"
           class="w-full sm:w-auto"
-          :loading="appointments.isSaving"
-          @click="workflow('confirm')"
+          @click="confirmation = 'confirm'"
           >Confirm</UButton
         >
         <UButton
           v-if="canComplete"
           color="success"
           class="w-full sm:w-auto"
-          :loading="appointments.isSaving"
-          @click="workflow('complete')"
+          @click="confirmation = 'complete'"
           >Complete</UButton
         >
         <UButton
@@ -156,29 +188,17 @@ async function remove() {
           color="error"
           variant="outline"
           class="w-full sm:w-auto"
-          :loading="appointments.isSaving"
           @click="confirmation = 'cancel'"
           >Cancel appointment</UButton
         >
       </div>
     </div>
     <AppConfirm
-      :open="confirmation === 'delete'"
-      title="Delete appointment?"
-      message="This appointment will be permanently deleted."
-      confirm-label="Delete"
+      :open="Boolean(confirmation)"
+      v-bind="confirmationConfig"
       :loading="appointments.isSaving"
       @cancel="confirmation = null"
-      @confirm="remove"
-    />
-    <AppConfirm
-      :open="confirmation === 'cancel'"
-      title="Cancel appointment?"
-      message="This appointment will be marked as cancelled."
-      confirm-label="Cancel appointment"
-      :loading="appointments.isSaving"
-      @cancel="confirmation = null"
-      @confirm="workflow('cancel')"
+      @confirm="runConfirmation"
     />
   </section>
 </template>

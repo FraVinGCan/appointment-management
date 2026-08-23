@@ -2,6 +2,7 @@
 import { computed, h, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 
+import AppConfirm from "../components/AppConfirm.vue";
 import AppEmpty from "../components/AppEmpty.vue";
 import AppError from "../components/AppError.vue";
 import AppLoading from "../components/AppLoading.vue";
@@ -10,12 +11,15 @@ import AppPagination from "../components/AppPagination.vue";
 import AppointmentTableActions from "../components/AppointmentTableActions.vue";
 import EnumBadge from "../components/EnumBadge.vue";
 import { useAppointmentStore } from "../stores/appointments";
+import { useNotificationStore } from "../stores/notifications";
 
 const appointments = useAppointmentStore();
+const notifications = useNotificationStore();
 const router = useRouter();
 const search = ref("");
 const status = ref("");
 const priority = ref("");
+const pendingAction = ref(null);
 let searchTimer;
 const tableRows = computed(() =>
   appointments.items.map((appointment) => ({
@@ -61,7 +65,14 @@ const columns = [
   {
     id: "actions",
     header: "Actions",
-    cell: ({ row }) => h(AppointmentTableActions, { id: row.original.id }),
+    cell: ({ row }) =>
+      h(AppointmentTableActions, {
+        id: row.original.id,
+        status: row.original.status,
+        onAction: (action) => {
+          pendingAction.value = { id: row.original.id, action };
+        },
+      }),
   },
 ];
 
@@ -81,6 +92,41 @@ function canComplete(appointment) {
 }
 function canCancel(appointment) {
   return ["Requested", "Confirmed"].includes(appointment.status);
+}
+const actionCopy = {
+  confirm: {
+    title: "Confirm appointment?",
+    message: "The client will see this booking as confirmed.",
+    confirmLabel: "Confirm appointment",
+  },
+  complete: {
+    title: "Complete appointment?",
+    message:
+      "This marks the appointment as completed and cannot be changed afterwards.",
+    confirmLabel: "Complete appointment",
+  },
+  cancel: {
+    title: "Cancel appointment?",
+    message:
+      "This appointment will be marked as cancelled and cannot be restored.",
+    confirmLabel: "Cancel appointment",
+  },
+};
+const pendingActionConfig = computed(
+  () => actionCopy[pendingAction.value?.action] ?? null,
+);
+async function runPendingAction() {
+  const { id, action } = pendingAction.value;
+  try {
+    const updated = await appointments[action](id);
+    appointments.updateItem(updated);
+    const pastTense = { confirm: "confirmed", complete: "completed", cancel: "cancelled" };
+    notifications.notify(`Appointment ${pastTense[action]} successfully.`);
+  } catch {
+    // The store exposes the backend conflict message.
+  } finally {
+    pendingAction.value = null;
+  }
 }
 function formatDate(date) {
   return new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(
@@ -240,7 +286,7 @@ function selectRow(_event, row) {
                 v-if="canConfirm(appointment)"
                 size="sm"
                 color="success"
-                @click.stop="appointments.confirm(appointment.id)"
+                @click.stop="pendingAction = { id: appointment.id, action: 'confirm' }"
               >
                 Confirm
               </UButton>
@@ -248,7 +294,7 @@ function selectRow(_event, row) {
                 v-else-if="canComplete(appointment)"
                 size="sm"
                 color="primary"
-                @click.stop="appointments.complete(appointment.id)"
+                @click.stop="pendingAction = { id: appointment.id, action: 'complete' }"
               >
                 Complete
               </UButton>
@@ -256,7 +302,7 @@ function selectRow(_event, row) {
                 v-else-if="canCancel(appointment)"
                 size="sm"
                 color="error"
-                @click.stop="appointments.cancel(appointment.id)"
+                @click.stop="pendingAction = { id: appointment.id, action: 'cancel' }"
               >
                 Cancel
               </UButton>
@@ -279,5 +325,13 @@ function selectRow(_event, row) {
         @change="goToPage"
       />
     </div>
+
+    <AppConfirm
+      :open="Boolean(pendingAction)"
+      v-bind="pendingActionConfig"
+      :loading="appointments.isSaving"
+      @cancel="pendingAction = null"
+      @confirm="runPendingAction"
+    />
   </section>
 </template>

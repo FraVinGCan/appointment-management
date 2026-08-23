@@ -59,7 +59,10 @@ class Appointment extends Model
     ): void {
         $query->where('service_id', $serviceId)
             ->whereDate('appointment_date', $appointmentDate)
-            ->where('status', '!=', AppointmentStatus::Cancelled->value)
+            ->where(function (Builder $query): void {
+                $query->where('status', AppointmentStatus::Confirmed->value)
+                    ->orWhere('status', AppointmentStatus::Completed->value);
+            })
             ->when($ignoreAppointmentId !== null, fn (Builder $query) => $query->where('id', '!=', $ignoreAppointmentId))
             ->where('start_time', '<', $endTime)
             ->where('end_time', '>', $startTime);
