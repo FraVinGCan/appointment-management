@@ -16,6 +16,8 @@ class AppointmentController extends Controller
 {
     public function index(AppointmentIndexRequest $request): JsonResponse
     {
+        $this->authorize('viewAny', Appointment::class);
+
         $filters = $request->validated();
         $search = trim((string) ($filters['search'] ?? ''));
 
@@ -40,11 +42,15 @@ class AppointmentController extends Controller
 
     public function show(Appointment $appointment): AppointmentResource
     {
+        $this->authorize('view', $appointment);
+
         return new AppointmentResource($appointment->load(['client.user', 'service']));
     }
 
     public function store(StoreAppointmentRequest $request): JsonResponse
     {
+        $this->authorize('create', Appointment::class);
+
         $data = $request->validated();
 
         if ($this->hasConflict($data)) {
@@ -69,6 +75,8 @@ class AppointmentController extends Controller
 
     public function update(UpdateAppointmentRequest $request, Appointment $appointment): JsonResponse
     {
+        $this->authorize('update', $appointment);
+
         $data = $request->validated();
 
         if ($this->hasConflict($data, $appointment->id)) {
@@ -90,6 +98,8 @@ class AppointmentController extends Controller
 
     public function destroy(Appointment $appointment): JsonResponse
     {
+        $this->authorize('delete', $appointment);
+
         $appointment->delete();
 
         return response()->json(null, 204);
@@ -115,6 +125,8 @@ class AppointmentController extends Controller
         AppointmentWorkflowService $workflow,
         string $action,
     ): JsonResponse {
+        $this->authorize($action, $appointment);
+
         try {
             $updatedAppointment = $workflow->{$action}($appointment);
         } catch (AppointmentWorkflowException $exception) {

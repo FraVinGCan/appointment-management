@@ -15,6 +15,8 @@ class ClientController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
+        $this->authorize('viewAny', Client::class);
+
         $search = trim((string) $request->query('search', ''));
         $clients = Client::query()
             ->with('user')
@@ -27,11 +29,15 @@ class ClientController extends Controller
 
     public function show(Client $client): ClientResource
     {
+        $this->authorize('view', $client);
+
         return new ClientResource($client->load('user'));
     }
 
     public function store(StoreClientRequest $request): JsonResponse
     {
+        $this->authorize('create', Client::class);
+
         $data = $request->validated();
         $client = DB::transaction(function () use ($data): Client {
             $user = User::create([
@@ -54,6 +60,8 @@ class ClientController extends Controller
 
     public function update(UpdateClientRequest $request, Client $client): ClientResource
     {
+        $this->authorize('update', $client);
+
         $data = $request->validated();
         $client->update([
             'name' => $data['name'],
@@ -67,6 +75,8 @@ class ClientController extends Controller
 
     public function deactivate(Client $client): ClientResource
     {
+        $this->authorize('deactivate', $client);
+
         $client->update(['active' => false]);
 
         return new ClientResource($client->fresh()->load('user'));
@@ -74,6 +84,8 @@ class ClientController extends Controller
 
     public function activate(Client $client): ClientResource
     {
+        $this->authorize('activate', $client);
+
         $client->update(['active' => true]);
 
         return new ClientResource($client->fresh()->load('user'));

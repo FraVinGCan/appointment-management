@@ -23,11 +23,15 @@ class ServiceController extends Controller
 
     public function show(Service $service): ServiceResource
     {
+        $this->authorize('view', $service);
+
         return new ServiceResource($service->load('appointments'));
     }
 
     public function store(StoreServiceRequest $request): JsonResponse
     {
+        $this->authorize('create', Service::class);
+
         $data = $request->validated();
         $service = Service::create([
             'name' => $data['name'],
@@ -40,6 +44,8 @@ class ServiceController extends Controller
 
     public function update(UpdateServiceRequest $request, Service $service): ServiceResource
     {
+        $this->authorize('update', $service);
+
         $data = $request->validated();
         $service->update([
             'name' => $data['name'],
@@ -52,6 +58,8 @@ class ServiceController extends Controller
 
     public function deactivate(Service $service): ServiceResource
     {
+        $this->authorize('deactivate', $service);
+
         $service->update(['active' => false]);
 
         return new ServiceResource($service->fresh());

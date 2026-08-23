@@ -27,6 +27,8 @@ class ClientAppointmentController extends Controller
 
     public function store(BookingRequest $request, AppointmentController $appointments): JsonResponse
     {
+        $this->authorize('create', Appointment::class);
+
         $data = $request->validated();
         $data['clientId'] = $request->user()->client->id;
 
@@ -57,7 +59,7 @@ class ClientAppointmentController extends Controller
         Appointment $appointment,
         AppointmentWorkflowService $workflow,
     ): JsonResponse|AppointmentResource {
-        if ($appointment->client_id !== $request->user()->client->id) {
+        if (! $request->user()->can('cancel', $appointment)) {
             return response()->json(['message' => 'Appointment not found.'], 404);
         }
 
