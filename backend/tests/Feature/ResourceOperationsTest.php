@@ -215,7 +215,7 @@ test('admins can manage and deactivate clients and services', function () {
         ->assertJsonPath('data.active', false);
 });
 
-test('protected phase 4 endpoints reject unauthenticated requests', function () {
+test('protected endpoints reject unauthenticated requests', function () {
     $this->getJson('/api/appointments')->assertUnauthorized();
     $this->postJson('/api/booking-requests')->assertUnauthorized();
     $this->getJson('/api/clients')->assertUnauthorized();
