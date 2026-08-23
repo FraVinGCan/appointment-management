@@ -10,9 +10,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-function staffUser(): User
+function adminUser(): User
 {
-    return User::factory()->create(['is_staff' => true]);
+    return User::factory()->create(['is_admin' => true]);
 }
 
 function appointmentPayload(Client $client, Service $service, array $overrides = []): array
@@ -28,35 +28,35 @@ function appointmentPayload(Client $client, Service $service, array $overrides =
     ], $overrides);
 }
 
-test('staff can create, view, update, search, paginate, and delete appointments', function () {
-    $staff = staffUser();
+test('admins can create, view, update, search, paginate, and delete appointments', function () {
+    $admin = adminUser();
     $client = Client::factory()->create(['name' => 'Maria Santos']);
     $service = Service::factory()->create(['name' => 'Initial Consultation']);
 
-    $response = $this->actingAs($staff)->postJson('/api/appointments', appointmentPayload($client, $service));
+    $response = $this->actingAs($admin)->postJson('/api/appointments', appointmentPayload($client, $service));
     $response->assertCreated()->assertJsonPath('data.status', AppointmentStatus::Requested->value);
     $appointmentId = $response->json('data.id');
 
-    $this->actingAs($staff)->getJson('/api/appointments/'.$appointmentId)
+    $this->actingAs($admin)->getJson('/api/appointments/'.$appointmentId)
         ->assertOk()
         ->assertJsonPath('data.client.name', 'Maria Santos');
 
-    $this->actingAs($staff)->putJson('/api/appointments/'.$appointmentId, appointmentPayload($client, $service, [
+    $this->actingAs($admin)->putJson('/api/appointments/'.$appointmentId, appointmentPayload($client, $service, [
         'notes' => 'Updated notes',
         'priority' => AppointmentPriority::High->value,
     ]))->assertOk()->assertJsonPath('data.notes', 'Updated notes');
 
-    $this->actingAs($staff)->getJson('/api/appointments?search=Maria&per_page=1')
+    $this->actingAs($admin)->getJson('/api/appointments?search=Maria&per_page=1')
         ->assertOk()
         ->assertJsonCount(1, 'data')
         ->assertJsonPath('meta.per_page', 1);
 
-    $this->actingAs($staff)->deleteJson('/api/appointments/'.$appointmentId)->assertNoContent();
+    $this->actingAs($admin)->deleteJson('/api/appointments/'.$appointmentId)->assertNoContent();
     $this->assertDatabaseMissing('appointments', ['id' => $appointmentId]);
 });
 
 test('appointment validation rejects status, invalid times, and overlapping active bookings', function () {
-    $staff = staffUser();
+    $admin = adminUser();
     $client = Client::factory()->create();
     $service = Service::factory()->create();
     $existing = Appointment::factory()->create([
@@ -67,31 +67,31 @@ test('appointment validation rejects status, invalid times, and overlapping acti
         'end_time' => '10:00',
     ]);
 
-    $this->actingAs($staff)->postJson('/api/appointments', appointmentPayload($client, $service, [
+    $this->actingAs($admin)->postJson('/api/appointments', appointmentPayload($client, $service, [
         'status' => AppointmentStatus::Confirmed->value,
         'startTime' => '09:30',
         'endTime' => '10:30',
     ]))->assertUnprocessable()->assertJsonValidationErrors(['status']);
 
-    $this->actingAs($staff)->postJson('/api/appointments', appointmentPayload($client, $service, [
+    $this->actingAs($admin)->postJson('/api/appointments', appointmentPayload($client, $service, [
         'startTime' => '10:00',
         'endTime' => '09:00',
     ]))->assertUnprocessable()->assertJsonValidationErrors(['endTime']);
 
-    $this->actingAs($staff)->postJson('/api/appointments', appointmentPayload($client, $service, [
+    $this->actingAs($admin)->postJson('/api/appointments', appointmentPayload($client, $service, [
         'startTime' => '09:30',
         'endTime' => '10:30',
     ]))->assertConflict();
 
     $existing->update(['status' => AppointmentStatus::Cancelled]);
-    $this->actingAs($staff)->postJson('/api/appointments', appointmentPayload($client, $service, [
+    $this->actingAs($admin)->postJson('/api/appointments', appointmentPayload($client, $service, [
         'startTime' => '09:30',
         'endTime' => '10:30',
     ]))->assertCreated();
 });
 
 test('appointment listing supports status and priority filters', function () {
-    $staff = staffUser();
+    $admin = adminUser();
     $requested = Appointment::factory()->create([
         'status' => AppointmentStatus::Requested,
         'priority' => AppointmentPriority::High,
@@ -102,12 +102,12 @@ test('appointment listing supports status and priority filters', function () {
         'appointment_date' => '2026-09-03',
     ]);
 
-    $this->actingAs($staff)->getJson('/api/appointments?status=Requested&priority=High')
+    $this->actingAs($admin)->getJson('/api/appointments?status=Requested&priority=High')
         ->assertOk()
         ->assertJsonCount(1, 'data')
         ->assertJsonPath('data.0.id', $requested->id);
 
-    $this->actingAs($staff)->getJson('/api/appointments?status=Unknown')
+    $this->actingAs($admin)->getJson('/api/appointments?status=Unknown')
         ->assertUnprocessable()
         ->assertJsonValidationErrors(['status']);
 });
@@ -122,7 +122,7 @@ test('public services only include active services and clients can book them', f
         ->assertJsonFragment(['id' => $activeService->id])
         ->assertJsonMissing(['id' => $inactiveService->id]);
 
-    $this->actingAs(staffUser())->getJson('/api/management/services')
+    $this->actingAs(adminUser())->getJson('/api/management/services')
         ->assertOk()
         ->assertJsonFragment(['id' => $inactiveService->id]);
 
@@ -163,33 +163,33 @@ test('clients can only view and cancel their own eligible appointments', functio
         ->assertJsonPath('data.status', AppointmentStatus::Cancelled->value);
 });
 
-test('staff can manage and deactivate clients and services', function () {
-    $staff = staffUser();
+test('admins can manage and deactivate clients and services', function () {
+    $admin = adminUser();
     $client = Client::factory()->create();
     $service = Service::factory()->create();
 
-    $this->actingAs($staff)->putJson('/api/clients/'.$client->id, [
+    $this->actingAs($admin)->putJson('/api/clients/'.$client->id, [
         'name' => 'Updated Client',
         'email' => $client->user->email,
         'phone' => '555-0100',
         'active' => true,
     ])->assertOk()->assertJsonPath('data.name', 'Updated Client');
 
-    $this->actingAs($staff)->patchJson('/api/clients/'.$client->id.'/deactivate')
+    $this->actingAs($admin)->patchJson('/api/clients/'.$client->id.'/deactivate')
         ->assertOk()
         ->assertJsonPath('data.active', false);
 
-    $this->actingAs($staff)->patchJson('/api/clients/'.$client->id.'/activate')
+    $this->actingAs($admin)->patchJson('/api/clients/'.$client->id.'/activate')
         ->assertOk()
         ->assertJsonPath('data.active', true);
 
-    $this->actingAs($staff)->putJson('/api/services/'.$service->id, [
+    $this->actingAs($admin)->putJson('/api/services/'.$service->id, [
         'name' => 'Updated Service',
         'description' => 'Updated description',
         'active' => true,
     ])->assertOk()->assertJsonPath('data.name', 'Updated Service');
 
-    $this->actingAs($staff)->patchJson('/api/services/'.$service->id.'/deactivate')
+    $this->actingAs($admin)->patchJson('/api/services/'.$service->id.'/deactivate')
         ->assertOk()
         ->assertJsonPath('data.active', false);
 });

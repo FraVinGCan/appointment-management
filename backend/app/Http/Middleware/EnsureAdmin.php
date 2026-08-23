@@ -6,7 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class EnsureStaff
+class EnsureAdmin
 {
     /**
      * Handle an incoming request.
@@ -19,8 +19,8 @@ class EnsureStaff
             return response()->json(['message' => 'Authentication is required.'], 401);
         }
 
-        if (! $request->user()->isStaff()) {
-            return response()->json(['message' => 'Staff access is required.'], 403);
+        if (! $request->user()->isAdmin()) {
+            return response()->json(['message' => 'Admin access is required.'], 403);
         }
 
         return $next($request);

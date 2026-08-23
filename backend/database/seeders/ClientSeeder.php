@@ -31,7 +31,7 @@ class ClientSeeder extends Seeder
         foreach ($clients as $clientData) {
             $user = User::updateOrCreate(
                 ['email' => $clientData['email']],
-                ['name' => $clientData['name'], 'password' => 'password', 'is_staff' => false],
+                ['name' => $clientData['name'], 'password' => 'password', 'is_admin' => false],
             );
 
             Client::updateOrCreate(

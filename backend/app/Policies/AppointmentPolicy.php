@@ -8,66 +8,66 @@ use App\Models\User;
 class AppointmentPolicy
 {
     /**
-     * Only staff may list every appointment.
+     * Only admins may list every appointment.
      */
     public function viewAny(User $user): bool
     {
-        return $user->isStaff();
+        return $user->isAdmin();
     }
 
     /**
-     * Staff may view any appointment; clients may view their own.
+     * Admins may view any appointment; clients may view their own.
      */
     public function view(User $user, Appointment $appointment): bool
     {
-        return $user->isStaff() || $appointment->isOwnedBy($user);
+        return $user->isAdmin() || $appointment->isOwnedBy($user);
     }
 
     /**
-     * Staff create appointments on behalf of clients; active clients book their own.
+     * Admins create appointments on behalf of clients; active clients book their own.
      */
     public function create(User $user): bool
     {
-        return $user->isStaff() || (bool) $user->client?->active;
+        return $user->isAdmin() || (bool) $user->client?->active;
     }
 
     /**
-     * Only staff may edit appointment details.
+     * Only admins may edit appointment details.
      */
     public function update(User $user, Appointment $appointment): bool
     {
-        return $user->isStaff();
+        return $user->isAdmin();
     }
 
     /**
-     * Only staff may delete appointments.
+     * Only admins may delete appointments.
      */
     public function delete(User $user, Appointment $appointment): bool
     {
-        return $user->isStaff();
+        return $user->isAdmin();
     }
 
     /**
-     * Only staff may confirm requested appointments.
+     * Only admins may confirm requested appointments.
      */
     public function confirm(User $user, Appointment $appointment): bool
     {
-        return $user->isStaff();
+        return $user->isAdmin();
     }
 
     /**
-     * Only staff may mark appointments as completed.
+     * Only admins may mark appointments as completed.
      */
     public function complete(User $user, Appointment $appointment): bool
     {
-        return $user->isStaff();
+        return $user->isAdmin();
     }
 
     /**
-     * Staff may cancel any appointment; clients may cancel their own.
+     * Admins may cancel any appointment; clients may cancel their own.
      */
     public function cancel(User $user, Appointment $appointment): bool
     {
-        return $user->isStaff() || $appointment->isOwnedBy($user);
+        return $user->isAdmin() || $appointment->isOwnedBy($user);
     }
 }

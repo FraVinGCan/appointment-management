@@ -30,7 +30,7 @@ async function signOut() {
             Welcome, {{ auth.user?.name }}
           </h1>
           <p class="mt-2 text-slate-400">
-            {{ auth.isStaff ? "Staff workspace" : "Client workspace" }}
+            {{ auth.isAdmin ? "Admin workspace" : "Client workspace" }}
           </p>
         </div>
         <UButton

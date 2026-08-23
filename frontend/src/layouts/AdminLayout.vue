@@ -24,7 +24,7 @@
     <USidebar
       v-model:open="sidebarOpen"
       title="Appointment Desk"
-      description="Staff workspace"
+      description="Admin workspace"
       collapsible
       class="z-30"
     >

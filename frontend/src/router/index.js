@@ -7,7 +7,7 @@ import Login from "../pages/Login.vue";
 import Register from "../pages/Register.vue";
 import BookAppointment from "../pages/BookAppointment.vue";
 import ClientAppointments from "../pages/ClientAppointments.vue";
-import StaffAppointments from "../pages/StaffAppointments.vue";
+import AdminAppointments from "../pages/AdminAppointments.vue";
 import AppointmentCreate from "../pages/AppointmentCreate.vue";
 import AppointmentDetails from "../pages/AppointmentDetails.vue";
 import AppointmentEdit from "../pages/AppointmentEdit.vue";
@@ -28,9 +28,9 @@ const router = createRouter({
     { path: "/register", component: Register, meta: { guestOnly: true } },
     {
       path: "/appointments",
-      name: "staff-appointments",
-      component: StaffAppointments,
-      meta: { requiresAuth: true, requiresStaff: true, title: "Appointments" },
+      name: "admin-appointments",
+      component: AdminAppointments,
+      meta: { requiresAuth: true, requiresAdmin: true, title: "Appointments" },
     },
     {
       path: "/appointments/create",
@@ -38,7 +38,7 @@ const router = createRouter({
       component: AppointmentCreate,
       meta: {
         requiresAuth: true,
-        requiresStaff: true,
+        requiresAdmin: true,
         title: "Create appointment",
       },
     },
@@ -48,7 +48,7 @@ const router = createRouter({
       component: AppointmentDetails,
       meta: {
         requiresAuth: true,
-        requiresStaff: true,
+        requiresAdmin: true,
         title: "Appointment details",
       },
     },
@@ -58,21 +58,21 @@ const router = createRouter({
       component: AppointmentEdit,
       meta: {
         requiresAuth: true,
-        requiresStaff: true,
+        requiresAdmin: true,
         title: "Edit appointment",
       },
     },
     {
       path: "/clients",
-      name: "staff-clients",
+      name: "admin-clients",
       component: ClientList,
-      meta: { requiresAuth: true, requiresStaff: true, title: "Clients" },
+      meta: { requiresAuth: true, requiresAdmin: true, title: "Clients" },
     },
     {
       path: "/clients/create",
       name: "client-create",
       component: ClientCreate,
-      meta: { requiresAuth: true, requiresStaff: true, title: "Add client" },
+      meta: { requiresAuth: true, requiresAdmin: true, title: "Add client" },
     },
     {
       path: "/clients/:id",
@@ -80,7 +80,7 @@ const router = createRouter({
       component: ClientDetails,
       meta: {
         requiresAuth: true,
-        requiresStaff: true,
+        requiresAdmin: true,
         title: "Client details",
       },
     },
@@ -88,19 +88,19 @@ const router = createRouter({
       path: "/clients/:id/edit",
       name: "client-edit",
       component: ClientEdit,
-      meta: { requiresAuth: true, requiresStaff: true, title: "Edit client" },
+      meta: { requiresAuth: true, requiresAdmin: true, title: "Edit client" },
     },
     {
       path: "/services",
-      name: "staff-services",
+      name: "admin-services",
       component: ServiceList,
-      meta: { requiresAuth: true, requiresStaff: true, title: "Services" },
+      meta: { requiresAuth: true, requiresAdmin: true, title: "Services" },
     },
     {
       path: "/services/create",
       name: "service-create",
       component: ServiceCreate,
-      meta: { requiresAuth: true, requiresStaff: true, title: "Add service" },
+      meta: { requiresAuth: true, requiresAdmin: true, title: "Add service" },
     },
     {
       path: "/services/:id",
@@ -108,7 +108,7 @@ const router = createRouter({
       component: ServiceDetails,
       meta: {
         requiresAuth: true,
-        requiresStaff: true,
+        requiresAdmin: true,
         title: "Service details",
       },
     },
@@ -116,7 +116,7 @@ const router = createRouter({
       path: "/services/:id/edit",
       name: "service-edit",
       component: ServiceEdit,
-      meta: { requiresAuth: true, requiresStaff: true, title: "Edit service" },
+      meta: { requiresAuth: true, requiresAdmin: true, title: "Edit service" },
     },
     {
       path: "/book",
@@ -149,7 +149,7 @@ router.beforeEach(async (to) => {
   if (to.meta.guestOnly && auth.isAuthenticated) return { name: "home" };
   if (to.meta.requiresAuth && !auth.isAuthenticated)
     return { path: "/login", query: { redirect: to.fullPath } };
-  if (to.meta.requiresStaff && !auth.isStaff) return { name: "home" };
+  if (to.meta.requiresAdmin && !auth.isAdmin) return { name: "home" };
   if (to.meta.requiresClient && !auth.isClient) return { name: "home" };
 });
 

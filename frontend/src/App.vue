@@ -13,7 +13,7 @@ import { computed, onMounted, onUnmounted } from "vue";
 import { useRoute } from "vue-router";
 
 import ClientLayout from "./layouts/ClientLayout.vue";
-import StaffLayout from "./layouts/StaffLayout.vue";
+import AdminLayout from "./layouts/AdminLayout.vue";
 import NotificationStack from "./components/NotificationStack.vue";
 import { useAuthStore } from "./stores/auth";
 import { useNotificationStore } from "./stores/notifications";
@@ -23,7 +23,7 @@ const notifications = useNotificationStore();
 const route = useRoute();
 const layout = computed(() => {
   if (!auth.isAuthenticated || route.meta.guestOnly) return null;
-  return auth.isStaff ? StaffLayout : ClientLayout;
+  return auth.isAdmin ? AdminLayout : ClientLayout;
 });
 
 function expireSession() {

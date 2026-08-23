@@ -1,7 +1,7 @@
 <?php
 
+use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsureClient;
-use App\Http\Middleware\EnsureStaff;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -17,7 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->statefulApi();
         $middleware->alias([
-            'staff' => EnsureStaff::class,
+            'admin' => EnsureAdmin::class,
             'client' => EnsureClient::class,
         ]);
     })

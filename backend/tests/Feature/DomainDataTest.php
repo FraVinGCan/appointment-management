@@ -38,12 +38,12 @@ test('seed data is ordered and includes inactive historical services', function 
     $inactiveService = Service::where('active', false)->firstOrFail();
 
     expect($inactiveService->appointments)->not->toBeEmpty();
-    $this->assertDatabaseHas('users', ['email' => 'staff@example.com', 'is_staff' => true]);
+    $this->assertDatabaseHas('users', ['email' => 'admin@example.com', 'is_admin' => true]);
 });
 
 test('client profiles belong to exactly one user account', function () {
     $client = Client::factory()->create();
 
-    expect($client->user->is_staff)->toBeFalse()
+    expect($client->user->is_admin)->toBeFalse()
         ->and($client->user->client->is($client))->toBeTrue();
 });

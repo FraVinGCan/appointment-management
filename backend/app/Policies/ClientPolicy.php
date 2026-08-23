@@ -8,50 +8,50 @@ use App\Models\User;
 class ClientPolicy
 {
     /**
-     * Only staff may list clients.
+     * Only admins may list clients.
      */
     public function viewAny(User $user): bool
     {
-        return $user->isStaff();
+        return $user->isAdmin();
     }
 
     /**
-     * Only staff may view client profiles.
+     * Only admins may view client profiles.
      */
     public function view(User $user, Client $client): bool
     {
-        return $user->isStaff();
+        return $user->isAdmin();
     }
 
     /**
-     * Only staff may create client profiles.
+     * Only admins may create client profiles.
      */
     public function create(User $user): bool
     {
-        return $user->isStaff();
+        return $user->isAdmin();
     }
 
     /**
-     * Only staff may update client profiles.
+     * Only admins may update client profiles.
      */
     public function update(User $user, Client $client): bool
     {
-        return $user->isStaff();
+        return $user->isAdmin();
     }
 
     /**
-     * Only staff may reactivate client accounts.
+     * Only admins may reactivate client accounts.
      */
     public function activate(User $user, Client $client): bool
     {
-        return $user->isStaff();
+        return $user->isAdmin();
     }
 
     /**
-     * Only staff may deactivate client accounts.
+     * Only admins may deactivate client accounts.
      */
     public function deactivate(User $user, Client $client): bool
     {
-        return $user->isStaff();
+        return $user->isAdmin();
     }
 }

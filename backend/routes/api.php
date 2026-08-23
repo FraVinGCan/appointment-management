@@ -15,7 +15,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/user', [AuthController::class, 'user']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
-    Route::middleware('staff')->group(function (): void {
+    Route::middleware('admin')->group(function (): void {
         Route::apiResource('appointments', AppointmentController::class);
         Route::post('/appointments/{appointment}/confirm', [AppointmentController::class, 'confirm']);
         Route::post('/appointments/{appointment}/complete', [AppointmentController::class, 'complete']);

@@ -11,7 +11,7 @@ There is no root package manager or test runner — always run commands from the
 
 ## Features
 
-- Two role types: **staff** manage appointments, clients, and services; **clients** register, browse active services, book appointments, and cancel their own bookings.
+- Two role types: **admins** manage appointments, clients, and services; **clients** register, browse active services, book appointments, and cancel their own bookings.
 - Appointment lifecycle: `Requested → Confirmed → Completed` (or `Cancelled`), with Low/Medium/High priority.
 - Clients and services can be deactivated without deleting history.
 - Cookie-based authentication (Laravel Sanctum) with route guards on the frontend.
@@ -32,7 +32,7 @@ cd backend
 composer run setup
 ```
 
-This installs PHP + JS dependencies, creates `.env`, generates the app key, migrates, and builds backend assets. Then seed demo data (staff account, sample clients/services/appointments):
+This installs PHP + JS dependencies, creates `.env`, generates the app key, migrates, and builds backend assets. Then seed demo data (admin account, sample clients/services/appointments):
 
 ```bash
 php artisan migrate:fresh --seed
@@ -59,7 +59,7 @@ Seeded accounts use the password `password`:
 
 | Role | Email |
 | --- | --- |
-| Staff | `staff@example.com` |
+| Admin | `admin@example.com` |
 | Client | `maria@example.com` (see `ClientSeeder` for the rest) |
 
 ## Verification

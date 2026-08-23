@@ -57,7 +57,7 @@ async function remove() {
         <p
           class="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-400"
         >
-          Staff workspace
+          Admin workspace
         </p>
         <h1 class="mt-2 text-2xl sm:text-3xl font-semibold">
           Appointment details

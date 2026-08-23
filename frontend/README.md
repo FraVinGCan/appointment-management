@@ -41,7 +41,7 @@ src/
 ├── router/index.js      # Routes + navigation guards
 ├── stores/              # Pinia stores: auth, appointments, clients, services, notifications
 ├── services/            # API layer: axios instance + per-resource services
-├── layouts/             # StaffLayout / ClientLayout shells
+├── layouts/             # AdminLayout / ClientLayout shells
 ├── pages/               # Route view components
 └── components/          # Shared UI (forms, tables actions, badges, modals, etc.)
 ```
@@ -50,7 +50,7 @@ src/
 
 - Login/register set a Sanctum cookie; requests use `withCredentials` + `XSRF` token (`src/services/api.js`).
 - The auth store initializes the session on first navigation; a `401` response dispatches an `auth:expired` event to force logout.
-- Router guards enforce `requiresAuth`, `requiresStaff`, `requiresClient`, and `guestOnly` route meta.
+- Router guards enforce `requiresAuth`, `requiresAdmin`, `requiresClient`, and `guestOnly` route meta.
 
 ## Routes
 
@@ -58,8 +58,8 @@ src/
 | --- | --- | --- |
 | `/login`, `/register` | guests | Auth pages |
 | `/` | authenticated | Home / role workspace |
-| `/appointments`, `/appointments/:id[/edit]`, `/appointments/create` | staff | Appointment management |
-| `/clients`, `/clients/:id[/edit]`, `/clients/create` | staff | Client management |
-| `/services`, `/services/:id[/edit]`, `/services/create` | staff | Service management |
+| `/appointments`, `/appointments/:id[/edit]`, `/appointments/create` | admin | Appointment management |
+| `/clients`, `/clients/:id[/edit]`, `/clients/create` | admin | Client management |
+| `/services`, `/services/:id[/edit]`, `/services/create` | admin | Service management |
 | `/book` | client | Book an appointment |
 | `/client/appointments` | client | My appointments |

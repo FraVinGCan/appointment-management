@@ -45,7 +45,7 @@ class AuthController extends Controller
                 'name' => $request->string('name')->toString(),
                 'email' => $request->string('email')->toString(),
                 'password' => $request->string('password')->toString(),
-                'is_staff' => false,
+                'is_admin' => false,
             ]);
 
             return Client::create([
@@ -72,7 +72,7 @@ class AuthController extends Controller
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
-            'isStaff' => $user->is_staff,
+            'isAdmin' => $user->is_admin,
             'client' => $client ? [
                 'id' => $client->id,
                 'name' => $client->name,

@@ -44,7 +44,7 @@ class ClientController extends Controller
                 'name' => $data['name'],
                 'email' => $data['email'],
                 'password' => $data['password'],
-                'is_staff' => false,
+                'is_admin' => false,
             ]);
 
             return Client::create([

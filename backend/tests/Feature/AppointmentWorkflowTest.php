@@ -20,11 +20,11 @@ function workflowAppointment(AppointmentStatus $status): Appointment
     ]);
 }
 
-test('staff can perform every valid appointment transition', function (string $action, AppointmentStatus $initialStatus, AppointmentStatus $expectedStatus) {
+test('admins can perform every valid appointment transition', function (string $action, AppointmentStatus $initialStatus, AppointmentStatus $expectedStatus) {
     $appointment = workflowAppointment($initialStatus);
-    $staff = User::factory()->create(['is_staff' => true]);
+    $admin = User::factory()->create(['is_admin' => true]);
 
-    $this->actingAs($staff)->postJson('/api/appointments/'.$appointment->id.'/'.$action)
+    $this->actingAs($admin)->postJson('/api/appointments/'.$appointment->id.'/'.$action)
         ->assertOk()
         ->assertJsonPath('data.status', $expectedStatus->value);
 
@@ -38,9 +38,9 @@ test('staff can perform every valid appointment transition', function (string $a
 
 test('invalid appointment transitions return conflict and preserve status', function (string $action, AppointmentStatus $status) {
     $appointment = workflowAppointment($status);
-    $staff = User::factory()->create(['is_staff' => true]);
+    $admin = User::factory()->create(['is_admin' => true]);
 
-    $this->actingAs($staff)->postJson('/api/appointments/'.$appointment->id.'/'.$action)
+    $this->actingAs($admin)->postJson('/api/appointments/'.$appointment->id.'/'.$action)
         ->assertConflict()
         ->assertJsonPath('message', sprintf(
             'Appointment cannot be %s because its current status is %s.',
@@ -81,7 +81,7 @@ test('client cancellation uses the workflow and remains ownership scoped', funct
         ->assertJsonPath('message', 'Appointment cannot be cancelled because its current status is Cancelled.');
 });
 
-test('workflow endpoints are restricted to staff', function () {
+test('workflow endpoints are restricted to admins', function () {
     $appointment = workflowAppointment(AppointmentStatus::Requested);
     $client = Client::factory()->create();
 

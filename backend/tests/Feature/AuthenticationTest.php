@@ -10,19 +10,19 @@ beforeEach(function () {
     $this->withHeader('Origin', 'http://localhost:5173');
 });
 
-test('a staff member can log in and retrieve their context', function () {
-    $user = User::factory()->create(['email' => 'staff@example.com', 'password' => 'password', 'is_staff' => true]);
+test('an admin can log in and retrieve their context', function () {
+    $user = User::factory()->create(['email' => 'admin@example.com', 'password' => 'password', 'is_admin' => true]);
 
     $response = $this->postJson('/api/login', ['email' => $user->email, 'password' => 'password']);
 
-    $response->assertOk()->assertJsonPath('user.email', $user->email)->assertJsonPath('user.isStaff', true);
+    $response->assertOk()->assertJsonPath('user.email', $user->email)->assertJsonPath('user.isAdmin', true);
     $this->getJson('/api/user')->assertOk()->assertJsonPath('user.id', $user->id);
 });
 
 test('invalid credentials return unauthorized', function () {
-    User::factory()->create(['email' => 'staff@example.com', 'password' => 'password']);
+    User::factory()->create(['email' => 'admin@example.com', 'password' => 'password']);
 
-    $this->postJson('/api/login', ['email' => 'staff@example.com', 'password' => 'wrong-password'])
+    $this->postJson('/api/login', ['email' => 'admin@example.com', 'password' => 'wrong-password'])
         ->assertUnauthorized()
         ->assertJsonPath('message', 'The provided credentials are incorrect.');
 });
@@ -36,8 +36,8 @@ test('a client can register with a linked profile and is logged in', function ()
         'password_confirmation' => 'password',
     ]);
 
-    $response->assertCreated()->assertJsonPath('user.isStaff', false)->assertJsonPath('user.client.name', 'New Client');
-    $this->assertDatabaseHas('users', ['email' => 'new-client@example.com', 'is_staff' => false]);
+    $response->assertCreated()->assertJsonPath('user.isAdmin', false)->assertJsonPath('user.client.name', 'New Client');
+    $this->assertDatabaseHas('users', ['email' => 'new-client@example.com', 'is_admin' => false]);
     $this->assertDatabaseHas('clients', ['name' => 'New Client', 'phone' => '555-0199']);
     expect(Client::whereHas('user', fn ($query) => $query->where('email', 'new-client@example.com'))->count())->toBe(1);
 });

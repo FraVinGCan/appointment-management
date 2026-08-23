@@ -1,6 +1,6 @@
 # Appointment Management — Backend
 
-Laravel 13 REST API (PHP ≥ 8.3) serving the Vue SPA in [`../frontend`](../frontend). Uses Laravel Sanctum with **cookie-based SPA authentication** and role-based access for staff and clients.
+Laravel 13 REST API (PHP ≥ 8.3) serving the Vue SPA in [`../frontend`](../frontend). Uses Laravel Sanctum with **cookie-based SPA authentication** and role-based access for admins and clients.
 
 ## Stack
 
@@ -34,7 +34,7 @@ Installs PHP + JS dependencies, creates `.env` from `.env.example`, generates th
 php artisan migrate:fresh --seed
 ```
 
-Runs `StaffSeeder` (staff account), `ClientSeeder`, `ServiceSeeder`, and `AppointmentSeeder`. The seeded staff login is `staff@example.com` / `password`.
+Runs `AdminSeeder` (admin account), `ClientSeeder`, `ServiceSeeder`, and `AppointmentSeeder`. The seeded admin login is `admin@example.com` / `password`.
 
 ## Development
 
@@ -58,7 +58,7 @@ Feature tests cover authentication, access boundaries between roles, appointment
 
 | Model | Notes |
 | --- | --- |
-| `User` | Authenticatable; `is_staff` boolean distinguishes staff from client accounts. Optional `client` profile relation. |
+| `User` | Authenticatable; `is_admin` boolean distinguishes admin from client accounts. Optional `client` profile relation. |
 | `Client` | Client profile linked to a `user_id`; `active` flag; has many appointments. |
 | `Service` | Bookable service offered by the business; has many appointments. |
 | `Appointment` | Belongs to a client + service; date/time range; casts to enums below. |
@@ -68,7 +68,7 @@ Enums:
 - `AppointmentStatus`: `Requested`, `Confirmed`, `Completed`, `Cancelled`
 - `AppointmentPriority`: `Low`, `Medium`, `High`
 
-Lifecycle: a client creates a booking as `Requested`; staff confirm it; it is then completed or cancelled.
+Lifecycle: a client creates a booking as `Requested`; admins confirm it; it is then completed or cancelled.
 
 ## API surface (`routes/api.php`)
 
@@ -89,7 +89,7 @@ Base URL: `{APP_URL}/api`
 | GET | `/user` | Current user |
 | POST | `/logout` | Revoke session |
 
-### Staff only (`staff` middleware)
+### Admin only (`admin` middleware)
 
 | Method | Endpoint | Description |
 | --- | --- | --- |
