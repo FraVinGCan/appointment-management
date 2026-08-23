@@ -1,10 +1,31 @@
 <template>
-  <UModal :open="open" :title="title" :description="message" :dismissible="!loading" @update:open="(value) => !value && $emit('cancel')">
+  <UModal
+    :open="open"
+    :title="title"
+    :description="message"
+    :dismissible="!loading"
+    @update:open="(value) => !value && $emit('cancel')"
+  >
     <template #body><div /></template>
     <template #footer>
-      <div class="flex w-full flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">
-        <UButton color="neutral" variant="outline" class="w-full sm:w-auto" :disabled="loading" @click="$emit('cancel')">Cancel</UButton>
-        <UButton color="error" class="w-full sm:w-auto" :loading="loading" @click="$emit('confirm')">{{ confirmLabel }}</UButton>
+      <div
+        class="flex w-full flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3"
+      >
+        <UButton
+          color="neutral"
+          variant="outline"
+          class="w-full sm:w-auto"
+          :disabled="loading"
+          @click="$emit('cancel')"
+          >Cancel</UButton
+        >
+        <UButton
+          color="error"
+          class="w-full sm:w-auto"
+          :loading="loading"
+          @click="$emit('confirm')"
+          >{{ confirmLabel }}</UButton
+        >
       </div>
     </template>
   </UModal>
@@ -13,11 +34,11 @@
 <script setup>
 defineProps({
   open: Boolean,
-  title: { type: String, default: 'Confirm action' },
-  message: { type: String, default: 'Are you sure you want to continue?' },
-  confirmLabel: { type: String, default: 'Confirm' },
+  title: { type: String, default: "Confirm action" },
+  message: { type: String, default: "Are you sure you want to continue?" },
+  confirmLabel: { type: String, default: "Confirm" },
   loading: Boolean,
-})
+});
 
-defineEmits(['cancel', 'confirm'])
+defineEmits(["cancel", "confirm"]);
 </script>

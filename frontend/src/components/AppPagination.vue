@@ -3,13 +3,16 @@ defineProps({
   currentPage: { type: Number, required: true },
   lastPage: { type: Number, required: true },
   isLoading: { type: Boolean, default: false },
-})
+});
 
-defineEmits(['change'])
+defineEmits(["change"]);
 </script>
 
 <template>
-  <div v-if="lastPage > 1" class="flex items-center justify-between gap-3 px-3 py-4 text-sm text-slate-400 sm:flex-row">
+  <div
+    v-if="lastPage > 1"
+    class="flex items-center justify-between gap-3 px-3 py-4 text-sm text-slate-400 sm:flex-row"
+  >
     <UButton
       color="neutral"
       variant="outline"

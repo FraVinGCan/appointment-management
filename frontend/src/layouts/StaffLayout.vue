@@ -29,10 +29,22 @@
       class="z-30"
     >
       <template #default>
-        <UNavigationMenu :items="links" orientation="vertical" highlight class="w-full" />
+        <UNavigationMenu
+          :items="links"
+          orientation="vertical"
+          highlight
+          class="w-full"
+        />
       </template>
       <template #footer>
-        <UButton color="neutral" variant="outline" block :loading="auth.isLoading" @click="signOut">Log out</UButton>
+        <UButton
+          color="neutral"
+          variant="outline"
+          block
+          :loading="auth.isLoading"
+          @click="signOut"
+          >Log out</UButton
+        >
       </template>
     </USidebar>
     <main class="min-h-screen px-4 py-6 sm:px-6 sm:py-8 lg:pl-72">
@@ -44,29 +56,32 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { ref, watch } from "vue";
+import { useRouter, useRoute } from "vue-router";
 
-import { useAuthStore } from '../stores/auth'
+import { useAuthStore } from "../stores/auth";
 
-const auth = useAuthStore()
-const router = useRouter()
-const route = useRoute()
+const auth = useAuthStore();
+const router = useRouter();
+const route = useRoute();
 const links = [
-  { label: 'Dashboard', to: '/', icon: 'i-lucide-house' },
-  { label: 'Appointments', to: '/appointments', icon: 'i-lucide-calendar' },
-  { label: 'Clients', to: '/clients', icon: 'i-lucide-users' },
-  { label: 'Services', to: '/services', icon: 'i-lucide-briefcase-business' },
-]
+  { label: "Dashboard", to: "/", icon: "i-lucide-house" },
+  { label: "Appointments", to: "/appointments", icon: "i-lucide-calendar" },
+  { label: "Clients", to: "/clients", icon: "i-lucide-users" },
+  { label: "Services", to: "/services", icon: "i-lucide-briefcase-business" },
+];
 
-const sidebarOpen = ref(true)
+const sidebarOpen = ref(true);
 
-watch(() => route.fullPath, () => {
-  sidebarOpen.value = false
-})
+watch(
+  () => route.fullPath,
+  () => {
+    sidebarOpen.value = false;
+  },
+);
 
 async function signOut() {
-  await auth.logout()
-  router.push('/login')
+  await auth.logout();
+  router.push("/login");
 }
 </script>

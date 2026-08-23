@@ -20,16 +20,35 @@ function saved() {
 </script>
 <template>
   <section class="space-y-6">
-    <AppBreadcrumbs :items="[{ label: 'Services', to: '/services' }, { label: 'View', to: `/services/${route.params.id}` }, { label: 'Edit' }]" />
+    <AppBreadcrumbs
+      :items="[
+        { label: 'Services', to: '/services' },
+        { label: 'View', to: `/services/${route.params.id}` },
+        { label: 'Edit' },
+      ]"
+    />
     <div>
-      <p class="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-400">
+      <p
+        class="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-400"
+      >
         Staff workspace
       </p>
       <h1 class="mt-2 text-2xl sm:text-3xl font-semibold">Edit service</h1>
     </div>
     <AppLoading v-if="services.isLoading" message="Loading service..." />
-    <AppError v-else-if="services.error && services.errorStatus !== 404" :message="services.error" />
-    <AppNotFound v-else-if="services.errorStatus === 404" resource="Service" back-to="/services" />
-    <ServiceForm v-else-if="services.current" :service="services.current" @saved="saved" />
+    <AppError
+      v-else-if="services.error && services.errorStatus !== 404"
+      :message="services.error"
+    />
+    <AppNotFound
+      v-else-if="services.errorStatus === 404"
+      resource="Service"
+      back-to="/services"
+    />
+    <ServiceForm
+      v-else-if="services.current"
+      :service="services.current"
+      @saved="saved"
+    />
   </section>
 </template>

@@ -20,16 +20,35 @@ function saved() {
 </script>
 <template>
   <section class="space-y-6">
-    <AppBreadcrumbs :items="[{ label: 'Clients', to: '/clients' }, { label: 'View', to: `/clients/${route.params.id}` }, { label: 'Edit' }]" />
+    <AppBreadcrumbs
+      :items="[
+        { label: 'Clients', to: '/clients' },
+        { label: 'View', to: `/clients/${route.params.id}` },
+        { label: 'Edit' },
+      ]"
+    />
     <div>
-      <p class="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-400">
+      <p
+        class="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-400"
+      >
         Staff workspace
       </p>
       <h1 class="mt-2 text-2xl sm:text-3xl font-semibold">Edit client</h1>
     </div>
     <AppLoading v-if="clients.isLoading" message="Loading client..." />
-    <AppError v-else-if="clients.error && clients.errorStatus !== 404" :message="clients.error" />
-    <AppNotFound v-else-if="clients.errorStatus === 404" resource="Client" back-to="/clients" />
-    <ClientForm v-else-if="clients.current" :client="clients.current" @saved="saved" />
+    <AppError
+      v-else-if="clients.error && clients.errorStatus !== 404"
+      :message="clients.error"
+    />
+    <AppNotFound
+      v-else-if="clients.errorStatus === 404"
+      resource="Client"
+      back-to="/clients"
+    />
+    <ClientForm
+      v-else-if="clients.current"
+      :client="clients.current"
+      @saved="saved"
+    />
   </section>
 </template>

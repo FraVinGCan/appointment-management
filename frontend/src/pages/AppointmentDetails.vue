@@ -46,23 +46,57 @@ async function remove() {
 
 <template>
   <section class="space-y-6">
-    <AppBreadcrumbs :items="[{ label: 'Appointments', to: '/appointments' }, { label: 'View' }]" />
+    <AppBreadcrumbs
+      :items="[
+        { label: 'Appointments', to: '/appointments' },
+        { label: 'View' },
+      ]"
+    />
     <div class="flex flex-wrap items-end justify-between gap-4">
       <div>
-        <p class="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-400">
+        <p
+          class="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-400"
+        >
           Staff workspace
         </p>
-        <h1 class="mt-2 text-2xl sm:text-3xl font-semibold">Appointment details</h1>
+        <h1 class="mt-2 text-2xl sm:text-3xl font-semibold">
+          Appointment details
+        </h1>
       </div>
       <div v-if="appointment" class="flex flex-wrap gap-2">
-        <UButton color="neutral" variant="outline" class="w-full sm:w-auto" :to="`/appointments/${appointment.id}/edit`">Edit</UButton>
-        <UButton color="error" variant="outline" class="w-full sm:w-auto" @click="confirmation = 'delete'">Delete</UButton>
+        <UButton
+          color="neutral"
+          variant="outline"
+          class="w-full sm:w-auto"
+          :to="`/appointments/${appointment.id}/edit`"
+          >Edit</UButton
+        >
+        <UButton
+          color="error"
+          variant="outline"
+          class="w-full sm:w-auto"
+          @click="confirmation = 'delete'"
+          >Delete</UButton
+        >
       </div>
     </div>
-    <AppLoading v-if="appointments.isLoading" message="Loading appointment..." />
-    <AppError v-else-if="appointments.error && appointments.errorStatus !== 404" :message="appointments.error" />
-    <AppNotFound v-else-if="appointments.errorStatus === 404" resource="Appointment" back-to="/appointments" />
-    <div v-else-if="appointment" class="max-w-3xl rounded-2xl border border-slate-800 bg-slate-900 p-4 sm:p-6">
+    <AppLoading
+      v-if="appointments.isLoading"
+      message="Loading appointment..."
+    />
+    <AppError
+      v-else-if="appointments.error && appointments.errorStatus !== 404"
+      :message="appointments.error"
+    />
+    <AppNotFound
+      v-else-if="appointments.errorStatus === 404"
+      resource="Appointment"
+      back-to="/appointments"
+    />
+    <div
+      v-else-if="appointment"
+      class="max-w-3xl rounded-2xl border border-slate-800 bg-slate-900 p-4 sm:p-6"
+    >
       <div class="flex flex-wrap items-start justify-between gap-4">
         <div class="min-w-0">
           <h2 class="text-xl sm:text-2xl font-semibold truncate">
@@ -84,7 +118,9 @@ async function remove() {
           <dt class="text-xs uppercase tracking-wide text-slate-500">
             Priority
           </dt>
-          <dd class="mt-1"><EnumBadge :value="appointment.priority" kind="priority" /></dd>
+          <dd class="mt-1">
+            <EnumBadge :value="appointment.priority" kind="priority" />
+          </dd>
         </div>
         <div>
           <dt class="text-xs uppercase tracking-wide text-slate-500">
@@ -100,9 +136,30 @@ async function remove() {
         </div>
       </dl>
       <div class="mt-8 flex flex-wrap gap-3 border-t border-slate-800 pt-6">
-        <UButton v-if="canConfirm" class="w-full sm:w-auto" :loading="appointments.isSaving" @click="workflow('confirm')">Confirm</UButton>
-        <UButton v-if="canComplete" color="success" class="w-full sm:w-auto" :loading="appointments.isSaving" @click="workflow('complete')">Complete</UButton>
-        <UButton v-if="canCancel" color="error" variant="outline" class="w-full sm:w-auto" :loading="appointments.isSaving" @click="confirmation = 'cancel'">Cancel appointment</UButton>
+        <UButton
+          v-if="canConfirm"
+          class="w-full sm:w-auto"
+          :loading="appointments.isSaving"
+          @click="workflow('confirm')"
+          >Confirm</UButton
+        >
+        <UButton
+          v-if="canComplete"
+          color="success"
+          class="w-full sm:w-auto"
+          :loading="appointments.isSaving"
+          @click="workflow('complete')"
+          >Complete</UButton
+        >
+        <UButton
+          v-if="canCancel"
+          color="error"
+          variant="outline"
+          class="w-full sm:w-auto"
+          :loading="appointments.isSaving"
+          @click="confirmation = 'cancel'"
+          >Cancel appointment</UButton
+        >
       </div>
     </div>
     <AppConfirm
@@ -112,7 +169,8 @@ async function remove() {
       confirm-label="Delete"
       :loading="appointments.isSaving"
       @cancel="confirmation = null"
-      @confirm="remove" />
+      @confirm="remove"
+    />
     <AppConfirm
       :open="confirmation === 'cancel'"
       title="Cancel appointment?"
@@ -120,6 +178,7 @@ async function remove() {
       confirm-label="Cancel appointment"
       :loading="appointments.isSaving"
       @cancel="confirmation = null"
-      @confirm="workflow('cancel')" />
+      @confirm="workflow('cancel')"
+    />
   </section>
 </template>

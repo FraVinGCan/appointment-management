@@ -1,6 +1,10 @@
 <template>
   <div @click.stop>
-    <USwitch :model-value="modelValue" :disabled="disabled" @update:model-value="$emit('toggle', $event)" />
+    <USwitch
+      :model-value="modelValue"
+      :disabled="disabled"
+      @update:model-value="$emit('toggle', $event)"
+    />
   </div>
 </template>
 
@@ -8,7 +12,7 @@
 defineProps({
   modelValue: Boolean,
   disabled: Boolean,
-})
+});
 
-defineEmits(['toggle'])
+defineEmits(["toggle"]);
 </script>

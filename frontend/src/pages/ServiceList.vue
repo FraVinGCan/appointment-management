@@ -26,15 +26,27 @@ async function deactivate() {
   <section class="space-y-6">
     <div class="flex flex-wrap items-end justify-between gap-4">
       <div>
-        <p class="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-400">
+        <p
+          class="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-400"
+        >
           Staff workspace
         </p>
         <h1 class="mt-2 text-2xl sm:text-3xl font-semibold">Services</h1>
       </div>
-      <UButton to="/services/create" trailing-icon="i-lucide-plus" class="w-full sm:w-auto">Add service</UButton>
+      <UButton
+        to="/services/create"
+        trailing-icon="i-lucide-plus"
+        class="w-full sm:w-auto"
+        >Add service</UButton
+      >
     </div>
     <AppLoading v-if="services.isLoading" message="Loading services..." />
-    <AppError v-else-if="services.error" :message="services.error" :retry="true" @retry="services.fetchAll()" />
+    <AppError
+      v-else-if="services.error"
+      :message="services.error"
+      :retry="true"
+      @retry="services.fetchAll()"
+    />
     <AppEmpty v-else-if="!services.items.length" message="No services found." />
     <div v-else class="grid gap-4 md:grid-cols-2">
       <UCard
@@ -49,16 +61,30 @@ async function deactivate() {
             variant="subtle"
           >
             {{ service.active ? "Active" : "Inactive" }}
-          </UBadge
-          >
+          </UBadge>
         </div>
         <p class="mt-3 text-sm text-slate-400">
           {{ service.description || "No description" }}
         </p>
         <div class="mt-5 flex flex-wrap gap-2">
-          <UButton size="sm" variant="link" :to="`/services/${service.id}`">View</UButton>
-          <UButton size="sm" color="neutral" variant="link" :to="`/services/${service.id}/edit`">Edit</UButton>
-          <UButton v-if="service.active" size="sm" color="error" variant="link" @click="selected = service">Deactivate</UButton>
+          <UButton size="sm" variant="link" :to="`/services/${service.id}`"
+            >View</UButton
+          >
+          <UButton
+            size="sm"
+            color="neutral"
+            variant="link"
+            :to="`/services/${service.id}/edit`"
+            >Edit</UButton
+          >
+          <UButton
+            v-if="service.active"
+            size="sm"
+            color="error"
+            variant="link"
+            @click="selected = service"
+            >Deactivate</UButton
+          >
         </div>
       </UCard>
     </div>
@@ -69,6 +95,7 @@ async function deactivate() {
       confirm-label="Deactivate"
       :loading="services.isSaving"
       @cancel="selected = null"
-      @confirm="deactivate" />
+      @confirm="deactivate"
+    />
   </section>
 </template>

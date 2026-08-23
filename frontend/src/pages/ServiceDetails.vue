@@ -13,28 +13,53 @@ onMounted(() => services.fetch(route.params.id));
 </script>
 <template>
   <section class="space-y-6">
-    <AppBreadcrumbs :items="[{ label: 'Services', to: '/services' }, { label: 'View' }]" />
+    <AppBreadcrumbs
+      :items="[{ label: 'Services', to: '/services' }, { label: 'View' }]"
+    />
     <div class="flex flex-wrap items-end justify-between gap-4">
       <div>
-        <p class="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-400">
+        <p
+          class="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-400"
+        >
           Staff workspace
         </p>
         <h1 class="mt-2 text-2xl sm:text-3xl font-semibold">Service details</h1>
       </div>
-      <UButton v-if="services.current" color="neutral" variant="outline" class="w-full sm:w-auto" :to="`/services/${services.current.id}/edit`">Edit</UButton>
+      <UButton
+        v-if="services.current"
+        color="neutral"
+        variant="outline"
+        class="w-full sm:w-auto"
+        :to="`/services/${services.current.id}/edit`"
+        >Edit</UButton
+      >
     </div>
     <AppLoading v-if="services.isLoading" message="Loading service..." />
-    <AppError v-else-if="services.error && services.errorStatus !== 404" :message="services.error" />
-    <AppNotFound v-else-if="services.errorStatus === 404" resource="Service" back-to="/services" />
-    <div v-else-if="services.current" class="max-w-2xl rounded-2xl border border-slate-800 bg-slate-900 p-4 sm:p-6">
+    <AppError
+      v-else-if="services.error && services.errorStatus !== 404"
+      :message="services.error"
+    />
+    <AppNotFound
+      v-else-if="services.errorStatus === 404"
+      resource="Service"
+      back-to="/services"
+    />
+    <div
+      v-else-if="services.current"
+      class="max-w-2xl rounded-2xl border border-slate-800 bg-slate-900 p-4 sm:p-6"
+    >
       <div class="flex flex-wrap items-start justify-between gap-3">
-        <h2 class="text-xl sm:text-2xl font-semibold truncate">{{ services.current.name }}</h2>
+        <h2 class="text-xl sm:text-2xl font-semibold truncate">
+          {{ services.current.name }}
+        </h2>
         <span
           :class="
             services.current.active ? 'text-emerald-300' : 'text-slate-500'
           "
-          ><EnumBadge :value="services.current.active ? 'Active' : 'Inactive'" kind="active" /></span
-        >
+          ><EnumBadge
+            :value="services.current.active ? 'Active' : 'Inactive'"
+            kind="active"
+        /></span>
       </div>
       <p class="mt-5 text-slate-400">
         {{ services.current.description || "No description" }}
