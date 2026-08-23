@@ -5,6 +5,7 @@ import { useAuthStore } from "../stores/auth";
 import Home from "../pages/Home.vue";
 import Login from "../pages/Login.vue";
 import Register from "../pages/Register.vue";
+import Marketplace from "../pages/Marketplace.vue";
 import BookAppointment from "../pages/BookAppointment.vue";
 import ClientAppointments from "../pages/ClientAppointments.vue";
 import AdminAppointments from "../pages/AdminAppointments.vue";
@@ -28,6 +29,12 @@ const router = createRouter({
       name: "home",
       component: Home,
       meta: { requiresAuth: true, title: "Dashboard" },
+    },
+    {
+      path: "/marketplace",
+      name: "marketplace",
+      component: Marketplace,
+      meta: { public: true, title: "Service marketplace" },
     },
     {
       path: "/login",
@@ -160,6 +167,11 @@ router.beforeEach(async (to) => {
   const auth = useAuthStore();
 
   if (!auth.isInitialized) await auth.initialize();
+
+  if (to.name === "marketplace" && auth.isAuthenticated)
+    return { name: "home" };
+  if (to.name === "home" && !auth.isAuthenticated)
+    return { name: "marketplace" };
 
   if (to.meta.guestOnly && auth.isAuthenticated) return { name: "home" };
   if (to.meta.requiresAuth && !auth.isAuthenticated)
