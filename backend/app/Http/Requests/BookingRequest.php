@@ -35,4 +35,12 @@ class BookingRequest extends FormRequest
             'status' => ['prohibited'],
         ];
     }
+
+    public function attributes(): array
+    {
+        return [
+            'serviceId' => 'service',
+            'clientId' => 'client',
+        ];
+    }
 }

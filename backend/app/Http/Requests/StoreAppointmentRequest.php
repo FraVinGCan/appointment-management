@@ -30,4 +30,12 @@ class StoreAppointmentRequest extends FormRequest
             'status' => ['prohibited'],
         ];
     }
+
+    public function attributes(): array
+    {
+        return [
+            'clientId' => 'client',
+            'serviceId' => 'service',
+        ];
+    }
 }
