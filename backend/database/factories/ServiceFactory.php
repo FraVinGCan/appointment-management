@@ -20,7 +20,6 @@ class ServiceFactory extends Factory
         return [
             'name' => fake()->unique()->words(2, true),
             'description' => fake()->optional()->sentence(),
-            'duration_minutes' => fake()->randomElement([30, 45, 60, 90]),
             'active' => true,
         ];
     }

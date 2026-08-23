@@ -186,9 +186,8 @@ test('staff can manage and deactivate clients and services', function () {
     $this->actingAs($staff)->putJson('/api/services/'.$service->id, [
         'name' => 'Updated Service',
         'description' => 'Updated description',
-        'durationMinutes' => 45,
         'active' => true,
-    ])->assertOk()->assertJsonPath('data.durationMinutes', 45);
+    ])->assertOk()->assertJsonPath('data.name', 'Updated Service');
 
     $this->actingAs($staff)->patchJson('/api/services/'.$service->id.'/deactivate')
         ->assertOk()

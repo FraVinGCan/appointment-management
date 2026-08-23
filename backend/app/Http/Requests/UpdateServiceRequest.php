@@ -20,7 +20,6 @@ class UpdateServiceRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'durationMinutes' => ['required', 'integer', 'min:1'],
             'active' => ['required', 'boolean'],
         ];
     }

@@ -51,7 +51,7 @@ async function submit() {
     <AppError v-else-if="services.error" :message="services.error" :retry="true" @retry="services.fetchActive()" />
     <UForm v-else class="max-w-2xl space-y-5" :state="form" @submit="submit">
       <UCard variant="subtle" class="p-4 sm:p-6"><div class="space-y-6">
-      <UFormField label="Service" name="serviceId" required :error="fieldError('serviceId')"><USelect v-model="form.serviceId" placeholder="Select a service" value-key="value" :items="services.items.map((service) => ({ label: `${service.name} (${service.durationMinutes} min)`, value: String(service.id) }))" class="w-full" /></UFormField>
+      <UFormField label="Service" name="serviceId" required :error="fieldError('serviceId')"><USelect v-model="form.serviceId" placeholder="Select a service" value-key="value" :items="services.items.map((service) => ({ label: service.name, value: String(service.id) }))" class="w-full" /></UFormField>
 
       <div class="grid gap-5 sm:grid-cols-2">
         <UFormField label="Date" name="appointmentDate" required :error="fieldError('appointmentDate')"><UInput v-model="form.appointmentDate" type="date" :min="today" class="w-full" /></UFormField>

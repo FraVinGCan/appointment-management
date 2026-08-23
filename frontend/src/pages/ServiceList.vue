@@ -55,7 +55,6 @@ async function deactivate() {
         <p class="mt-3 text-sm text-slate-400">
           {{ service.description || "No description" }}
         </p>
-        <p class="mt-4 text-sm">{{ service.durationMinutes }} minutes</p>
         <div class="mt-5 flex flex-wrap gap-2">
           <UButton size="sm" variant="link" :to="`/services/${service.id}`">View</UButton>
           <UButton size="sm" color="neutral" variant="link" :to="`/services/${service.id}/edit`">Edit</UButton>

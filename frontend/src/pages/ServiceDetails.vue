@@ -39,9 +39,6 @@ onMounted(() => services.fetch(route.params.id));
       <p class="mt-5 text-slate-400">
         {{ services.current.description || "No description" }}
       </p>
-      <p class="mt-5 border-t border-slate-800 pt-5 text-sm">
-        Duration: {{ services.current.durationMinutes }} minutes
-      </p>
     </div>
   </section>
 </template>

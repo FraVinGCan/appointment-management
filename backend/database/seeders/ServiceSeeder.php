@@ -13,9 +13,9 @@ class ServiceSeeder extends Seeder
     public function run(): void
     {
         $services = [
-            ['name' => 'Initial Consultation', 'description' => 'A first discussion about the requested service.', 'duration_minutes' => 30, 'active' => true],
-            ['name' => 'Follow-up Review', 'description' => 'Review progress and agree on next steps.', 'duration_minutes' => 30, 'active' => true],
-            ['name' => 'Legacy Service Review', 'description' => 'An inactive service retained for historical appointments.', 'duration_minutes' => 60, 'active' => false],
+            ['name' => 'Initial Consultation', 'description' => 'A first discussion about the requested service.', 'active' => true],
+            ['name' => 'Follow-up Review', 'description' => 'Review progress and agree on next steps.', 'active' => true],
+            ['name' => 'Legacy Service Review', 'description' => 'An inactive service retained for historical appointments.', 'active' => false],
         ];
 
         foreach ($services as $serviceData) {

@@ -32,7 +32,6 @@ class ServiceController extends Controller
         $service = Service::create([
             'name' => $data['name'],
             'description' => $data['description'] ?? null,
-            'duration_minutes' => $data['durationMinutes'],
             'active' => $data['active'] ?? true,
         ]);
 
@@ -45,7 +44,6 @@ class ServiceController extends Controller
         $service->update([
             'name' => $data['name'],
             'description' => $data['description'] ?? null,
-            'duration_minutes' => $data['durationMinutes'],
             'active' => $data['active'],
         ]);
 

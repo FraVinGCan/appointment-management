@@ -16,7 +16,6 @@ class ServiceResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'description' => $this->description,
-            'durationMinutes' => $this->duration_minutes,
             'active' => (bool) $this->active,
             'appointments' => AppointmentResource::collection($this->whenLoaded('appointments')),
             'createdAt' => $this->created_at?->toISOString(),

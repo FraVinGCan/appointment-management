@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->text('description')->nullable();
-            $table->unsignedInteger('duration_minutes');
             $table->boolean('active')->default(true);
             $table->timestamps();
         });
