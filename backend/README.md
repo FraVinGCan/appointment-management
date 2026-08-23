@@ -1,58 +1,109 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Appointment Management — Backend
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Laravel 13 REST API (PHP ≥ 8.3) serving the Vue SPA in [`../frontend`](../frontend). Uses Laravel Sanctum with **cookie-based SPA authentication** and role-based access for staff and clients.
 
-## About Laravel
+## Stack
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- Laravel `^13.17`, PHP `^8.3`
+- Laravel Sanctum (stateful SPA auth)
+- MySQL (default), database queue, database session/cache
+- Pest for testing (in-memory SQLite via `phpunit.xml`)
+- Pint for code style
+- Vite builds assets from `resources/` (this package.json is not the frontend's)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
-
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Getting started
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+composer run setup
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Installs PHP + JS dependencies, creates `.env` from `.env.example`, generates the app key, migrates, and builds backend assets.
 
-## Contributing
+### Environment notes (`backend/.env`)
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+| Variable | Purpose |
+| --- | --- |
+| `DB_*` | MySQL connection (`appointment_management` database by default) |
+| `APP_URL` | API origin, default `http://localhost:8000` |
+| `CORS_ALLOWED_ORIGINS` | Allowed SPA origins (defaults to Vite dev server on port 5173) |
+| `SANCTUM_STATEFUL_DOMAINS` | Domains allowed to make authenticated stateful requests |
 
-## Code of Conduct
+### Seeding
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+php artisan migrate:fresh --seed
+```
 
-## Security Vulnerabilities
+Runs `StaffSeeder` (staff account), `ClientSeeder`, `ServiceSeeder`, and `AppointmentSeeder`. The seeded staff login is `staff@example.com` / `password`.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Development
 
-## License
+```bash
+composer run dev
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Starts three processes concurrently: `php artisan serve` (API at http://localhost:8000), a queue listener, and the Vite asset watcher.
+
+## Testing & style
+
+```bash
+composer run test                                  # full suite (Pest)
+php artisan test --compact --filter=testName       # single test
+vendor/bin/pint --dirty                            # format changed files
+```
+
+Feature tests cover authentication, access boundaries between roles, appointment workflows, domain data, and resource operations.
+
+## Domain model
+
+| Model | Notes |
+| --- | --- |
+| `User` | Authenticatable; `is_staff` boolean distinguishes staff from client accounts. Optional `client` profile relation. |
+| `Client` | Client profile linked to a `user_id`; `active` flag; has many appointments. |
+| `Service` | Bookable service offered by the business; has many appointments. |
+| `Appointment` | Belongs to a client + service; date/time range; casts to enums below. |
+
+Enums:
+
+- `AppointmentStatus`: `Requested`, `Confirmed`, `Completed`, `Cancelled`
+- `AppointmentPriority`: `Low`, `Medium`, `High`
+
+Lifecycle: a client creates a booking as `Requested`; staff confirm it; it is then completed or cancelled.
+
+## API surface (`routes/api.php`)
+
+Base URL: `{APP_URL}/api`
+
+### Public
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| POST | `/login` | Log in (sets Sanctum cookie) |
+| POST | `/client/register` | Register a new client account |
+| GET | `/services` | List active services |
+
+### Authenticated (`auth:sanctum`)
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| GET | `/user` | Current user |
+| POST | `/logout` | Revoke session |
+
+### Staff only (`staff` middleware)
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| GET/POST/PUT/PATCH/DELETE | `/appointments` | Full CRUD (`apiResource`) |
+| POST | `/appointments/{id}/confirm` · `/complete` · `/cancel` | Status transitions |
+| GET/POST/PUT/PATCH | `/clients` | CRUD except delete |
+| PATCH | `/clients/{id}/deactivate` · `/activate` | Toggle active flag |
+| GET/POST/PUT/PATCH | `/management/services` | Service management CRUD except delete |
+| PATCH | `/services/{id}/deactivate` | Deactivate a service |
+
+### Client only (`client` middleware)
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| POST | `/booking-requests` | Request an appointment |
+| GET | `/client/appointments` | Own appointments |
+| PATCH | `/client/appointments/{id}/cancel` | Cancel own appointment |

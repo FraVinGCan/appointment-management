@@ -1,38 +1,65 @@
-# frontend
+# Appointment Management — Frontend
 
-This template should help get you started developing with Vue 3 in Vite.
+Vue 3 single-page application (Vite) for the appointment management system, talking to the Laravel API in [`../backend`](../backend).
 
-## Recommended IDE Setup
+## Stack
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+- Vue 3 (`<script setup>`) + Vite
+- Nuxt UI v4 + Tailwind CSS 4 for components/styling
+- Pinia for state management
+- Vue Router (history mode) with auth/role guards
+- Axios with cookie-based (Sanctum) authentication
 
-## Recommended Browser Setup
+## Requirements
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+- Node.js `^22.18.0 || >=24.12.0`
+- On Windows PowerShell, use `npm` instead of `npm` if execution policy blocks `npm.ps1`.
 
-## Customize configuration
+## Getting started
 
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
+```bash
 npm install
+cp .env.example .env   # sets VITE_API_BASE_URL=http://localhost:8000/api
+npm run dev            # http://localhost:5173
 ```
 
-### Compile and Hot-Reload for Development
+The backend must be running at the URL in `VITE_API_BASE_URL`. Make sure `CORS_ALLOWED_ORIGINS` and `SANCTUM_STATEFUL_DOMAINS` in `backend/.env` include `http://localhost:5173` (the defaults do).
 
-```sh
-npm run dev
+## Scripts
+
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Start Vite dev server with Vue DevTools |
+| `npm run build` | Production build to `dist/` |
+| `npm run preview` | Preview the production build |
+
+## Project structure
+
+```
+src/
+├── main.js              # App entry: Pinia, router, Nuxt UI plugin
+├── router/index.js      # Routes + navigation guards
+├── stores/              # Pinia stores: auth, appointments, clients, services, notifications
+├── services/            # API layer: axios instance + per-resource services
+├── layouts/             # StaffLayout / ClientLayout shells
+├── pages/               # Route view components
+└── components/          # Shared UI (forms, tables actions, badges, modals, etc.)
 ```
 
-### Compile and Minify for Production
+## Authentication & roles
 
-```sh
-npm run build
-```
+- Login/register set a Sanctum cookie; requests use `withCredentials` + `XSRF` token (`src/services/api.js`).
+- The auth store initializes the session on first navigation; a `401` response dispatches an `auth:expired` event to force logout.
+- Router guards enforce `requiresAuth`, `requiresStaff`, `requiresClient`, and `guestOnly` route meta.
+
+## Routes
+
+| Path | Access | Page |
+| --- | --- | --- |
+| `/login`, `/register` | guests | Auth pages |
+| `/` | authenticated | Home / role workspace |
+| `/appointments`, `/appointments/:id[/edit]`, `/appointments/create` | staff | Appointment management |
+| `/clients`, `/clients/:id[/edit]`, `/clients/create` | staff | Client management |
+| `/services`, `/services/:id[/edit]`, `/services/create` | staff | Service management |
+| `/book` | client | Book an appointment |
+| `/client/appointments` | client | My appointments |
