@@ -9,15 +9,18 @@ import AppNotFound from "../components/AppNotFound.vue";
 import AppBreadcrumbs from "../components/AppBreadcrumbs.vue";
 import AppPageHeader from "../components/AppPageHeader.vue";
 import { useAppointmentStore } from "../stores/appointments";
-import { useNotificationStore } from "../stores/notifications";
 
 const route = useRoute();
 const router = useRouter();
 const appointments = useAppointmentStore();
-const notifications = useNotificationStore();
+const toast = useToast();
 onMounted(() => appointments.fetch(route.params.id));
 function saved() {
-  notifications.notify("Appointment updated successfully.");
+  toast.add({
+    title: "Success",
+    description: "Appointment updated successfully.",
+    color: "success",
+  });
   router.push(`/appointments/${route.params.id}`);
 }
 </script>

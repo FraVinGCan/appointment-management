@@ -39,7 +39,7 @@ The backend must be running at the URL in `VITE_API_BASE_URL`. Make sure `CORS_A
 src/
 ├── main.js              # App entry: Pinia, router, Nuxt UI plugin
 ├── router/index.js      # Routes + navigation guards
-├── stores/              # Pinia stores: auth, appointments, clients, services, notifications
+├── stores/              # Pinia stores: auth, appointments, clients, services
 ├── services/            # API layer: axios instance + per-resource services
 ├── layouts/             # AdminLayout / ClientLayout shells
 ├── pages/               # Route view components

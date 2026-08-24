@@ -10,12 +10,11 @@ import AppBreadcrumbs from "../components/AppBreadcrumbs.vue";
 import AppPageHeader from "../components/AppPageHeader.vue";
 import EnumBadge from "../components/EnumBadge.vue";
 import { useAppointmentStore } from "../stores/appointments";
-import { useNotificationStore } from "../stores/notifications";
 
 const route = useRoute();
 const router = useRouter();
 const appointments = useAppointmentStore();
-const notifications = useNotificationStore();
+const toast = useToast();
 const confirmation = ref(null);
 onMounted(() => appointments.fetch(route.params.id));
 const appointment = computed(() => appointments.current);
@@ -64,13 +63,21 @@ const actionPastTense = {
 async function workflow(action) {
   const updated = await appointments[action](appointment.value.id);
   appointments.updateItem(updated);
-  notifications.notify(`Appointment ${actionPastTense[action]} successfully.`);
+  toast.add({
+    title: "Success",
+    description: `Appointment ${actionPastTense[action]} successfully.`,
+    color: "success",
+  });
   confirmation.value = null;
 }
 async function remove() {
   await appointments.remove(appointment.value.id);
   appointments.removeItem(appointment.value.id);
-  notifications.notify("Appointment deleted.");
+  toast.add({
+    title: "Appointment deleted",
+    description: "The appointment was removed permanently.",
+    color: "success",
+  });
   router.push("/appointments");
 }
 async function runConfirmation() {

@@ -2,11 +2,14 @@
 import { useRouter } from "vue-router";
 import AppPageHeader from "../components/AppPageHeader.vue";
 import ServiceForm from "../components/ServiceForm.vue";
-import { useNotificationStore } from "../stores/notifications";
 const router = useRouter();
-const notifications = useNotificationStore();
+const toast = useToast();
 function saved() {
-  notifications.notify("Service created successfully.");
+  toast.add({
+    title: "Success",
+    description: "Service created successfully.",
+    color: "success",
+  });
   router.push("/services");
 }
 </script>

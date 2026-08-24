@@ -3,12 +3,15 @@ import { useRouter } from "vue-router";
 
 import AppPageHeader from "../components/AppPageHeader.vue";
 import AppointmentForm from "../components/AppointmentForm.vue";
-import { useNotificationStore } from "../stores/notifications";
 
 const router = useRouter();
-const notifications = useNotificationStore();
+const toast = useToast();
 function saved() {
-  notifications.notify("Appointment created successfully.");
+  toast.add({
+    title: "Success",
+    description: "Appointment created successfully.",
+    color: "success",
+  });
   router.push("/appointments");
 }
 </script>

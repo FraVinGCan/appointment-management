@@ -12,10 +12,9 @@ import AppPageHeader from "../components/AppPageHeader.vue";
 import AppointmentTableActions from "../components/AppointmentTableActions.vue";
 import EnumBadge from "../components/EnumBadge.vue";
 import { useAppointmentStore } from "../stores/appointments";
-import { useNotificationStore } from "../stores/notifications";
 
 const appointments = useAppointmentStore();
-const notifications = useNotificationStore();
+const toast = useToast();
 const router = useRouter();
 const search = ref("");
 const status = ref("");
@@ -122,7 +121,11 @@ async function runPendingAction() {
     const updated = await appointments[action](id);
     appointments.updateItem(updated);
     const pastTense = { confirm: "confirmed", complete: "completed", cancel: "cancelled" };
-    notifications.notify(`Appointment ${pastTense[action]} successfully.`);
+    toast.add({
+      title: "Success",
+      description: `Appointment ${pastTense[action]} successfully.`,
+      color: "success",
+    });
   } catch {
     // The store exposes the backend conflict message.
   } finally {

@@ -1,7 +1,6 @@
 import { defineStore } from "pinia";
 
 import * as authService from "../services/authService";
-import { useNotificationStore } from "./notifications";
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
@@ -36,15 +35,21 @@ export const useAuthStore = defineStore("auth", {
 
     async login(credentials) {
       const user = await this.mutate(() => authService.login(credentials));
-      useNotificationStore().notify("Signed in successfully.");
+      useToast().add({
+        title: "Success",
+        description: "Signed in successfully.",
+        color: "success",
+      });
       return user;
     },
 
     async register(payload) {
       const user = await this.mutate(() => authService.registerClient(payload));
-      useNotificationStore().notify(
-        "Your client account was created successfully.",
-      );
+      useToast().add({
+        title: "Success",
+        description: "Your client account was created successfully.",
+        color: "success",
+      });
       return user;
     },
 
@@ -55,7 +60,11 @@ export const useAuthStore = defineStore("auth", {
       try {
         await authService.logout();
         this.user = null;
-        useNotificationStore().notify("You have been signed out.");
+        useToast().add({
+          title: "Success",
+          description: "You have been signed out.",
+          color: "success",
+        });
       } catch (error) {
         this.error = authService.errorMessage(error);
         throw error;

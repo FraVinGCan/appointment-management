@@ -8,10 +8,9 @@ import AppLoading from "../components/AppLoading.vue";
 import AppPageHeader from "../components/AppPageHeader.vue";
 import AppPagination from "../components/AppPagination.vue";
 import { useAppointmentStore } from "../stores/appointments";
-import { useNotificationStore } from "../stores/notifications";
 
 const appointments = useAppointmentStore();
-const notifications = useNotificationStore();
+const toast = useToast();
 const appointmentToCancel = ref(null);
 
 onMounted(() => appointments.fetchClientList());
@@ -36,7 +35,11 @@ async function cancelAppointment() {
       appointmentToCancel.value.id,
     );
     appointments.updateItem(updated);
-    notifications.notify("Appointment cancelled.");
+    toast.add({
+      title: "Appointment cancelled",
+      description: "Your appointment has been cancelled.",
+      color: "success",
+    });
     appointmentToCancel.value = null;
   } catch {
     // The store exposes the backend conflict message.

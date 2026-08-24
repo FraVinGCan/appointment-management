@@ -8,12 +8,11 @@ import AppError from "../components/AppError.vue";
 import AppLoading from "../components/AppLoading.vue";
 import AppPageHeader from "../components/AppPageHeader.vue";
 import { useAppointmentStore } from "../stores/appointments";
-import { useNotificationStore } from "../stores/notifications";
 import { useServiceStore } from "../stores/services";
 
 const appointments = useAppointmentStore();
 const services = useServiceStore();
-const notifications = useNotificationStore();
+const toast = useToast();
 const router = useRouter();
 const form = reactive({
   serviceId: "",
@@ -50,7 +49,11 @@ async function submit() {
       startTime: form.startTime ? formatTime(form.startTime) : "",
       endTime: form.endTime ? formatTime(form.endTime) : "",
     });
-    notifications.notify("Booking request submitted successfully.");
+    toast.add({
+      title: "Success",
+      description: "Booking request submitted successfully.",
+      color: "success",
+    });
     router.push({ name: "client-appointments" });
   } catch {
     // The store exposes request and field errors to the template.

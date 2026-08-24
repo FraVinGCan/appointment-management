@@ -2,11 +2,14 @@
 import { useRouter } from "vue-router";
 import AppPageHeader from "../components/AppPageHeader.vue";
 import ClientForm from "../components/ClientForm.vue";
-import { useNotificationStore } from "../stores/notifications";
 const router = useRouter();
-const notifications = useNotificationStore();
+const toast = useToast();
 function saved() {
-  notifications.notify("Client created successfully.");
+  toast.add({
+    title: "Success",
+    description: "Client created successfully.",
+    color: "success",
+  });
   router.push("/clients");
 }
 </script>

@@ -12,10 +12,9 @@ import AppPagination from "../components/AppPagination.vue";
 import ClientActiveToggle from "../components/ClientActiveToggle.vue";
 import ClientTableActions from "../components/ClientTableActions.vue";
 import { useClientStore } from "../stores/clients";
-import { useNotificationStore } from "../stores/notifications";
 
 const clients = useClientStore();
-const notifications = useNotificationStore();
+const toast = useToast();
 const router = useRouter();
 const search = ref("");
 const selected = ref(null);
@@ -83,7 +82,11 @@ async function updateActive(client, value) {
       ? clients.activate(client.id)
       : clients.deactivate(client.id));
     clients.updateItem(item);
-    notifications.notify(`Client ${value ? "activated" : "deactivated"}.`);
+    toast.add({
+      title: "Success",
+      description: `Client ${value ? "activated" : "deactivated"}.`,
+      color: "success",
+    });
     selected.value = null;
   } catch {
     /* Store state is rendered below. */

@@ -8,14 +8,17 @@ import AppNotFound from "../components/AppNotFound.vue";
 import AppBreadcrumbs from "../components/AppBreadcrumbs.vue";
 import AppPageHeader from "../components/AppPageHeader.vue";
 import { useClientStore } from "../stores/clients";
-import { useNotificationStore } from "../stores/notifications";
 const route = useRoute();
 const router = useRouter();
 const clients = useClientStore();
-const notifications = useNotificationStore();
+const toast = useToast();
 onMounted(() => clients.fetch(route.params.id));
 function saved() {
-  notifications.notify("Client updated successfully.");
+  toast.add({
+    title: "Success",
+    description: "Client updated successfully.",
+    color: "success",
+  });
   router.push(`/clients/${route.params.id}`);
 }
 </script>

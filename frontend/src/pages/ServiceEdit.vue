@@ -7,15 +7,18 @@ import AppNotFound from "../components/AppNotFound.vue";
 import AppBreadcrumbs from "../components/AppBreadcrumbs.vue";
 import AppPageHeader from "../components/AppPageHeader.vue";
 import ServiceForm from "../components/ServiceForm.vue";
-import { useNotificationStore } from "../stores/notifications";
 import { useServiceStore } from "../stores/services";
 const route = useRoute();
 const router = useRouter();
 const services = useServiceStore();
-const notifications = useNotificationStore();
+const toast = useToast();
 onMounted(() => services.fetch(route.params.id));
 function saved() {
-  notifications.notify("Service updated successfully.");
+  toast.add({
+    title: "Success",
+    description: "Service updated successfully.",
+    color: "success",
+  });
   router.push(`/services/${route.params.id}`);
 }
 </script>

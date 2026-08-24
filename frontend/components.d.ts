@@ -27,7 +27,6 @@ declare module 'vue' {
     ClientTableActions: typeof import('./src/components/ClientTableActions.vue')['default']
     DashboardStatCard: typeof import('./src/components/dashboard/DashboardStatCard.vue')['default']
     EnumBadge: typeof import('./src/components/EnumBadge.vue')['default']
-    NotificationStack: typeof import('./src/components/NotificationStack.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     ServiceForm: typeof import('./src/components/ServiceForm.vue')['default']

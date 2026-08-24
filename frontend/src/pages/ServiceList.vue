@@ -5,10 +5,9 @@ import AppEmpty from "../components/AppEmpty.vue";
 import AppError from "../components/AppError.vue";
 import AppLoading from "../components/AppLoading.vue";
 import AppPageHeader from "../components/AppPageHeader.vue";
-import { useNotificationStore } from "../stores/notifications";
 import { useServiceStore } from "../stores/services";
 const services = useServiceStore();
-const notifications = useNotificationStore();
+const toast = useToast();
 const selected = ref(null);
 onMounted(() => services.fetchAll());
 async function deactivate() {
@@ -16,7 +15,11 @@ async function deactivate() {
     const item = await services.deactivate(selected.value.id);
     const index = services.items.findIndex((service) => service.id === item.id);
     if (index >= 0) services.items.splice(index, 1, item);
-    notifications.notify("Service deactivated.");
+    toast.add({
+      title: "Service deactivated",
+      description: "The service is no longer bookable by clients.",
+      color: "success",
+    });
     selected.value = null;
   } catch {
     /* Store state is rendered below. */
