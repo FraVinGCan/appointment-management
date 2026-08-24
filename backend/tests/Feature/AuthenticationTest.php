@@ -10,6 +10,10 @@ beforeEach(function () {
     $this->withHeader('Origin', 'http://localhost:5173');
 });
 
+test('the session probe returns a null user for guests', function () {
+    $this->getJson('/api/user')->assertOk()->assertJsonPath('user', null);
+});
+
 test('an admin can log in and retrieve their context', function () {
     $user = User::factory()->create(['email' => 'admin@example.com', 'password' => 'password', 'is_admin' => true]);
 

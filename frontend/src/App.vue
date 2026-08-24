@@ -24,6 +24,7 @@ const layout = computed(() => {
 });
 
 function expireSession() {
+  if (!auth.user) return;
   auth.user = null;
   toast.add({
     title: "Request failed",

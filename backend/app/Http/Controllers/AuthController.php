@@ -35,7 +35,9 @@ class AuthController extends Controller
 
     public function user(Request $request): JsonResponse
     {
-        return response()->json(['user' => $this->userData($request->user())]);
+        $user = $request->user();
+
+        return response()->json(['user' => $user ? $this->userData($user) : null]);
     }
 
     public function registerClient(ClientRegistrationRequest $request): JsonResponse

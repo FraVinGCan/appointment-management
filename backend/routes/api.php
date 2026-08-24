@@ -11,9 +11,9 @@ use Illuminate\Support\Facades\Route;
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/client/register', [AuthController::class, 'registerClient']);
 Route::get('/services', [ServiceController::class, 'index']);
+Route::get('/user', [AuthController::class, 'user']);
 
 Route::middleware('auth:sanctum')->group(function (): void {
-    Route::get('/user', [AuthController::class, 'user']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
     Route::middleware('admin')->group(function (): void {
