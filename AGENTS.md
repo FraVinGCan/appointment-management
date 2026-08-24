@@ -4,7 +4,10 @@
 
 - This repository contains two independent apps: the Laravel API/backend in `backend/` and the Vue 3/Vite app in `frontend/`.
 - There is no root package manager or root test command. Run commands from the app directory they belong to.
-- `backend/AGENTS.md` contains the Laravel Boost rules and is authoritative for backend changes; backend skills are under `backend/.agents/skills/`.
+- `backend/AGENTS.md` contains the Laravel Boost rules and is authoritative for backend changes.
+- Boost-managed skills are tracked in `.agents/skills/backend/`, where agents discover them. Treat it as generated output.
+- On every `composer update`, `php artisan boost:update` regenerates `backend/.agents/skills/` (it exists only transiently during the update), `backend/scripts/sync-skills.php` mirrors it into `.agents/skills/backend/`, then deletes `backend/.agents/`. Do not hand-edit either copy; updates overwrite them.
+- To add or override a skill durably, create it under `backend/.ai/skills/{name}/SKILL.md`; `boost:update` publishes custom skills alongside its built-ins, and a same-name custom skill overrides the built-in one.
 - The backend's `package.json` builds Laravel assets from `backend/resources/`; it is not the Vue frontend's package manifest.
 - Backend HTTP wiring is in `backend/bootstrap/app.php` and `backend/routes/`; the frontend entrypoint is `frontend/src/main.js`, with routes in `frontend/src/router/index.js`.
 
