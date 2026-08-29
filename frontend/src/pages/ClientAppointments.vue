@@ -55,10 +55,10 @@ async function cancelAppointment() {
     >
       <template #actions>
         <UButton
-          to="/book"
+          to="/client/marketplace"
           trailing-icon="i-lucide-arrow-right"
           class="w-full sm:w-auto"
-          >Book an appointment</UButton
+          >Browse services</UButton
         >
       </template>
     </AppPageHeader>
@@ -77,8 +77,8 @@ async function cancelAppointment() {
       v-else-if="!appointments.items.length"
       message="You do not have any appointments yet."
     >
-      <UButton class="mt-4" to="/book" variant="link"
-        >Request your first appointment</UButton
+      <UButton class="mt-4" to="/client/marketplace" variant="link"
+        >Browse services</UButton
       >
     </AppEmpty>
     <div v-else class="space-y-4">

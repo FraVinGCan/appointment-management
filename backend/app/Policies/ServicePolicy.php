@@ -8,11 +8,11 @@ use App\Models\User;
 class ServicePolicy
 {
     /**
-     * Only admins may inspect individual services.
+     * Admins may inspect every service; clients may inspect active services.
      */
     public function view(User $user, Service $service): bool
     {
-        return $user->isAdmin();
+        return $user->isAdmin() || (bool) $service->active;
     }
 
     /**

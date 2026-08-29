@@ -19,6 +19,8 @@ class ServiceFactory extends Factory
     {
         return [
             'name' => fake()->unique()->words(2, true),
+            'short_description' => fake()->optional()->sentence(8),
+            'category' => fake()->optional()->word(),
             'description' => fake()->optional()->sentence(),
             'active' => true,
         ];

@@ -8,6 +8,7 @@ use App\Http\Resources\ServiceResource;
 use App\Models\Service;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class ServiceController extends Controller
 {
@@ -21,11 +22,33 @@ class ServiceController extends Controller
         return ServiceResource::collection($services)->response();
     }
 
-    public function show(Service $service): ServiceResource
+    public function categories(): JsonResponse
     {
-        $this->authorize('view', $service);
+        $categories = Service::query()
+            ->whereNotNull('category')
+            ->orderBy('category')
+            ->pluck('category')
+            ->map(fn (string $category): string => Str::squish($category))
+            ->filter()
+            ->unique(fn (string $category): string => strtolower($category))
+            ->values();
 
-        return new ServiceResource($service->load('appointments'));
+        return response()->json(['data' => $categories]);
+    }
+
+    public function show(Request $request, Service $service): ServiceResource
+    {
+        if ($request->user()) {
+            $this->authorize('view', $service);
+        } elseif (! $service->active) {
+            abort(404);
+        }
+
+        if ($request->user()?->isAdmin()) {
+            $service->load('appointments');
+        }
+
+        return new ServiceResource($service);
     }
 
     public function store(StoreServiceRequest $request): JsonResponse
@@ -35,6 +58,8 @@ class ServiceController extends Controller
         $data = $request->validated();
         $service = Service::create([
             'name' => $data['name'],
+            'short_description' => $data['shortDescription'] ?? null,
+            'category' => $this->canonicalCategory($data['category'] ?? null),
             'description' => $data['description'] ?? null,
             'active' => $data['active'] ?? true,
         ]);
@@ -49,6 +74,8 @@ class ServiceController extends Controller
         $data = $request->validated();
         $service->update([
             'name' => $data['name'],
+            'short_description' => $data['shortDescription'] ?? null,
+            'category' => $this->canonicalCategory($data['category'] ?? null),
             'description' => $data['description'] ?? null,
             'active' => $data['active'],
         ]);
@@ -63,5 +90,19 @@ class ServiceController extends Controller
         $service->update(['active' => false]);
 
         return new ServiceResource($service->fresh());
+    }
+
+    private function canonicalCategory(?string $category): ?string
+    {
+        $category = Str::squish($category ?? '');
+
+        if ($category === '') {
+            return null;
+        }
+
+        return Service::query()
+            ->whereRaw('LOWER(category) = ?', [strtolower($category)])
+            ->orderBy('id')
+            ->value('category') ?? $category;
     }
 }

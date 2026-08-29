@@ -1,11 +1,13 @@
 <script setup>
 import { computed, onMounted, ref } from "vue";
+import { useAuthStore } from "../stores/auth";
 
 import AppError from "../components/AppError.vue";
 import AppLoading from "../components/AppLoading.vue";
 import { useServiceStore } from "../stores/services";
 
 const services = useServiceStore();
+const auth = useAuthStore();
 const search = ref("");
 
 onMounted(() => services.fetchActive());
@@ -38,8 +40,8 @@ const filteredServices = computed(() => {
           Our service marketplace
         </h1>
         <p class="mt-2 max-w-2xl text-slate-400">
-          Browse everything we offer, then sign in as a client to request an
-          appointment for the service you need.
+          Browse everything we offer, then choose a service to view its details
+          and request an appointment.
         </p>
       </section>
 
@@ -72,17 +74,26 @@ const filteredServices = computed(() => {
             class="flex flex-col transition-colors hover:border-slate-600"
           >
             <div class="flex h-full flex-col">
-              <h2 class="font-semibold text-slate-100">{{ service.name }}</h2>
+              <div class="flex items-start justify-between gap-3">
+                <h2 class="font-semibold text-slate-100">{{ service.name }}</h2>
+                <UBadge v-if="service.category" color="primary" variant="subtle">
+                  {{ service.category }}
+                </UBadge>
+              </div>
               <p class="mt-2 flex-1 text-sm text-slate-400">
                 {{
-                  service.description ||
+                  service.shortDescription ||
                   "No description provided for this service yet."
                 }}
               </p>
               <UButton
                 class="mt-4 w-full sm:w-auto self-start"
-                :to="{ path: '/login', query: { redirect: '/book' } }"
-                >Sign in to book</UButton
+                :to="
+                  auth.isClient
+                    ? { name: 'client-service-details', params: { id: service.id } }
+                    : { name: 'public-service-details', params: { id: service.id } }
+                "
+                >View service</UButton
               >
             </div>
           </UCard>

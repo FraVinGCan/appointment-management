@@ -63,13 +63,18 @@ test('client policy is admin only', function () {
     }
 });
 
-test('service policy is admin only', function () {
+test('service policy lets clients view active services only', function () {
     $service = Service::factory()->create();
+    $inactiveService = Service::factory()->inactive()->create();
 
     expect(Gate::forUser($this->admin)->allows('create', Service::class))->toBeTrue()
         ->and(Gate::forUser($this->clientUser)->allows('create', Service::class))->toBeFalse();
 
-    foreach (['view', 'update', 'deactivate'] as $ability) {
+    expect(Gate::forUser($this->admin)->allows('view', $service))->toBeTrue()
+        ->and(Gate::forUser($this->clientUser)->allows('view', $service))->toBeTrue()
+        ->and(Gate::forUser($this->clientUser)->allows('view', $inactiveService))->toBeFalse();
+
+    foreach (['update', 'deactivate'] as $ability) {
         expect(Gate::forUser($this->admin)->allows($ability, $service))->toBeTrue()
             ->and(Gate::forUser($this->clientUser)->allows($ability, $service))->toBeFalse();
     }

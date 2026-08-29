@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Route;
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/client/register', [AuthController::class, 'registerClient']);
 Route::get('/services', [ServiceController::class, 'index']);
+Route::get('/services/{service}', [ServiceController::class, 'show']);
 Route::get('/user', [AuthController::class, 'user']);
 
 Route::middleware('auth:sanctum')->group(function (): void {
@@ -24,8 +25,9 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::apiResource('clients', ClientController::class)->except(['destroy']);
         Route::patch('/clients/{client}/deactivate', [ClientController::class, 'deactivate']);
         Route::patch('/clients/{client}/activate', [ClientController::class, 'activate']);
-        Route::apiResource('services', ServiceController::class)->except(['destroy', 'index']);
+        Route::apiResource('services', ServiceController::class)->except(['destroy', 'index', 'show']);
         Route::get('/management/services', [ServiceController::class, 'index']);
+        Route::get('/management/services/categories', [ServiceController::class, 'categories']);
         Route::patch('/services/{service}/deactivate', [ServiceController::class, 'deactivate']);
         Route::get('/dashboard/stats', [DashboardController::class, 'index']);
     });

@@ -1,7 +1,7 @@
 <script setup>
-import { CalendarDate, Time } from "@internationalized/date";
+import { CalendarDate } from "@internationalized/date";
 import { computed, onMounted, reactive } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 
 import AppDatePicker from "../components/AppDatePicker.vue";
 import AppError from "../components/AppError.vue";
@@ -12,10 +12,10 @@ import { useServiceStore } from "../stores/services";
 
 const appointments = useAppointmentStore();
 const services = useServiceStore();
+const route = useRoute();
 const toast = useToast();
 const router = useRouter();
 const form = reactive({
-  serviceId: "",
   appointmentDate: null,
   startTime: null,
   endTime: null,
@@ -30,7 +30,7 @@ const today = computed(
     ),
 );
 
-onMounted(() => services.fetchActive());
+onMounted(() => services.fetch(route.params.id));
 
 function fieldError(field) {
   return appointments.validationErrors[field]?.[0];
@@ -44,7 +44,7 @@ async function submit() {
   try {
     await appointments.createBooking({
       ...form,
-      serviceId: Number(form.serviceId),
+      serviceId: Number(route.params.id),
       appointmentDate: form.appointmentDate?.toString() || "",
       startTime: form.startTime ? formatTime(form.startTime) : "",
       endTime: form.endTime ? formatTime(form.endTime) : "",
@@ -64,97 +64,107 @@ async function submit() {
 <template>
   <section class="space-y-6">
     <AppPageHeader
-      title="Book an appointment"
-      description="Choose a service and request a time that works for you."
+      :breadcrumbs="[
+        { label: 'Service marketplace', to: '/client/marketplace' },
+        { label: 'Service details' },
+      ]"
+      :title="services.current?.name || 'Service details'"
+      description="Review the service and request a time that works for you."
     />
 
-    <AppLoading
-      v-if="services.isLoading"
-      message="Loading available services..."
-    />
+    <AppLoading v-if="services.isLoading" message="Loading service..." />
     <AppError
       v-else-if="services.error"
       :message="services.error"
       :retry="true"
-      @retry="services.fetchActive()"
+      @retry="services.fetch(route.params.id)"
     />
-    <UForm v-else class="max-w-2xl space-y-5" :state="form" @submit="submit">
-      <UCard variant="subtle" class="p-4 sm:p-6"
-        ><div class="space-y-6">
-          <UFormField
-            label="Service"
-            name="serviceId"
-            required
-            :error="fieldError('serviceId')"
-            ><USelect
-              v-model="form.serviceId"
-              placeholder="Select a service"
-              value-key="value"
-              :items="
-                services.items.map((service) => ({
-                  label: service.name,
-                  value: String(service.id),
-                }))
-              "
-              class="w-full"
-          /></UFormField>
-
-          <div class="grid gap-5 sm:grid-cols-2">
-            <UFormField
-              label="Date"
-              name="appointmentDate"
-              required
-              :error="fieldError('appointmentDate')"
-              ><AppDatePicker
-                v-model="form.appointmentDate"
-                :min-value="today"
-              /></UFormField>
-            <UFormField
-              label="Start time"
-              name="startTime"
-              required
-              :error="fieldError('startTime')"
-              ><UInputTime
-                v-model="form.startTime"
-                hide-time-zone
-                class="w-full"
-            /></UFormField>
-            <UFormField
-              label="End time"
-              name="endTime"
-              required
-              :error="fieldError('endTime')"
-              ><UInputTime
-                v-model="form.endTime"
-                hide-time-zone
-                class="w-full"
-            /></UFormField>
-          </div>
-
-          <UFormField
-            label="Notes"
-            name="notes"
-            hint="Optional"
-            :error="fieldError('notes')"
-            ><UTextarea v-model="form.notes" :rows="4" class="w-full"
-          /></UFormField>
-
-          <UAlert
-            v-if="appointments.error"
-            color="error"
-            variant="soft"
-            :description="appointments.error"
-          />
-          <div class="flex flex-wrap gap-3">
-            <UButton
-              type="submit"
-              class="w-full sm:w-auto"
-              :loading="appointments.isSaving"
-              >Submit booking request</UButton
-            >
-          </div>
+    <div v-else-if="services.current" class="max-w-2xl space-y-6">
+      <UCard variant="subtle">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <h2 class="text-lg font-semibold">About this service</h2>
+          <UBadge v-if="services.current.category" color="primary" variant="subtle">
+            {{ services.current.category }}
+          </UBadge>
         </div>
+        <p v-if="services.current.shortDescription" class="mt-2 text-slate-300">
+          {{ services.current.shortDescription }}
+        </p>
+        <p class="text-slate-400">
+          {{
+            services.current.description ||
+            "No description provided for this service yet."
+          }}
+        </p>
       </UCard>
-    </UForm>
+      <UForm class="space-y-5" :state="form" @submit="submit">
+        <UCard variant="subtle" class="p-4 sm:p-6">
+          <div class="space-y-6">
+            <div class="grid gap-5 sm:grid-cols-2">
+              <UFormField
+                label="Date"
+                name="appointmentDate"
+                required
+                :error="fieldError('appointmentDate')"
+              >
+                <AppDatePicker
+                  v-model="form.appointmentDate"
+                  :min-value="today"
+                />
+              </UFormField>
+              <UFormField
+                label="Start time"
+                name="startTime"
+                required
+                :error="fieldError('startTime')"
+              >
+                <UInputTime
+                  v-model="form.startTime"
+                  hide-time-zone
+                  class="w-full"
+                />
+              </UFormField>
+              <UFormField
+                label="End time"
+                name="endTime"
+                required
+                :error="fieldError('endTime')"
+              >
+                <UInputTime
+                  v-model="form.endTime"
+                  hide-time-zone
+                  class="w-full"
+                />
+              </UFormField>
+            </div>
+
+            <UFormField
+              label="Notes"
+              name="notes"
+              hint="Optional"
+              :error="fieldError('notes')"
+            >
+              <UTextarea v-model="form.notes" :rows="4" class="w-full" />
+            </UFormField>
+
+            <UAlert
+              v-if="appointments.error"
+              color="error"
+              variant="soft"
+              :description="appointments.error"
+            />
+            <div class="flex flex-wrap gap-3">
+              <UButton
+                type="submit"
+                class="w-full sm:w-auto"
+                :loading="appointments.isSaving"
+              >
+                Submit booking request
+              </UButton>
+            </div>
+          </div>
+        </UCard>
+      </UForm>
+    </div>
   </section>
 </template>

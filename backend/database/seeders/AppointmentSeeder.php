@@ -14,25 +14,28 @@ class AppointmentSeeder extends Seeder
      */
     public function run(): void
     {
+        $today = today();
         $appointments = [
-            [1, 1, 'Initial discussion about the requested service.', AppointmentStatus::Requested, AppointmentPriority::High, '2026-08-18', '09:00', '09:30'],
-            [2, 2, 'Follow-up after the previous appointment.', AppointmentStatus::Confirmed, AppointmentPriority::Medium, '2026-08-18', '10:00', '10:30'],
-            [3, 3, "Routine review of the client's request.", AppointmentStatus::Completed, AppointmentPriority::Low, '2026-08-12', '08:30', '09:00'],
-            [4, 1, 'Scheduled service requiring a dedicated time slot.', AppointmentStatus::Confirmed, AppointmentPriority::High, '2026-08-19', '11:00', '12:00'],
-            [5, 2, "Consultation regarding the client's requirements.", AppointmentStatus::Cancelled, AppointmentPriority::Medium, '2026-08-14', '13:00', '13:30'],
-            [6, 3, 'Review progress following the previous appointment.', AppointmentStatus::Requested, AppointmentPriority::High, '2026-08-20', '09:30', '10:00'],
-            [7, 1, 'Routine follow-up and requirements review.', AppointmentStatus::Confirmed, AppointmentPriority::Medium, '2026-08-20', '14:00', '14:30'],
-            [8, 2, 'Consultation about the requested service.', AppointmentStatus::Requested, AppointmentPriority::Low, '2026-08-21', '08:00', '08:30'],
-            [9, 3, 'Scheduled service with standard preparation.', AppointmentStatus::Completed, AppointmentPriority::High, '2026-08-10', '15:00', '16:00'],
-            [10, 1, 'Follow-up to review the previous appointment outcome.', AppointmentStatus::Confirmed, AppointmentPriority::Medium, '2026-08-22', '10:30', '11:00'],
-            [11, 2, 'Routine review and general consultation.', AppointmentStatus::Requested, AppointmentPriority::High, '2026-08-22', '13:30', '14:00'],
-            [12, 3, "Initial consultation about the client's requirements.", AppointmentStatus::Cancelled, AppointmentPriority::Low, '2026-08-16', '16:00', '16:30'],
+            [1, 1, 'Discuss business goals and recommend practical next steps.', AppointmentStatus::Requested, AppointmentPriority::High, 1, '09:00', '09:30'],
+            [2, 2, 'Review submitted documents and identify recommended updates.', AppointmentStatus::Confirmed, AppointmentPriority::Medium, 1, '10:00', '10:30'],
+            [3, 3, 'Review the project scope and proposed delivery plan.', AppointmentStatus::Completed, AppointmentPriority::Low, -5, '08:30', '09:00'],
+            [4, 1, 'Develop a practical strategy for the requested business goals.', AppointmentStatus::Confirmed, AppointmentPriority::High, 2, '11:00', '12:00'],
+            [5, 2, 'Discuss required revisions to the submitted documents.', AppointmentStatus::Cancelled, AppointmentPriority::Medium, -3, '13:00', '13:30'],
+            [6, 3, 'Map project priorities and confirm the next planning steps.', AppointmentStatus::Requested, AppointmentPriority::High, 3, '09:30', '10:00'],
+            [7, 1, 'Review business objectives and refine the recommended approach.', AppointmentStatus::Confirmed, AppointmentPriority::Medium, 3, '14:00', '14:30'],
+            [8, 2, 'Review document requirements and provide improvement notes.', AppointmentStatus::Requested, AppointmentPriority::Low, 4, '08:00', '08:30'],
+            [9, 3, 'Confirm the project timeline and standard preparation tasks.', AppointmentStatus::Completed, AppointmentPriority::High, -7, '15:00', '16:00'],
+            [10, 1, 'Evaluate the strategy outcomes and agree on adjustments.', AppointmentStatus::Confirmed, AppointmentPriority::Medium, 5, '10:30', '11:00'],
+            [11, 2, 'Complete a general document review and recommendations.', AppointmentStatus::Requested, AppointmentPriority::High, 5, '13:30', '14:00'],
+            [12, 3, 'Discuss project requirements and the proposed work plan.', AppointmentStatus::Cancelled, AppointmentPriority::Low, -1, '16:00', '16:30'],
         ];
 
-        foreach ($appointments as [$clientNumber, $serviceNumber, $notes, $status, $priority, $date, $start, $end]) {
+        foreach ($appointments as [$clientNumber, $serviceNumber, $notes, $status, $priority, $dateOffset, $start, $end]) {
+            $date = $today->copy()->addDays($dateOffset)->format('Y-m-d');
+
             Appointment::updateOrCreate(
-                ['client_id' => $clientNumber, 'service_id' => $serviceNumber, 'appointment_date' => $date, 'start_time' => $start],
-                ['notes' => $notes, 'status' => $status, 'priority' => $priority, 'end_time' => $end],
+                ['client_id' => $clientNumber, 'service_id' => $serviceNumber, 'notes' => $notes],
+                ['status' => $status, 'priority' => $priority, 'appointment_date' => $date, 'start_time' => $start, 'end_time' => $end],
             );
         }
     }

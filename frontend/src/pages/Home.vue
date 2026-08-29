@@ -1,11 +1,68 @@
 <script setup>
+import { computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 
+import AppEmpty from "../components/AppEmpty.vue";
+import AppError from "../components/AppError.vue";
+import AppLoading from "../components/AppLoading.vue";
+import EnumBadge from "../components/EnumBadge.vue";
 import AdminDashboard from "./AdminDashboard.vue";
 import { useAuthStore } from "../stores/auth";
+import { useAppointmentStore } from "../stores/appointments";
 
 const auth = useAuthStore();
+const appointments = useAppointmentStore();
 const router = useRouter();
+
+onMounted(() => {
+  if (!auth.isAdmin) appointments.fetchClientList({ per_page: 100 });
+});
+
+const pendingAppointments = computed(
+  () => appointments.items.filter(({ status }) => status === "Requested").length,
+);
+const completedAppointments = computed(
+  () => appointments.items.filter(({ status }) => status === "Completed").length,
+);
+const upcomingAppointments = computed(() =>
+  appointments.items
+    .filter(
+      ({ status, appointmentDate, startTime }) =>
+        ["Requested", "Confirmed"].includes(status) &&
+        appointmentDate &&
+        `${appointmentDate}T${startTime || "00:00"}` >= toLocalDateTime(),
+    )
+    .sort((first, second) => appointmentDateTime(first).localeCompare(appointmentDateTime(second)))
+    .slice(0, 3),
+);
+
+function toLocalDateTime() {
+  const now = new Date();
+  const date = [now.getFullYear(), now.getMonth() + 1, now.getDate()]
+    .map((part, index) => (index ? String(part).padStart(2, "0") : part))
+    .join("-");
+  const time = now.toTimeString().slice(0, 5);
+
+  return `${date}T${time}`;
+}
+
+function appointmentDateTime(appointment) {
+  return `${appointment.appointmentDate}T${appointment.startTime || "00:00"}`;
+}
+
+function formatDate(date) {
+  if (!date) return "Date unavailable";
+
+  return new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(
+    new Date(`${date}T00:00:00`),
+  );
+}
+
+function formatTimeRange(appointment) {
+  if (!appointment.startTime || !appointment.endTime) return "Time unavailable";
+
+  return `${appointment.startTime} - ${appointment.endTime}`;
+}
 
 async function signOut() {
   await auth.logout();
@@ -17,49 +74,117 @@ async function signOut() {
   <AdminDashboard v-if="auth.isAdmin" />
 
   <section v-else class="space-y-6">
-    <div class="rounded-2xl border border-slate-800 bg-slate-900 p-5 sm:p-8">
-      <div class="flex flex-wrap items-start justify-between gap-4">
+    <div
+      class="rounded-2xl border border-cyan-900/80 bg-gradient-to-br from-cyan-950/70 via-slate-900 to-slate-900 p-5 sm:p-8"
+    >
+      <div class="flex flex-wrap items-end justify-between gap-5">
         <div>
-          <p
-            class="text-sm font-semibold uppercase tracking-[0.25em] text-cyan-400"
-          >
-            Appointment Desk
+          <p class="text-sm font-semibold uppercase tracking-[0.25em] text-cyan-400">
+            Client overview
           </p>
           <h1 class="mt-3 text-2xl font-semibold sm:text-3xl">
-            Welcome, {{ auth.user?.name }}
+            Welcome back, {{ auth.user?.name }}
           </h1>
-          <p class="mt-2 text-slate-400">Client workspace</p>
+          <p class="mt-2 max-w-xl text-slate-300">
+            Keep track of your visits and find the next service that fits your schedule.
+          </p>
         </div>
         <UButton
-          color="neutral"
-          variant="outline"
+          to="/client/marketplace"
+          icon="i-lucide-search"
           class="w-full sm:w-auto"
-          :loading="auth.isLoading"
-          @click="signOut"
         >
-          Log out
+          Browse services
         </UButton>
       </div>
-      <div class="mt-10 grid gap-4 sm:grid-cols-2">
-        <ULink to="/book">
-          <UCard variant="subtle" class="border-cyan-900 bg-cyan-950/30">
-            <span class="font-semibold text-cyan-300"
-              >Book an appointment</span
-            >
-            <span class="mt-2 block text-sm text-slate-400"
-              >Request a time from the available services.</span
-            >
-          </UCard>
-        </ULink>
-        <ULink to="/client/appointments">
-          <UCard variant="subtle" class="border-slate-700">
-            <span class="font-semibold text-slate-200">My appointments</span>
-            <span class="mt-2 block text-sm text-slate-400"
-              >View and manage your booking requests.</span
-            >
-          </UCard>
-        </ULink>
-      </div>
     </div>
+
+    <AppLoading
+      v-if="appointments.isLoading"
+      message="Loading your appointment overview..."
+    />
+    <AppError
+      v-else-if="appointments.error"
+      :message="appointments.error"
+      :retry="true"
+      @retry="appointments.fetchClientList({ per_page: 100 })"
+    />
+    <template v-else>
+      <div class="grid gap-4 sm:grid-cols-3">
+        <UCard variant="subtle" class="border-slate-800 bg-slate-900/60">
+          <p class="text-sm font-medium text-slate-400">Upcoming visits</p>
+          <p class="mt-2 text-3xl font-semibold text-cyan-300">
+            {{ upcomingAppointments.length }}
+          </p>
+          <p class="mt-1 text-xs text-slate-500">Requested or confirmed</p>
+        </UCard>
+        <UCard variant="subtle" class="border-slate-800 bg-slate-900/60">
+          <p class="text-sm font-medium text-slate-400">Pending requests</p>
+          <p class="mt-2 text-3xl font-semibold text-amber-300">
+            {{ pendingAppointments }}
+          </p>
+          <p class="mt-1 text-xs text-slate-500">Waiting for confirmation</p>
+        </UCard>
+        <UCard variant="subtle" class="border-slate-800 bg-slate-900/60">
+          <p class="text-sm font-medium text-slate-400">Completed visits</p>
+          <p class="mt-2 text-3xl font-semibold text-emerald-300">
+            {{ completedAppointments }}
+          </p>
+          <p class="mt-1 text-xs text-slate-500">From your appointment history</p>
+        </UCard>
+      </div>
+
+      <div class="grid gap-6 lg:grid-cols-[1.4fr_0.8fr]">
+        <UCard variant="subtle" class="border-slate-800 bg-slate-900/60">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <h2 class="text-lg font-semibold">Your next visits</h2>
+              <p class="mt-1 text-sm text-slate-400">Your closest upcoming appointments.</p>
+            </div>
+            <UButton to="/client/appointments" variant="link" trailing-icon="i-lucide-arrow-right">
+              View all
+            </UButton>
+          </div>
+
+          <div v-if="upcomingAppointments.length" class="mt-5 divide-y divide-slate-800">
+            <div
+              v-for="appointment in upcomingAppointments"
+              :key="appointment.id"
+              class="flex flex-wrap items-center justify-between gap-4 py-4 first:pt-0 last:pb-0"
+            >
+              <div class="min-w-0">
+                <p class="truncate font-semibold text-slate-100">
+                  {{ appointment.service?.name || "Appointment" }}
+                </p>
+                <p class="mt-1 text-sm text-slate-400">
+                  {{ formatDate(appointment.appointmentDate) }} · {{ formatTimeRange(appointment) }}
+                </p>
+              </div>
+              <EnumBadge :value="appointment.status" />
+            </div>
+          </div>
+          <AppEmpty v-else class="mt-5" message="You have no upcoming appointments." >
+            <UButton class="mt-4" to="/client/marketplace" variant="link">
+              Find a service
+            </UButton>
+          </AppEmpty>
+        </UCard>
+
+        <UCard variant="subtle" class="border-slate-800 bg-slate-900/60">
+          <h2 class="text-lg font-semibold">Plan your next visit</h2>
+          <p class="mt-2 text-sm leading-6 text-slate-400">
+            Browse available services and send a booking request in just a few steps.
+          </p>
+          <div class="mt-6 space-y-3">
+            <UButton to="/client/marketplace" block trailing-icon="i-lucide-arrow-right">
+              Explore services
+            </UButton>
+            <UButton to="/client/appointments" block color="neutral" variant="outline">
+              Review appointments
+            </UButton>
+          </div>
+        </UCard>
+      </div>
+    </template>
   </section>
 </template>

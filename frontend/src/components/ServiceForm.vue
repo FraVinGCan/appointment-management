@@ -1,5 +1,5 @@
 <script setup>
-import { reactive } from "vue";
+import { onMounted, reactive } from "vue";
 import { useServiceStore } from "../stores/services";
 
 const props = defineProps({ service: { type: Object, default: null } });
@@ -7,24 +7,40 @@ const emit = defineEmits(["saved"]);
 const services = useServiceStore();
 const form = reactive({
   name: props.service?.name || "",
+  shortDescription: props.service?.shortDescription || "",
+  category: props.service?.category || "",
   description: props.service?.description || "",
   active: props.service?.active ?? true,
 });
 function error(field) {
   return services.validationErrors[field]?.[0];
 }
+
+function categoryValue() {
+  const category = form.category.trim();
+  const existingCategory = services.categories.find(
+    (value) => value.toLowerCase() === category.toLowerCase(),
+  );
+
+  return existingCategory || category;
+}
+
 async function submit() {
   try {
+    const payload = { ...form, category: categoryValue() };
+
     emit(
       "saved",
       await (props.service
-        ? services.update(props.service.id, { ...form })
-        : services.create({ ...form })),
+        ? services.update(props.service.id, payload)
+        : services.create(payload)),
     );
   } catch {
     /* Store state is rendered below. */
   }
 }
+
+onMounted(() => services.fetchCategories().catch(() => {}));
 </script>
 
 <template>
@@ -34,6 +50,25 @@ async function submit() {
         <UFormField label="Name" name="name" required :error="error('name')"
           ><UInput v-model="form.name" class="w-full"
         /></UFormField>
+        <div class="grid gap-5 sm:grid-cols-2">
+          <UFormField
+            label="Short description"
+            name="shortDescription"
+            :error="error('shortDescription')"
+          ><UInput v-model="form.shortDescription" class="w-full" /></UFormField>
+          <UFormField
+            label="Category"
+            name="category"
+            :error="error('category')"
+          ><UInputMenu
+            v-model="form.category"
+            mode="autocomplete"
+            create-item
+            :items="services.categories"
+            placeholder="Select or type a category"
+            class="w-full"
+          /></UFormField>
+        </div>
         <UFormField
           label="Description"
           name="description"

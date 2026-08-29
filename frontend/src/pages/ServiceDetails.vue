@@ -53,8 +53,16 @@ onMounted(() => services.fetch(route.params.id));
           ><EnumBadge
             :value="services.current.active ? 'Active' : 'Inactive'"
             kind="active"
-        /></span>
+          /></span>
       </div>
+      <div class="mt-4 flex flex-wrap gap-2">
+        <UBadge v-if="services.current.category" color="primary" variant="subtle">
+          {{ services.current.category }}
+        </UBadge>
+      </div>
+      <p v-if="services.current.shortDescription" class="mt-4 text-slate-300">
+        {{ services.current.shortDescription }}
+      </p>
       <p class="mt-5 text-slate-400">
         {{ services.current.description || "No description" }}
       </p>

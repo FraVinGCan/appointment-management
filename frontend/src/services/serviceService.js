@@ -10,6 +10,11 @@ export async function listAll() {
   return data.data;
 }
 
+export async function listCategories() {
+  const { data } = await api.get("/management/services/categories");
+  return data.data;
+}
+
 export async function get(id) {
   const { data } = await api.get(`/services/${id}`);
   return data.data;

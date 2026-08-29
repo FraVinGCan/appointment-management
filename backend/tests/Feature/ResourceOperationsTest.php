@@ -163,6 +163,34 @@ test('public services only include active services and clients can book them', f
     ])->assertUnprocessable()->assertJsonValidationErrors(['serviceId']);
 });
 
+test('clients can view active service details but not inactive services', function () {
+    $activeService = Service::factory()->create(['description' => 'Helpful details']);
+    $inactiveService = Service::factory()->inactive()->create();
+    $client = Client::factory()->create();
+
+    $this->actingAs($client->user)->getJson('/api/services/'.$activeService->id)
+        ->assertOk()
+        ->assertJsonPath('data.name', $activeService->name)
+        ->assertJsonPath('data.description', 'Helpful details');
+
+    $this->actingAs($client->user)->getJson('/api/services/'.$inactiveService->id)
+        ->assertForbidden();
+});
+
+test('guests can view active service details but not inactive services', function () {
+    $activeService = Service::factory()->create(['description' => 'Helpful details']);
+    $inactiveService = Service::factory()->inactive()->create();
+
+    $this->getJson('/api/services/'.$activeService->id)
+        ->assertOk()
+        ->assertJsonPath('data.name', $activeService->name)
+        ->assertJsonPath('data.description', 'Helpful details')
+        ->assertJsonMissingPath('data.appointments');
+
+    $this->getJson('/api/services/'.$inactiveService->id)
+        ->assertNotFound();
+});
+
 test('clients can only view and cancel their own eligible appointments', function () {
     $firstClient = Client::factory()->create();
     $secondClient = Client::factory()->create();
@@ -206,9 +234,14 @@ test('admins can manage and deactivate clients and services', function () {
 
     $this->actingAs($admin)->putJson('/api/services/'.$service->id, [
         'name' => 'Updated Service',
+        'shortDescription' => 'A concise service summary.',
+        'category' => 'Advisory',
         'description' => 'Updated description',
         'active' => true,
-    ])->assertOk()->assertJsonPath('data.name', 'Updated Service');
+    ])->assertOk()
+        ->assertJsonPath('data.name', 'Updated Service')
+        ->assertJsonPath('data.shortDescription', 'A concise service summary.')
+        ->assertJsonPath('data.category', 'Advisory');
 
     $this->actingAs($admin)->patchJson('/api/services/'.$service->id.'/deactivate')
         ->assertOk()

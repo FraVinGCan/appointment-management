@@ -64,7 +64,13 @@ async function deactivate() {
             {{ service.active ? "Active" : "Inactive" }}
           </UBadge>
         </div>
-        <p class="mt-3 text-sm text-slate-400">
+        <UBadge v-if="service.category" class="mt-3" color="primary" variant="subtle">
+          {{ service.category }}
+        </UBadge>
+        <p v-if="service.shortDescription" class="mt-3 text-sm text-slate-300">
+          {{ service.shortDescription }}
+        </p>
+        <p class="mt-3 line-clamp-2 text-sm text-slate-400">
           {{ service.description || "No description" }}
         </p>
         <div class="mt-5 flex flex-wrap gap-2">

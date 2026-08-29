@@ -78,7 +78,11 @@ const router = useRouter();
 const sidebarOpen = ref(false);
 const links = [
   { label: "Overview", to: "/", icon: "i-lucide-house" },
-  { label: "Book an appointment", to: "/book", icon: "i-lucide-calendar-plus" },
+  {
+    label: "Service marketplace",
+    to: "/client/marketplace",
+    icon: "i-lucide-store",
+  },
   {
     label: "My appointments",
     to: "/client/appointments",

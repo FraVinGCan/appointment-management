@@ -20,6 +20,7 @@ import ServiceList from "../pages/ServiceList.vue";
 import ServiceCreate from "../pages/ServiceCreate.vue";
 import ServiceDetails from "../pages/ServiceDetails.vue";
 import ServiceEdit from "../pages/ServiceEdit.vue";
+import PublicServiceDetails from "../pages/PublicServiceDetails.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -35,6 +36,22 @@ const router = createRouter({
       name: "marketplace",
       component: Marketplace,
       meta: { public: true, title: "Service marketplace" },
+    },
+    {
+      path: "/marketplace/services/:id",
+      name: "public-service-details",
+      component: PublicServiceDetails,
+      meta: { public: true, title: "Service details" },
+    },
+    {
+      path: "/client/marketplace",
+      name: "client-marketplace",
+      component: Marketplace,
+      meta: {
+        requiresAuth: true,
+        requiresClient: true,
+        title: "Service marketplace",
+      },
     },
     {
       path: "/login",
@@ -141,14 +158,20 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresAdmin: true, title: "Edit service" },
     },
     {
-      path: "/book",
-      name: "client-book",
+      path: "/client/services/:id",
+      name: "client-service-details",
       component: BookAppointment,
       meta: {
         requiresAuth: true,
         requiresClient: true,
-        title: "Book an appointment",
+        title: "Service details",
       },
+    },
+    {
+      path: "/book",
+      name: "client-book",
+      redirect: { name: "client-marketplace" },
+      meta: { requiresAuth: true, requiresClient: true },
     },
     {
       path: "/client/appointments",

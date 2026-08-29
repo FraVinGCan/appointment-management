@@ -15,6 +15,8 @@ class ServiceResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'shortDescription' => $this->short_description,
+            'category' => $this->category,
             'description' => $this->description,
             'active' => (bool) $this->active,
             'appointments' => AppointmentResource::collection($this->whenLoaded('appointments')),

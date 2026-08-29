@@ -6,6 +6,7 @@ import { errorMessage, validationErrors } from "../services/error";
 export const useServiceStore = defineStore("services", {
   state: () => ({
     items: [],
+    categories: [],
     current: null,
     isLoading: false,
     isSaving: false,
@@ -25,6 +26,12 @@ export const useServiceStore = defineStore("services", {
       return this.run(async () => {
         this.items = await serviceApi.listAll();
         return this.items;
+      });
+    },
+    async fetchCategories() {
+      return this.run(async () => {
+        this.categories = await serviceApi.listCategories();
+        return this.categories;
       });
     },
     async fetch(id) {

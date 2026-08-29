@@ -31,7 +31,7 @@ test('seed data is ordered and includes inactive historical services', function 
     $this->seed();
 
     expect(Client::count())->toBe(12)
-        ->and(Service::count())->toBe(3)
+        ->and(Service::count())->toBe(6)
         ->and(Appointment::count())->toBe(12)
         ->and(Appointment::query()->whereIn('status', AppointmentStatus::cases())->count())->toBe(12);
 
