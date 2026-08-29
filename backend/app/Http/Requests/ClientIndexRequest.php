@@ -2,13 +2,10 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\AppointmentPriority;
-use App\Enums\AppointmentStatus;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rules\Enum;
 
-class AppointmentIndexRequest extends FormRequest
+class ClientIndexRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -22,10 +19,7 @@ class AppointmentIndexRequest extends FormRequest
     {
         return [
             'search' => ['nullable', 'string', 'max:255'],
-            'status' => ['nullable', new Enum(AppointmentStatus::class)],
-            'priority' => ['nullable', new Enum(AppointmentPriority::class)],
-            'client_id' => ['nullable', 'integer', 'exists:clients,id'],
-            'service_id' => ['nullable', 'integer', 'exists:services,id'],
+            'active' => ['nullable', 'boolean'],
             'page' => ['nullable', 'integer', 'min:1'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ];

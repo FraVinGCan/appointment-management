@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ServiceIndexRequest;
 use App\Http\Requests\StoreServiceRequest;
 use App\Http\Requests\UpdateServiceRequest;
 use App\Http\Resources\ServiceResource;
@@ -12,20 +13,27 @@ use Illuminate\Support\Str;
 
 class ServiceController extends Controller
 {
-    public function index(Request $request): JsonResponse
+    public function index(ServiceIndexRequest $request): JsonResponse
     {
+        $filters = $request->validated();
+        $search = trim((string) ($filters['search'] ?? ''));
         $services = Service::query()
             ->when(! $request->user()?->isAdmin(), fn ($query) => $query->where('active', true))
+            ->when($search !== '', fn ($query) => $query->where('name', 'like', "%{$search}%"))
+            ->when(isset($filters['category']), fn ($query) => $query->whereRaw('LOWER(category) = ?', [strtolower($filters['category'])]))
+            ->when($request->user()?->isAdmin() && array_key_exists('active', $filters), fn ($query) => $query->where('active', $filters['active']))
             ->orderBy('name')
+            ->when(isset($filters['limit']), fn ($query) => $query->limit($filters['limit']))
             ->get();
 
         return ServiceResource::collection($services)->response();
     }
 
-    public function categories(): JsonResponse
+    public function categories(Request $request): JsonResponse
     {
         $categories = Service::query()
             ->whereNotNull('category')
+            ->when($request->boolean('active'), fn ($query) => $query->where('active', true))
             ->orderBy('category')
             ->pluck('category')
             ->map(fn (string $category): string => Str::squish($category))

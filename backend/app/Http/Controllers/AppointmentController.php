@@ -33,6 +33,8 @@ class AppointmentController extends Controller
             })
             ->when(isset($filters['status']), fn ($query) => $query->where('status', $filters['status']))
             ->when(isset($filters['priority']), fn ($query) => $query->where('priority', $filters['priority']))
+            ->when(isset($filters['client_id']), fn ($query) => $query->where('client_id', $filters['client_id']))
+            ->when(isset($filters['service_id']), fn ($query) => $query->where('service_id', $filters['service_id']))
             ->orderBy('appointment_date')
             ->orderBy('start_time')
             ->paginate((int) ($filters['per_page'] ?? 10));

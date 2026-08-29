@@ -1,17 +1,22 @@
 import api from "./api";
 
-export async function listActive() {
-  const { data } = await api.get("/services");
+export async function listActive(params = {}) {
+  const { data } = await api.get("/services", { params });
   return data.data;
 }
 
-export async function listAll() {
-  const { data } = await api.get("/management/services");
+export async function listAll(params = {}) {
+  const { data } = await api.get("/management/services", { params });
   return data.data;
 }
 
 export async function listCategories() {
   const { data } = await api.get("/management/services/categories");
+  return data.data;
+}
+
+export async function listActiveCategories() {
+  const { data } = await api.get("/services/categories", { params: { active: 1 } });
   return data.data;
 }
 

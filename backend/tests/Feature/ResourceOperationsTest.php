@@ -119,6 +119,69 @@ test('appointment listing supports status and priority filters', function () {
         ->assertJsonValidationErrors(['status']);
 });
 
+test('appointment listing supports client and service filters', function () {
+    $admin = adminUser();
+    $client = Client::factory()->create();
+    $otherClient = Client::factory()->create();
+    $service = Service::factory()->create();
+    $otherService = Service::factory()->create();
+    $matching = Appointment::factory()->create([
+        'client_id' => $client->id,
+        'service_id' => $service->id,
+    ]);
+    Appointment::factory()->create([
+        'client_id' => $otherClient->id,
+        'service_id' => $otherService->id,
+    ]);
+
+    $this->actingAs($admin)
+        ->getJson("/api/appointments?client_id={$client->id}&service_id={$service->id}")
+        ->assertSuccessful()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $matching->id);
+});
+
+test('admin listings support client and service status filters', function () {
+    $admin = adminUser();
+    $activeClient = Client::factory()->create(['active' => true]);
+    $inactiveClient = Client::factory()->create(['active' => false]);
+
+    $this->actingAs($admin)
+        ->getJson('/api/clients?active=0')
+        ->assertSuccessful()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $inactiveClient->id);
+
+    Service::factory()->create(['category' => 'Consulting', 'active' => true]);
+    $inactiveService = Service::factory()->inactive()->create(['category' => 'Consulting']);
+    Service::factory()->create(['category' => 'Other', 'active' => true]);
+
+    $this->actingAs($admin)
+        ->getJson('/api/management/services?category=Consulting&active=0')
+        ->assertSuccessful()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $inactiveService->id);
+});
+
+test('service listing supports category filtering for clients while guests see no filter controls', function () {
+    $client = Client::factory()->create();
+    $matching = Service::factory()->create(['category' => 'Consulting']);
+    Service::factory()->create(['category' => 'Other']);
+    $inactive = Service::factory()->inactive()->create(['category' => 'Consulting']);
+
+    $this->actingAs($client->user)
+        ->getJson('/api/services?category=Consulting')
+        ->assertSuccessful()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $matching->id);
+
+    $this->getJson('/api/services/categories?active=1')
+        ->assertSuccessful()
+        ->assertJsonPath('data', ['Consulting', 'Other']);
+
+    expect($inactive->active)->toBeFalse();
+});
+
 test('public services only include active services and clients can book them', function () {
     $activeService = Service::factory()->create(['active' => true]);
     $inactiveService = Service::factory()->inactive()->create();

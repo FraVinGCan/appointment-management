@@ -17,6 +17,7 @@ const clients = useClientStore();
 const toast = useToast();
 const router = useRouter();
 const search = ref("");
+const active = ref("");
 const selected = ref(null);
 let timer;
 const rows = computed(() => clients.items);
@@ -63,10 +64,11 @@ onMounted(() => clients.fetchList());
 watch(search, (value) => {
   window.clearTimeout(timer);
   timer = window.setTimeout(
-    () => clients.fetchList({ search: value, page: 1 }),
+    () => clients.fetchList(query(1)),
     250,
   );
 });
+watch(active, () => clients.fetchList(query(1)));
 const pendingActive = ref(true);
 async function toggleActive(client, value) {
   if (!value) {
@@ -93,10 +95,14 @@ async function updateActive(client, value) {
   }
 }
 async function page(value) {
-  await clients.fetchList({
-    page: value,
-    ...(search.value ? { search: search.value } : {}),
-  });
+  await clients.fetchList(query(value));
+}
+function query(page) {
+  return {
+    page,
+    ...(search.value.trim() ? { search: search.value.trim() } : {}),
+    ...(active.value !== "" ? { active: active.value === "true" } : {}),
+  };
 }
 function selectRow(_event, row) {
   router.push(`/clients/${row.original.id}`);
@@ -124,6 +130,26 @@ function selectRow(_event, row) {
       placeholder="Search clients"
       class="w-full max-w-xl"
     />
+    <div class="flex flex-wrap items-end gap-4">
+      <UFormField label="Status">
+        <USelect
+          v-model="active"
+          placeholder="All statuses"
+          :items="[
+            { label: 'Active', value: 'true' },
+            { label: 'Inactive', value: 'false' },
+          ]"
+          class="w-full sm:w-40"
+        />
+      </UFormField>
+      <UButton
+        v-if="search || active"
+        color="neutral"
+        variant="ghost"
+        @click="search = ''; active = ''"
+        >Clear filters</UButton
+      >
+    </div>
     <AppLoading v-if="clients.isLoading" message="Loading clients..." />
     <AppError
       v-else-if="clients.error"

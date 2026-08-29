@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useAuthStore } from "../stores/auth";
 
 import AppError from "../components/AppError.vue";
@@ -9,8 +9,18 @@ import { useServiceStore } from "../stores/services";
 const services = useServiceStore();
 const auth = useAuthStore();
 const search = ref("");
+const category = ref("");
 
-onMounted(() => services.fetchActive());
+onMounted(async () => {
+  if (auth.isClient) await services.fetchActiveCategories();
+  await services.fetchActive();
+});
+
+watch(category, () => {
+  if (auth.isClient) {
+    services.fetchActive(category.value ? { category: category.value } : {});
+  }
+});
 
 const filteredServices = computed(() => {
   const query = search.value.trim().toLowerCase();
@@ -56,12 +66,22 @@ const filteredServices = computed(() => {
         @retry="services.fetchActive()"
       />
       <template v-else>
-        <UInput
-          v-model="search"
-          icon="i-lucide-search"
-          placeholder="Search services..."
-          class="w-full sm:max-w-sm"
-        />
+        <div class="grid gap-3 sm:flex sm:flex-wrap sm:items-end">
+          <UInput
+            v-model="search"
+            icon="i-lucide-search"
+            placeholder="Search services..."
+            class="w-full sm:max-w-sm"
+          />
+          <UFormField v-if="auth.isClient" label="Category">
+            <USelect
+              v-model="category"
+              placeholder="All categories"
+              :items="services.categories"
+              class="w-full sm:w-48"
+            />
+          </UFormField>
+        </div>
 
         <div
           v-if="filteredServices.length"

@@ -16,21 +16,27 @@ export const useServiceStore = defineStore("services", {
   }),
 
   actions: {
-    async fetchActive() {
+    async fetchActive(params = {}) {
       return this.run(async () => {
-        this.items = await serviceApi.listActive();
+        this.items = await serviceApi.listActive(params);
         return this.items;
       });
     },
-    async fetchAll() {
+    async fetchAll(params = {}) {
       return this.run(async () => {
-        this.items = await serviceApi.listAll();
+        this.items = await serviceApi.listAll(params);
         return this.items;
       });
     },
     async fetchCategories() {
       return this.run(async () => {
         this.categories = await serviceApi.listCategories();
+        return this.categories;
+      });
+    },
+    async fetchActiveCategories() {
+      return this.run(async () => {
+        this.categories = await serviceApi.listActiveCategories();
         return this.categories;
       });
     },

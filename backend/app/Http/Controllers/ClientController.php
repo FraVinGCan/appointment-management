@@ -2,27 +2,29 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ClientIndexRequest;
 use App\Http\Requests\StoreClientRequest;
 use App\Http\Requests\UpdateClientRequest;
 use App\Http\Resources\ClientResource;
 use App\Models\Client;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class ClientController extends Controller
 {
-    public function index(Request $request): JsonResponse
+    public function index(ClientIndexRequest $request): JsonResponse
     {
         $this->authorize('viewAny', Client::class);
 
-        $search = trim((string) $request->query('search', ''));
+        $filters = $request->validated();
+        $search = trim((string) ($filters['search'] ?? ''));
         $clients = Client::query()
             ->with('user')
             ->when($search !== '', fn ($query) => $query->where('name', 'like', "%{$search}%"))
+            ->when(array_key_exists('active', $filters), fn ($query) => $query->where('active', $filters['active']))
             ->orderBy('name')
-            ->paginate((int) $request->query('per_page', 10));
+            ->paginate((int) ($filters['per_page'] ?? 10));
 
         return ClientResource::collection($clients)->response();
     }

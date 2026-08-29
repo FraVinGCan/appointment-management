@@ -12,15 +12,31 @@ import AppPageHeader from "../components/AppPageHeader.vue";
 import AppointmentTableActions from "../components/AppointmentTableActions.vue";
 import EnumBadge from "../components/EnumBadge.vue";
 import { useAppointmentStore } from "../stores/appointments";
+import { useClientStore } from "../stores/clients";
+import { useServiceStore } from "../stores/services";
 
 const appointments = useAppointmentStore();
+const clients = useClientStore();
+const services = useServiceStore();
 const toast = useToast();
 const router = useRouter();
 const search = ref("");
 const status = ref("");
 const priority = ref("");
+const clientId = ref("");
+const serviceId = ref("");
+const clientSearchTerm = ref("");
+const serviceSearchTerm = ref("");
 const pendingAction = ref(null);
 let searchTimer;
+let clientSearchTimer;
+let serviceSearchTimer;
+const clientOptions = computed(() =>
+  clients.items.map((client) => ({ label: client.name, value: String(client.id) })),
+);
+const serviceOptions = computed(() =>
+  services.items.map((service) => ({ label: service.name, value: String(service.id) })),
+);
 const tableRows = computed(() =>
   appointments.items.map((appointment) => ({
     appointment: `${formatDate(appointment.appointmentDate)} ${appointment.startTime} - ${appointment.endTime}`,
@@ -76,13 +92,33 @@ const columns = [
   },
 ];
 
-onMounted(() => appointments.fetchList());
+onMounted(async () => {
+  await Promise.all([
+    appointments.fetchList(),
+    clients.fetchList({ per_page: 10 }),
+    services.fetchAll({ limit: 10 }),
+  ]);
+});
 
 watch(search, (value) => {
   window.clearTimeout(searchTimer);
   searchTimer = window.setTimeout(() => appointments.fetchList(query(1)), 250);
 });
-watch([status, priority], () => appointments.fetchList(query(1)));
+watch([status, priority, clientId, serviceId], () => appointments.fetchList(query(1)));
+watch(clientSearchTerm, (value) => {
+  window.clearTimeout(clientSearchTimer);
+  clientSearchTimer = window.setTimeout(
+    () => clients.fetchList({ search: value.trim(), per_page: 10 }),
+    250,
+  );
+});
+watch(serviceSearchTerm, (value) => {
+  window.clearTimeout(serviceSearchTimer);
+  serviceSearchTimer = window.setTimeout(
+    () => services.fetchAll(value.trim() ? { search: value.trim(), limit: 10 } : { limit: 10 }),
+    250,
+  );
+});
 
 function canConfirm(appointment) {
   return appointment.status === "Requested";
@@ -155,6 +191,8 @@ function query(page) {
     ...(search.value ? { search: search.value } : {}),
     ...(status.value ? { status: status.value } : {}),
     ...(priority.value ? { priority: priority.value } : {}),
+    ...(clientId.value ? { client_id: clientId.value } : {}),
+    ...(serviceId.value ? { service_id: serviceId.value } : {}),
   };
 }
 async function goToPage(page) {
@@ -209,13 +247,39 @@ function selectRow(_event, row) {
           class="w-full sm:w-48"
         />
       </UFormField>
+      <UFormField label="Client">
+        <USelectMenu
+          v-model="clientId"
+          v-model:search-term="clientSearchTerm"
+          value-key="value"
+          :items="clientOptions"
+          placeholder="All clients"
+          :search-input="{ placeholder: 'Search clients...', variant: 'none' }"
+          clear
+          class="w-full sm:w-56"
+        />
+      </UFormField>
+      <UFormField label="Service">
+        <USelectMenu
+          v-model="serviceId"
+          v-model:search-term="serviceSearchTerm"
+          value-key="value"
+          :items="serviceOptions"
+          placeholder="All services"
+          :search-input="{ placeholder: 'Search services...', variant: 'none' }"
+          clear
+          class="w-full sm:w-56"
+        />
+      </UFormField>
       <UButton
-        v-if="status || priority"
+        v-if="status || priority || clientId || serviceId"
         color="neutral"
         variant="ghost"
         @click="
           status = '';
           priority = '';
+          clientId = '';
+          serviceId = '';
         "
         >Clear filters</UButton
       >
