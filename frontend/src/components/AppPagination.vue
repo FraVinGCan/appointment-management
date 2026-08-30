@@ -1,7 +1,7 @@
 <script setup>
 defineProps({
-  currentPage: { type: Number, required: true },
-  lastPage: { type: Number, required: true },
+  currentPage: { type: Number, default: 1 },
+  lastPage: { type: Number, default: 1 },
   isLoading: { type: Boolean, default: false },
 });
 

@@ -33,7 +33,7 @@ const availableServices = computed(() =>
 onMounted(async () => {
   await Promise.all([
     clients.fetchList({ per_page: 100 }),
-    services.fetchAll(),
+    services.fetchAll({ per_page: 100 }),
   ]);
   if (props.appointment) {
     const [year, month, day] = props.appointment.appointmentDate

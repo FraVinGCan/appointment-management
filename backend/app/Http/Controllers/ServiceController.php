@@ -17,14 +17,16 @@ class ServiceController extends Controller
     {
         $filters = $request->validated();
         $search = trim((string) ($filters['search'] ?? ''));
-        $services = Service::query()
+        $query = Service::query()
             ->when(! $request->user()?->isAdmin(), fn ($query) => $query->where('active', true))
             ->when($search !== '', fn ($query) => $query->where('name', 'like', "%{$search}%"))
             ->when(isset($filters['category']), fn ($query) => $query->whereRaw('LOWER(category) = ?', [strtolower($filters['category'])]))
             ->when($request->user()?->isAdmin() && array_key_exists('active', $filters), fn ($query) => $query->where('active', $filters['active']))
-            ->orderBy('name')
-            ->when(isset($filters['limit']), fn ($query) => $query->limit($filters['limit']))
-            ->get();
+            ->orderBy('name');
+
+        $services = isset($filters['limit'])
+            ? $query->limit($filters['limit'])->get()
+            : $query->paginate((int) ($filters['per_page'] ?? 10));
 
         return ServiceResource::collection($services)->response();
     }

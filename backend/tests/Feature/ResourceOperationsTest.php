@@ -182,6 +182,19 @@ test('service listing supports category filtering for clients while guests see n
     expect($inactive->active)->toBeFalse();
 });
 
+test('service listings are paginated by default and support page parameters', function () {
+    $admin = adminUser();
+    Service::factory()->count(3)->create();
+
+    $this->actingAs($admin)
+        ->getJson('/api/management/services?per_page=2&page=2')
+        ->assertSuccessful()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('meta.current_page', 2)
+        ->assertJsonPath('meta.per_page', 2)
+        ->assertJsonPath('meta.last_page', 2);
+});
+
 test('public services only include active services and clients can book them', function () {
     $activeService = Service::factory()->create(['active' => true]);
     $inactiveService = Service::factory()->inactive()->create();

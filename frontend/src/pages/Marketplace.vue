@@ -1,36 +1,43 @@
 <script setup>
-import { computed, onMounted, ref, watch } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { useAuthStore } from "../stores/auth";
 
 import AppError from "../components/AppError.vue";
 import AppLoading from "../components/AppLoading.vue";
+import AppPagination from "../components/AppPagination.vue";
 import { useServiceStore } from "../stores/services";
 
 const services = useServiceStore();
 const auth = useAuthStore();
 const search = ref("");
 const category = ref("");
+const page = ref(1);
+let searchTimer;
 
 onMounted(async () => {
   if (auth.isClient) await services.fetchActiveCategories();
-  await services.fetchActive();
+  await services.fetchActive(query());
 });
 
-watch(category, () => {
-  if (auth.isClient) {
-    services.fetchActive(category.value ? { category: category.value } : {});
-  }
+watch([search, category], () => {
+  window.clearTimeout(searchTimer);
+  searchTimer = window.setTimeout(() => {
+    page.value = 1;
+    services.fetchActive(query());
+  }, 250);
 });
 
-const filteredServices = computed(() => {
-  const query = search.value.trim().toLowerCase();
-  if (!query) return services.items;
-  return services.items.filter(
-    (service) =>
-      service.name.toLowerCase().includes(query) ||
-      service.description?.toLowerCase().includes(query),
-  );
-});
+function query(currentPage = page.value) {
+  return {
+    page: currentPage,
+    ...(search.value.trim() ? { search: search.value.trim() } : {}),
+    ...(auth.isClient && category.value ? { category: category.value } : {}),
+  };
+}
+async function goToPage(value) {
+  page.value = value;
+  await services.fetchActive(query());
+}
 </script>
 
 <template>
@@ -63,7 +70,7 @@ const filteredServices = computed(() => {
         v-else-if="services.error"
         :message="services.error"
         :retry="true"
-        @retry="services.fetchActive()"
+        @retry="services.fetchActive(query())"
       />
       <template v-else>
         <div class="grid gap-3 sm:flex sm:flex-wrap sm:items-end">
@@ -84,11 +91,11 @@ const filteredServices = computed(() => {
         </div>
 
         <div
-          v-if="filteredServices.length"
+          v-if="services.items.length"
           class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
         >
           <UCard
-            v-for="service in filteredServices"
+            v-for="service in services.items"
             :key="service.id"
             variant="subtle"
             class="flex flex-col transition-colors hover:border-slate-600"
@@ -118,12 +125,15 @@ const filteredServices = computed(() => {
             </div>
           </UCard>
         </div>
-        <p v-else-if="services.items.length" class="text-center text-slate-400">
-          No services match your search. Try a different term.
-        </p>
         <p v-else class="text-center text-slate-400">
-          No services are available right now. Please check back soon.
+          {{ search || category ? "No services match your filters. Try different criteria." : "No services are available right now. Please check back soon." }}
         </p>
+        <AppPagination
+          :current-page="services.pagination?.current_page"
+          :last-page="services.pagination?.last_page"
+          :is-loading="services.isLoading"
+          @change="goToPage"
+        />
       </template>
     </div>
   </main>

@@ -4,6 +4,7 @@ import AppConfirm from "../components/AppConfirm.vue";
 import AppEmpty from "../components/AppEmpty.vue";
 import AppError from "../components/AppError.vue";
 import AppLoading from "../components/AppLoading.vue";
+import AppPagination from "../components/AppPagination.vue";
 import AppPageHeader from "../components/AppPageHeader.vue";
 import { useServiceStore } from "../stores/services";
 const services = useServiceStore();
@@ -12,24 +13,36 @@ const selected = ref(null);
 const search = ref("");
 const category = ref("");
 const active = ref("");
+const page = ref(1);
 let searchTimer;
 
 onMounted(async () => {
-  await Promise.all([services.fetchCategories(), services.fetchAll()]);
+  await Promise.all([services.fetchCategories(), services.fetchAll(query())]);
 });
 
 watch(search, () => {
   window.clearTimeout(searchTimer);
-  searchTimer = window.setTimeout(() => services.fetchAll(query()), 250);
+  searchTimer = window.setTimeout(() => {
+    page.value = 1;
+    services.fetchAll(query());
+  }, 250);
 });
-watch([category, active], () => services.fetchAll(query()));
+watch([category, active], () => {
+  page.value = 1;
+  services.fetchAll(query());
+});
 
-function query() {
+function query(currentPage = page.value) {
   return {
+    page: currentPage,
     ...(search.value.trim() ? { search: search.value.trim() } : {}),
     ...(category.value ? { category: category.value } : {}),
     ...(active.value !== "" ? { active: active.value === "true" } : {}),
   };
+}
+async function goToPage(value) {
+  page.value = value;
+  await services.fetchAll(query());
 }
 async function deactivate() {
   try {
@@ -104,7 +117,7 @@ async function deactivate() {
       v-else-if="services.error"
       :message="services.error"
       :retry="true"
-      @retry="services.fetchAll()"
+      @retry="services.fetchAll(query())"
     />
     <AppEmpty v-else-if="!services.items.length" message="No services found." />
     <div v-else class="grid gap-4 md:grid-cols-2">
@@ -153,6 +166,12 @@ async function deactivate() {
         </div>
       </UCard>
     </div>
+    <AppPagination
+      :current-page="services.pagination?.current_page"
+      :last-page="services.pagination?.last_page"
+      :is-loading="services.isLoading"
+      @change="goToPage"
+    />
     <AppConfirm
       :open="Boolean(selected)"
       title="Deactivate service?"

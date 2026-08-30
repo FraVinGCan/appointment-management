@@ -2,12 +2,12 @@ import api from "./api";
 
 export async function listActive(params = {}) {
   const { data } = await api.get("/services", { params });
-  return data.data;
+  return data;
 }
 
 export async function listAll(params = {}) {
   const { data } = await api.get("/management/services", { params });
-  return data.data;
+  return data;
 }
 
 export async function listCategories() {

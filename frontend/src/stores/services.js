@@ -6,6 +6,7 @@ import { errorMessage, validationErrors } from "../services/error";
 export const useServiceStore = defineStore("services", {
   state: () => ({
     items: [],
+    pagination: null,
     categories: [],
     current: null,
     isLoading: false,
@@ -18,13 +19,17 @@ export const useServiceStore = defineStore("services", {
   actions: {
     async fetchActive(params = {}) {
       return this.run(async () => {
-        this.items = await serviceApi.listActive(params);
+        const response = await serviceApi.listActive(params);
+        this.items = response.data;
+        this.pagination = response.meta ?? null;
         return this.items;
       });
     },
     async fetchAll(params = {}) {
       return this.run(async () => {
-        this.items = await serviceApi.listAll(params);
+        const response = await serviceApi.listAll(params);
+        this.items = response.data;
+        this.pagination = response.meta ?? null;
         return this.items;
       });
     },
