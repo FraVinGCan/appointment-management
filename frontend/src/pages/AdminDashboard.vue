@@ -313,7 +313,8 @@ function selectRow(_event, row) {
         <AppEmpty
           v-if="!upcomingRows.length"
           class="mt-4"
-          message="No upcoming or open appointments."
+          message="No upcoming or open appointments found."
+          icon="i-lucide-calendar-clock"
         />
         <template v-else>
           <div

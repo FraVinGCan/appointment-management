@@ -19,7 +19,9 @@ class ClientController extends Controller
 
         $filters = $request->validated();
         $search = trim((string) ($filters['search'] ?? ''));
-        $clients = Client::query()
+        $sortBy = $filters['sort_by'] ?? 'name';
+        $sortDirection = $filters['sort_direction'] ?? 'asc';
+        $clientsQuery = Client::query()
             ->with('user')
             ->when($search !== '', function ($query) use ($search): void {
                 $query->where(function ($query) use ($search): void {
@@ -28,9 +30,20 @@ class ClientController extends Controller
                         ->orWhere('phone', 'like', "%{$search}%");
                 });
             })
-            ->when(array_key_exists('active', $filters), fn ($query) => $query->where('active', $filters['active']))
-            ->orderBy('name')
-            ->paginate((int) ($filters['per_page'] ?? 10));
+            ->when(array_key_exists('active', $filters), fn ($query) => $query->where('active', $filters['active']));
+
+        if ($sortBy === 'email') {
+            $clientsQuery->orderBy(
+                User::query()
+                    ->select('email')
+                    ->whereColumn('users.id', 'clients.user_id'),
+                $sortDirection,
+            );
+        } else {
+            $clientsQuery->orderBy($sortBy, $sortDirection);
+        }
+
+        $clients = $clientsQuery->paginate((int) ($filters['per_page'] ?? 10));
 
         return ClientResource::collection($clients)->response();
     }

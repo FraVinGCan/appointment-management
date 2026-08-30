@@ -141,6 +141,22 @@ test('appointment listing supports status and priority filters', function () {
         ->assertJsonValidationErrors(['status']);
 });
 
+test('appointment listing supports allow-listed sorting', function () {
+    $admin = adminUser();
+    $later = Appointment::factory()->create(['appointment_date' => '2026-09-03']);
+    $earlier = Appointment::factory()->create(['appointment_date' => '2026-09-01']);
+
+    $this->actingAs($admin)
+        ->getJson('/api/appointments?sort_by=appointment_date&sort_direction=desc')
+        ->assertSuccessful()
+        ->assertJsonPath('data.0.id', $later->id);
+
+    $this->actingAs($admin)
+        ->getJson('/api/appointments?sort_by=not_allowed')
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['sort_by']);
+});
+
 test('appointment listing supports client and service filters', function () {
     $admin = adminUser();
     $client = Client::factory()->create();
@@ -508,6 +524,23 @@ test('admins can search clients by name email or phone', function () {
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0.id', $client->id);
     }
+});
+
+test('client listing supports allow-listed sorting', function () {
+    $admin = adminUser();
+    $zach = Client::factory()->create(['name' => 'Zach Client']);
+    $anna = Client::factory()->create(['name' => 'Anna Client']);
+
+    $this->actingAs($admin)
+        ->getJson('/api/clients?sort_by=name&sort_direction=asc&per_page=5')
+        ->assertSuccessful()
+        ->assertJsonPath('data.0.id', $anna->id)
+        ->assertJsonPath('meta.per_page', 5);
+
+    $this->actingAs($admin)
+        ->getJson('/api/clients?sort_direction=sideways')
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['sort_direction']);
 });
 
 test('protected endpoints reject unauthenticated requests', function () {

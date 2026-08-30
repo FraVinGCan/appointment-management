@@ -193,12 +193,10 @@ async function cancelAppointment() {
     />
     <AppEmpty
       v-else-if="!appointments.items.length"
-      message="You do not have any appointments yet."
-    >
-      <UButton class="mt-4" to="/client/marketplace" variant="link"
-        >Browse services</UButton
-      >
-    </AppEmpty>
+      message="No appointments found."
+      icon="i-lucide-calendar-check"
+      :action="{ to: '/client/marketplace', label: 'Browse services', icon: 'i-lucide-store' }"
+    />
     <div v-else class="space-y-4">
       <article
         v-for="appointment in appointments.items"

@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ClientIndexRequest extends FormRequest
 {
@@ -22,6 +23,8 @@ class ClientIndexRequest extends FormRequest
             'active' => ['nullable', 'boolean'],
             'page' => ['nullable', 'integer', 'min:1'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'sort_by' => ['nullable', Rule::in(['name', 'email', 'phone', 'active'])],
+            'sort_direction' => ['nullable', Rule::in(['asc', 'desc'])],
         ];
     }
 }

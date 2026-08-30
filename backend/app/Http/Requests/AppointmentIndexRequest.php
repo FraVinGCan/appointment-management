@@ -6,6 +6,7 @@ use App\Enums\AppointmentPriority;
 use App\Enums\AppointmentStatus;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 
 class AppointmentIndexRequest extends FormRequest
@@ -30,6 +31,8 @@ class AppointmentIndexRequest extends FormRequest
             'date_to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:date_from'],
             'page' => ['nullable', 'integer', 'min:1'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'sort_by' => ['nullable', Rule::in(['appointment_date', 'client', 'service', 'status', 'priority'])],
+            'sort_direction' => ['nullable', Rule::in(['asc', 'desc'])],
         ];
     }
 }

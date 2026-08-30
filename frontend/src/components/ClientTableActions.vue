@@ -1,19 +1,29 @@
+<script setup>
+import { computed } from "vue";
+
+const props = defineProps({
+  id: { type: [Number, String], required: true },
+  size: { type: String, default: "md" },
+});
+
+const items = computed(() => [
+  [
+    { label: "View", icon: "i-lucide-eye", to: `/clients/${props.id}` },
+    { label: "Edit", icon: "i-lucide-pencil", to: `/clients/${props.id}/edit` },
+  ],
+]);
+</script>
+
 <template>
-  <div class="flex gap-2" @click.stop>
-    <UButton :size="size" variant="link" :to="`/clients/${id}`">View</UButton>
-    <UButton
-      :size="size"
-      color="neutral"
-      variant="link"
-      :to="`/clients/${id}/edit`"
-      >Edit</UButton
-    >
+  <div @click.stop>
+    <UDropdownMenu :items="items" :size="size" :content="{ align: 'end' }">
+      <UButton
+        :size="size"
+        icon="i-lucide-ellipsis-vertical"
+        color="neutral"
+        variant="ghost"
+        aria-label="Client actions"
+      />
+    </UDropdownMenu>
   </div>
 </template>
-
-<script setup>
-defineProps({
-  id: { type: [Number, String], required: true },
-  size: { type: String, default: "xs" },
-});
-</script>

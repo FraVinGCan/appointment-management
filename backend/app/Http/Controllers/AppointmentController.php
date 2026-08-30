@@ -9,6 +9,8 @@ use App\Http\Requests\StoreAppointmentRequest;
 use App\Http\Requests\UpdateAppointmentRequest;
 use App\Http\Resources\AppointmentResource;
 use App\Models\Appointment;
+use App\Models\Client;
+use App\Models\Service;
 use App\Services\AppointmentWorkflowService;
 use Illuminate\Http\JsonResponse;
 
@@ -20,6 +22,8 @@ class AppointmentController extends Controller
 
         $filters = $request->validated();
         $search = trim((string) ($filters['search'] ?? ''));
+        $sortBy = $filters['sort_by'] ?? 'appointment_date';
+        $sortDirection = $filters['sort_direction'] ?? 'asc';
 
         $appointments = Appointment::query()
             ->withDetails()
@@ -36,10 +40,32 @@ class AppointmentController extends Controller
             ->when(isset($filters['client_id']), fn ($query) => $query->where('client_id', $filters['client_id']))
             ->when(isset($filters['service_id']), fn ($query) => $query->where('service_id', $filters['service_id']))
             ->when(isset($filters['date_from']), fn ($query) => $query->whereDate('appointment_date', '>=', $filters['date_from']))
-            ->when(isset($filters['date_to']), fn ($query) => $query->whereDate('appointment_date', '<=', $filters['date_to']))
-            ->orderBy('appointment_date')
-            ->orderBy('start_time')
-            ->paginate((int) ($filters['per_page'] ?? 10));
+            ->when(isset($filters['date_to']), fn ($query) => $query->whereDate('appointment_date', '<=', $filters['date_to']));
+
+        if ($sortBy === 'client') {
+            $appointments->orderBy(
+                Client::query()
+                    ->select('name')
+                    ->whereColumn('clients.id', 'appointments.client_id'),
+                $sortDirection,
+            );
+        } elseif ($sortBy === 'service') {
+            $appointments->orderBy(
+                Service::query()
+                    ->select('name')
+                    ->whereColumn('services.id', 'appointments.service_id'),
+                $sortDirection,
+            );
+        } else {
+            $appointments->orderBy($sortBy, $sortDirection);
+        }
+
+        if ($sortBy === 'appointment_date') {
+            $appointments->orderBy('start_time', $sortDirection);
+        }
+
+        $appointments->orderBy('id');
+        $appointments = $appointments->paginate((int) ($filters['per_page'] ?? 10));
 
         return AppointmentResource::collection($appointments)->response();
     }

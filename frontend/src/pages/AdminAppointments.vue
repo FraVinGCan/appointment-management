@@ -1,15 +1,13 @@
 <script setup>
-import { computed, h, onMounted, ref } from "vue";
+import { computed, h, onMounted, ref, resolveComponent } from "vue";
 import { parseDate } from "@internationalized/date";
 import { RouterLink, useRouter } from "vue-router";
 
 import AppConfirm from "../components/AppConfirm.vue";
+import AppDataTable from "../components/AppDataTable.vue";
 import AppDateRangePicker from "../components/AppDateRangePicker.vue";
-import AppEmpty from "../components/AppEmpty.vue";
 import AppError from "../components/AppError.vue";
-import AppLoading from "../components/AppLoading.vue";
 import AppBreadcrumbs from "../components/AppBreadcrumbs.vue";
-import AppPagination from "../components/AppPagination.vue";
 import AppPageHeader from "../components/AppPageHeader.vue";
 import AppointmentTableActions from "../components/AppointmentTableActions.vue";
 import EnumBadge from "../components/EnumBadge.vue";
@@ -20,6 +18,7 @@ import { useDebouncedWatch } from "../composables/useDebouncedWatch";
 import { useUrlState } from "../composables/useUrlState";
 
 const appointments = useAppointmentStore();
+const UButton = resolveComponent("UButton");
 const clients = useClientStore();
 const services = useServiceStore();
 const toast = useToast();
@@ -33,6 +32,9 @@ const urlState = useUrlState({
   date_from: "",
   date_to: "",
   page: 1,
+  per_page: 10,
+  sort_by: "appointment_date",
+  sort_direction: "asc",
 });
 
 const search = computed({
@@ -77,9 +79,20 @@ const page = computed({
   get: () => urlState.page.value,
   set: (value) => updateState({ page: value }, true),
 });
+const perPage = computed({
+  get: () => urlState.per_page.value,
+  set: (value) => updateState({ per_page: value, page: 1 }, true),
+});
+const sortBy = computed(() => urlState.sort_by.value);
+const sortDirection = computed(() => urlState.sort_direction.value);
 
 const clientSearchTerm = ref("");
 const serviceSearchTerm = ref("");
+const draftStatus = ref("");
+const draftPriority = ref("");
+const draftClientId = ref("");
+const draftServiceId = ref("");
+const draftDateRange = ref(null);
 const pendingAction = ref(null);
 const clientOptions = computed(() =>
   clients.items.map((client) => ({ label: client.name, value: String(client.id) })),
@@ -102,7 +115,7 @@ const tableRows = computed(() =>
 const columns = [
   {
     accessorKey: "appointment",
-    header: "Appointment",
+    header: () => sortableHeader("Appointment", "appointment_date"),
     cell: ({ row }) =>
       h(
         "div",
@@ -112,7 +125,7 @@ const columns = [
   },
   {
     accessorKey: "client",
-    header: "Client",
+    header: () => sortableHeader("Client", "client"),
     cell: ({ row }) =>
       row.original.clientId
         ? h(
@@ -128,7 +141,7 @@ const columns = [
   },
   {
     accessorKey: "service",
-    header: "Service",
+    header: () => sortableHeader("Service", "service"),
     cell: ({ row }) =>
       row.original.serviceId
         ? h(
@@ -144,13 +157,13 @@ const columns = [
   },
   {
     accessorKey: "status",
-    header: "Status",
+    header: () => sortableHeader("Status", "status"),
     cell: ({ row }) =>
       h(EnumBadge, { value: row.original.status, kind: "status" }),
   },
   {
     accessorKey: "priority",
-    header: "Priority",
+    header: () => sortableHeader("Priority", "priority"),
     cell: ({ row }) =>
       h(EnumBadge, { value: row.original.priority, kind: "priority" }),
   },
@@ -264,6 +277,9 @@ function formatTime(time) {
 function query(pageValue = page.value) {
   return {
     page: pageValue,
+    per_page: perPage.value,
+    sort_by: sortBy.value,
+    sort_direction: sortDirection.value,
     ...(search.value ? { search: search.value } : {}),
     ...(status.value ? { status: status.value } : {}),
     ...(priority.value ? { priority: priority.value } : {}),
@@ -277,6 +293,11 @@ async function goToPage(value) {
   updateState({ page: value }, true);
 }
 function clearFilters() {
+  draftStatus.value = "";
+  draftPriority.value = "";
+  draftClientId.value = "";
+  draftServiceId.value = "";
+  draftDateRange.value = null;
   updateState(
     {
       search: "",
@@ -291,6 +312,59 @@ function clearFilters() {
     true,
   );
 }
+function syncFilterDraft(open) {
+  if (!open) return;
+
+  draftStatus.value = status.value;
+  draftPriority.value = priority.value;
+  draftClientId.value = clientId.value;
+  draftServiceId.value = serviceId.value;
+  draftDateRange.value = dateRange.value;
+}
+function applyFilters() {
+  updateState(
+    {
+      status: draftStatus.value,
+      priority: draftPriority.value,
+      client_id: draftClientId.value,
+      service_id: draftServiceId.value,
+      date_from: draftDateRange.value?.start?.toString() || "",
+      date_to: draftDateRange.value?.end?.toString() || "",
+      page: 1,
+    },
+    true,
+  );
+}
+function sortableHeader(label, key) {
+  const isSorted = sortBy.value === key;
+
+  return h(
+    UButton,
+    {
+      color: "neutral",
+      variant: "ghost",
+      label,
+      icon: isSorted
+        ? sortDirection.value === "asc"
+          ? "i-lucide-arrow-up-narrow-wide"
+          : "i-lucide-arrow-down-wide-narrow"
+        : "i-lucide-arrow-up-down",
+      class: "-mx-2.5",
+      onClick: () => setSort(key),
+    },
+  );
+}
+function setSort(key) {
+  updateState(
+    {
+      sort_by: key,
+      sort_direction:
+        sortBy.value === key && sortDirection.value === "asc" ? "desc" : "asc",
+      page: 1,
+    },
+    true,
+  );
+}
 function updateState(updates, fetch = false) {
   if (updates.search !== undefined) urlState.search.value = updates.search;
   if (updates.status !== undefined) urlState.status.value = updates.status;
@@ -300,6 +374,9 @@ function updateState(updates, fetch = false) {
   if (updates.date_from !== undefined) urlState.date_from.value = updates.date_from;
   if (updates.date_to !== undefined) urlState.date_to.value = updates.date_to;
   if (updates.page !== undefined) urlState.page.value = updates.page;
+  if (updates.per_page !== undefined) urlState.per_page.value = updates.per_page;
+  if (updates.sort_by !== undefined) urlState.sort_by.value = updates.sort_by;
+  if (updates.sort_direction !== undefined) urlState.sort_direction.value = updates.sort_direction;
 
   if (fetch) {
     appointments.fetchList(query());
@@ -326,104 +403,53 @@ function selectRow(_event, row) {
       </template>
     </AppPageHeader>
 
-    <label class="block max-w-xl text-sm font-medium">
-      Search appointments
-      <UInput
-        v-model="search"
-        icon="i-lucide-search"
-        placeholder="Search by client, service, status, or priority"
-        class="mt-2 w-full"
-      />
-    </label>
-    <div
-      class="grid grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:items-end sm:gap-4"
-    >
-      <UFormField label="Status">
-        <USelectMenu
-           v-model="status"
-           placeholder="All statuses"
-           :items="['Requested', 'Confirmed', 'Completed', 'Cancelled']"
-           clear
-           class="w-full sm:w-48"
-        />
-      </UFormField>
-      <UFormField label="Priority">
-        <USelectMenu
-           v-model="priority"
-           placeholder="All priorities"
-           :items="['Low', 'Medium', 'High']"
-           clear
-           class="w-full sm:w-48"
-        />
-      </UFormField>
-      <UFormField label="Client">
-        <USelectMenu
-          v-model="clientId"
-          v-model:search-term="clientSearchTerm"
-           value-key="value"
-           :items="clientOptions"
-           ignore-filter
-          placeholder="All clients"
-          :search-input="{ placeholder: 'Search clients...', variant: 'none' }"
-          clear
-          class="w-full sm:w-56"
-        />
-      </UFormField>
-      <UFormField label="Service">
-        <USelectMenu
-          v-model="serviceId"
-          v-model:search-term="serviceSearchTerm"
-           value-key="value"
-           :items="serviceOptions"
-           ignore-filter
-          placeholder="All services"
-          :search-input="{ placeholder: 'Search services...', variant: 'none' }"
-          clear
-          class="w-full sm:w-56"
-        />
-      </UFormField>
-      <UFormField label="Date range">
-        <AppDateRangePicker v-model="dateRange" class="w-full sm:w-64" />
-      </UFormField>
-      <UButton
-        v-if="status || priority || clientId || serviceId || dateRange"
-        color="neutral"
-        variant="ghost"
-        @click="clearFilters"
-        >Clear filters</UButton
-      >
-    </div>
 
-    <AppLoading
-      v-if="appointments.isLoading"
-      message="Loading appointments..."
-    />
     <AppError
-      v-else-if="appointments.error"
+      v-if="appointments.error"
       :message="appointments.error"
       :retry="true"
       @retry="appointments.fetchList(query())"
     />
-    <AppEmpty
-      v-else-if="!appointments.items.length"
-      message="No appointments found."
-      ><UButton class="mt-4" to="/appointments/create" variant="link"
-        >Create appointment</UButton
-      ></AppEmpty
-    >
 
     <div v-else class="space-y-4">
-      <div
-        class="hidden sm:block overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900 p-2"
+      <AppDataTable
+        :data="tableRows"
+        :columns="columns"
+        :on-select="selectRow"
+        v-model:search="search"
+        search-placeholder="Search by client, service, status, or priority"
+        :filter-count="Number(Boolean(status)) + Number(Boolean(priority)) + Number(Boolean(clientId)) + Number(Boolean(serviceId)) + Number(Boolean(dateRange))"
+        :current-page="appointments.pagination?.current_page || page"
+        :total="appointments.pagination?.total || 0"
+        v-model:per-page="perPage"
+        :is-loading="appointments.isLoading"
+        empty-message="No appointments found."
+        empty-icon="i-lucide-calendar-x"
+        :empty-action="{ to: '/appointments/create', label: 'Create appointment', icon: 'i-lucide-plus' }"
+        table-class="hidden sm:block"
+        @change="goToPage"
+        @clear-filters="clearFilters"
+        @filters-open="syncFilterDraft"
+        @apply-filters="applyFilters"
       >
-        <UTable
-          :data="tableRows"
-          :columns="columns"
-          :on-select="selectRow"
-          :ui="{ tr: 'cursor-pointer', separator: 'z-0' }"
-          class="min-w-full"
-        />
-      </div>
+        <template #filters>
+          <UFormField label="Status">
+            <USelectMenu v-model="draftStatus" placeholder="All statuses" :items="['Requested', 'Confirmed', 'Completed', 'Cancelled']" clear class="w-full" />
+          </UFormField>
+          <UFormField label="Priority">
+            <USelectMenu v-model="draftPriority" placeholder="All priorities" :items="['Low', 'Medium', 'High']" clear class="w-full" />
+          </UFormField>
+          <UFormField label="Client">
+            <USelectMenu v-model="draftClientId" v-model:search-term="clientSearchTerm" value-key="value" :items="clientOptions" ignore-filter placeholder="All clients" :search-input="{ placeholder: 'Search clients...', variant: 'none' }" clear class="w-full" />
+          </UFormField>
+          <UFormField label="Service">
+            <USelectMenu v-model="draftServiceId" v-model:search-term="serviceSearchTerm" value-key="value" :items="serviceOptions" ignore-filter placeholder="All services" :search-input="{ placeholder: 'Search services...', variant: 'none' }" clear class="w-full" />
+          </UFormField>
+          <UFormField label="Date range">
+            <AppDateRangePicker v-model="draftDateRange" class="w-full" />
+          </UFormField>
+        </template>
+      </AppDataTable>
 
       <div class="sm:hidden space-y-3">
         <div
@@ -502,13 +528,6 @@ function selectRow(_event, row) {
         </div>
       </div>
 
-      <AppPagination
-        :current-page="appointments.pagination?.current_page"
-        :total="appointments.pagination?.total"
-        :per-page="appointments.pagination?.per_page"
-        :is-loading="appointments.isLoading"
-        @change="goToPage"
-      />
     </div>
 
     <AppConfirm

@@ -1,14 +1,12 @@
 <script setup>
-import { computed, h, onMounted, ref } from "vue";
+import { computed, h, onMounted, ref, resolveComponent } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import AppBreadcrumbs from "../components/AppBreadcrumbs.vue";
 import AppConfirm from "../components/AppConfirm.vue";
-import AppEmpty from "../components/AppEmpty.vue";
+import AppDataTable from "../components/AppDataTable.vue";
 import AppError from "../components/AppError.vue";
-import AppLoading from "../components/AppLoading.vue";
 import AppPageHeader from "../components/AppPageHeader.vue";
-import AppPagination from "../components/AppPagination.vue";
 import ClientActiveToggle from "../components/ClientActiveToggle.vue";
 import ClientTableActions from "../components/ClientTableActions.vue";
 import { useClientStore } from "../stores/clients";
@@ -16,6 +14,7 @@ import { useDebouncedWatch } from "../composables/useDebouncedWatch";
 import { useUrlState } from "../composables/useUrlState";
 
 const clients = useClientStore();
+const UButton = resolveComponent("UButton");
 const toast = useToast();
 const router = useRouter();
 const route = useRoute();
@@ -23,6 +22,9 @@ const urlState = useUrlState({
   search: "",
   active: "",
   page: 1,
+  per_page: 10,
+  sort_by: "name",
+  sort_direction: "asc",
 });
 const search = computed({
   get: () => urlState.search.value,
@@ -36,24 +38,31 @@ const page = computed({
   get: () => urlState.page.value,
   set: (value) => updateState({ page: value }),
 });
+const perPage = computed({
+  get: () => urlState.per_page.value,
+  set: (value) => updateState({ per_page: value, page: 1 }, true),
+});
+const sortBy = computed(() => urlState.sort_by.value);
+const sortDirection = computed(() => urlState.sort_direction.value);
 const selected = ref(null);
+const draftActive = ref("");
 const rows = computed(() => clients.items);
 const columns = [
   {
     accessorKey: "name",
-    header: "Name",
+    header: () => sortableHeader("Name", "name"),
     cell: ({ row }) =>
       h("div", { class: "min-w-0 truncate" }, row.original.name),
   },
   {
     accessorKey: "email",
-    header: "Email",
+    header: () => sortableHeader("Email", "email"),
     cell: ({ row }) =>
       h("div", { class: "min-w-0 truncate break-all" }, row.original.email),
   },
   {
     accessorKey: "phone",
-    header: "Phone",
+    header: () => sortableHeader("Phone", "phone"),
     cell: ({ row }) =>
       h(
         "div",
@@ -63,7 +72,7 @@ const columns = [
   },
   {
     id: "active",
-    header: "Active",
+    header: () => sortableHeader("Active", "active"),
     cell: ({ row }) =>
       h(ClientActiveToggle, {
         modelValue: row.original.active,
@@ -116,17 +125,60 @@ async function goToPage(value) {
 function query() {
   return {
     page: page.value,
+    per_page: perPage.value,
+    sort_by: sortBy.value,
+    sort_direction: sortDirection.value,
     ...(search.value.trim() ? { search: search.value.trim() } : {}),
     ...(active.value !== "" ? { active: active.value === "true" ? 1 : 0 } : {}),
   };
 }
 function clearFilters() {
+  draftActive.value = "";
   updateState({ search: "", active: "", page: 1 }, true);
+}
+function syncFilterDraft(open) {
+  if (open) draftActive.value = active.value;
+}
+function applyFilters() {
+  updateState({ active: draftActive.value, page: 1 }, true);
+}
+function sortableHeader(label, key) {
+  const isSorted = sortBy.value === key;
+
+  return h(
+    UButton,
+    {
+      color: "neutral",
+      variant: "ghost",
+      label,
+      icon: isSorted
+        ? sortDirection.value === "asc"
+          ? "i-lucide-arrow-up-narrow-wide"
+          : "i-lucide-arrow-down-wide-narrow"
+        : "i-lucide-arrow-up-down",
+      class: "-mx-2.5",
+      onClick: () => setSort(key),
+    },
+  );
+}
+function setSort(key) {
+  updateState(
+    {
+      sort_by: key,
+      sort_direction:
+        sortBy.value === key && sortDirection.value === "asc" ? "desc" : "asc",
+      page: 1,
+    },
+    true,
+  );
 }
 function updateState(updates, fetch = false) {
   if (updates.search !== undefined) urlState.search.value = updates.search;
   if (updates.active !== undefined) urlState.active.value = updates.active;
   if (updates.page !== undefined) urlState.page.value = updates.page;
+  if (updates.per_page !== undefined) urlState.per_page.value = updates.per_page;
+  if (updates.sort_by !== undefined) urlState.sort_by.value = updates.sort_by;
+  if (updates.sort_direction !== undefined) urlState.sort_direction.value = updates.sort_direction;
 
   if (fetch) {
     clients.fetchList(query());
@@ -152,54 +204,49 @@ function selectRow(_event, row) {
         >
       </template>
     </AppPageHeader>
-    <UInput
-      v-model="search"
-      icon="i-lucide-search"
-      placeholder="Search by name, email, or phone"
-      class="w-full max-w-xl"
-    />
-    <div class="flex flex-wrap items-end gap-4">
-      <UFormField label="Status">
-         <USelectMenu
-           v-model="active"
-          placeholder="All statuses"
-          :items="[
-            { label: 'Active', value: 'true' },
-            { label: 'Inactive', value: 'false' },
-           ]"
-           clear
-           class="w-full sm:w-40"
-         />
-      </UFormField>
-      <UButton
-        v-if="search || active"
-        color="neutral"
-        variant="ghost"
-        @click="clearFilters"
-        >Clear filters</UButton
-      >
-    </div>
-    <AppLoading v-if="clients.isLoading" message="Loading clients..." />
     <AppError
-      v-else-if="clients.error"
+      v-if="clients.error"
       :message="clients.error"
       :retry="true"
       @retry="clients.fetchList(query())"
     />
-    <AppEmpty v-else-if="!clients.items.length" message="No clients found." />
 
     <div v-else class="space-y-4">
-      <div
-        class="hidden sm:block overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900 p-2"
+      <AppDataTable
+        :data="rows"
+        :columns="columns"
+        :on-select="selectRow"
+        v-model:search="search"
+        :search-placeholder="'Search by name, email, or phone'"
+        :filter-count="active ? 1 : 0"
+        :current-page="clients.pagination?.current_page || page"
+        :total="clients.pagination?.total || 0"
+        v-model:per-page="perPage"
+        :is-loading="clients.isLoading"
+        empty-message="No clients found."
+        empty-icon="i-lucide-users"
+        :empty-action="{ to: '/clients/create', label: 'Add client', icon: 'i-lucide-plus' }"
+        table-class="hidden sm:block"
+        @change="goToPage"
+        @clear-filters="clearFilters"
+        @filters-open="syncFilterDraft"
+        @apply-filters="applyFilters"
       >
-        <UTable
-          :data="rows"
-          :columns="columns"
-          :on-select="selectRow"
-          :ui="{ tr: 'cursor-pointer', separator: 'z-0' }"
-          class="min-w-full"
-        />
-      </div>
+        <template #filters>
+          <UFormField label="Status">
+            <USelectMenu
+              v-model="draftActive"
+              placeholder="All statuses"
+              :items="[
+                { label: 'Active', value: 'true' },
+                { label: 'Inactive', value: 'false' },
+              ]"
+              clear
+              class="w-full"
+            />
+          </UFormField>
+        </template>
+      </AppDataTable>
 
       <div class="sm:hidden space-y-3">
         <div
@@ -243,13 +290,6 @@ function selectRow(_event, row) {
         </div>
       </div>
 
-      <AppPagination
-        :current-page="clients.pagination?.current_page"
-        :total="clients.pagination?.total"
-        :per-page="clients.pagination?.per_page"
-        :is-loading="clients.isLoading"
-        @change="goToPage"
-      />
     </div>
 
     <AppConfirm

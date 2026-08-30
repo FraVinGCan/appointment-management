@@ -166,7 +166,7 @@ function updateState(updates, fetch = false) {
       :retry="true"
       @retry="services.fetchAll(query())"
     />
-    <AppEmpty v-else-if="!services.items.length" message="No services found." />
+    <AppEmpty v-else-if="!services.items.length" message="No services found." icon="i-lucide-briefcase-business" :action="{ to: '/services/create', label: 'Add service', icon: 'i-lucide-plus' }" />
     <div v-else class="grid gap-4 md:grid-cols-2">
       <UCard
         v-for="service in services.items"

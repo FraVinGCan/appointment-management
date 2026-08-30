@@ -1,11 +1,10 @@
 <script setup>
-import { computed, h } from "vue";
+import { computed, h, ref } from "vue";
 import { parseDate } from "@internationalized/date";
 import { RouterLink, useRouter } from "vue-router";
 
-import AppEmpty from "./AppEmpty.vue";
+import AppDataTable from "./AppDataTable.vue";
 import AppDateRangePicker from "./AppDateRangePicker.vue";
-import AppPagination from "./AppPagination.vue";
 import AppointmentTableActions from "./AppointmentTableActions.vue";
 import EnumBadge from "./EnumBadge.vue";
 import { useUrlState } from "../composables/useUrlState";
@@ -24,6 +23,9 @@ const urlState = useUrlState({
   appointment_date_from: "",
   appointment_date_to: "",
   appointment_page: 1,
+  appointment_per_page: 10,
+  appointment_sort_by: "appointment_date",
+  appointment_sort_direction: "desc",
 });
 const search = computed({
   get: () => urlState.appointment_search.value,
@@ -60,6 +62,15 @@ const page = computed({
   get: () => urlState.appointment_page.value,
   set: (value) => updateState({ appointment_page: value }),
 });
+const perPage = computed({
+  get: () => urlState.appointment_per_page.value,
+  set: (value) => updateState({ appointment_per_page: value, appointment_page: 1 }),
+});
+const sortBy = computed(() => urlState.appointment_sort_by.value);
+const sortDirection = computed(() => urlState.appointment_sort_direction.value);
+const draftStatus = ref("");
+const draftPriority = ref("");
+const draftDateRange = ref(null);
 const showClient = computed(() => props.relationship === "service");
 
 const filteredAppointments = computed(() => {
@@ -100,8 +111,17 @@ const tableRows = computed(() =>
 );
 
 const paginatedAppointments = computed(() => {
-  const start = (page.value - 1) * 10;
-  return filteredAppointments.value.slice(start, start + 10);
+  const sorted = [...filteredAppointments.value].sort((first, second) => {
+    const getValue = (appointment) => {
+      if (sortBy.value === "appointment_date") return `${appointment.appointmentDate} ${appointment.startTime}`;
+      if (sortBy.value === "related") return (showClient.value ? appointment.client?.name : appointment.service?.name) || "";
+      return appointment[sortBy.value] || "";
+    };
+    const comparison = String(getValue(first)).localeCompare(String(getValue(second)), undefined, { numeric: true });
+    return sortDirection.value === "asc" ? comparison : -comparison;
+  });
+  const start = (page.value - 1) * perPage.value;
+  return sorted.slice(start, start + perPage.value);
 });
 
 function parseDateValue(value) {
@@ -121,12 +141,52 @@ function updateState(updates) {
 }
 
 function clearFilters() {
+  draftStatus.value = "";
+  draftPriority.value = "";
+  draftDateRange.value = null;
   updateState({
     appointment_search: "",
     appointment_status: "",
     appointment_priority: "",
     appointment_date_from: "",
     appointment_date_to: "",
+    appointment_page: 1,
+  });
+}
+function syncFilterDraft(open) {
+  if (!open) return;
+
+  draftStatus.value = status.value;
+  draftPriority.value = priority.value;
+  draftDateRange.value = dateRange.value;
+}
+function applyFilters() {
+  updateState({
+    appointment_status: draftStatus.value,
+    appointment_priority: draftPriority.value,
+    appointment_date_from: draftDateRange.value?.start?.toString() || "",
+    appointment_date_to: draftDateRange.value?.end?.toString() || "",
+    appointment_page: 1,
+  });
+}
+
+function sortableHeader(label, key) {
+  const isSorted = sortBy.value === key;
+
+  return h(
+    "button",
+    {
+      type: "button",
+      class: "-mx-2.5 inline-flex items-center gap-1 rounded-md px-2.5 py-1.5 font-medium hover:bg-slate-800",
+      onClick: () => setSort(key),
+    },
+    [label, h("span", { class: "text-xs text-slate-400" }, isSorted ? (sortDirection.value === "asc" ? "↑" : "↓") : "↕")],
+  );
+}
+function setSort(key) {
+  updateState({
+    appointment_sort_by: key,
+    appointment_sort_direction: sortBy.value === key && sortDirection.value === "asc" ? "desc" : "asc",
     appointment_page: 1,
   });
 }
@@ -141,8 +201,8 @@ function selectRow(_event, row) {
 
 const columns = computed(() => [
   {
-    accessorKey: "appointment",
-    header: "Appointment",
+      accessorKey: "appointment",
+      header: () => sortableHeader("Appointment", "appointment_date"),
     cell: ({ row }) =>
       h(
         "div",
@@ -152,18 +212,18 @@ const columns = computed(() => [
   },
   {
     accessorKey: showClient.value ? "client" : "service",
-    header: showClient.value ? "Client" : "Service",
+    header: () => sortableHeader(showClient.value ? "Client" : "Service", "related"),
     cell: ({ row }) =>
       relatedLink(row),
   },
   {
     accessorKey: "status",
-    header: "Status",
+    header: () => sortableHeader("Status", "status"),
     cell: ({ row }) => h(EnumBadge, { value: row.original.status, kind: "status" }),
   },
   {
     accessorKey: "priority",
-    header: "Priority",
+    header: () => sortableHeader("Priority", "priority"),
     cell: ({ row }) => h(EnumBadge, { value: row.original.priority, kind: "priority" }),
   },
   {
@@ -224,67 +284,35 @@ function formatTime(time) {
       <slot name="actions" />
     </div>
 
-    <label class="block max-w-xl text-sm font-medium">
-      Search appointments
-      <UInput
-        v-model="search"
-        icon="i-lucide-search"
-        :placeholder="'Search by ' + (showClient ? 'client, status, or priority' : 'service, status, or priority')"
-        class="mt-2 w-full"
-      />
-    </label>
-    <div class="flex flex-wrap items-end gap-4">
-      <UFormField label="Status">
-        <USelectMenu
-          v-model="status"
-          placeholder="All statuses"
-          :items="['Requested', 'Confirmed', 'Completed', 'Cancelled']"
-          clear
-          class="w-full sm:w-48"
-        />
-      </UFormField>
-      <UFormField label="Priority">
-        <USelectMenu
-          v-model="priority"
-          placeholder="All priorities"
-          :items="['Low', 'Medium', 'High']"
-          clear
-          class="w-full sm:w-48"
-        />
-      </UFormField>
-      <UFormField label="Date range">
-        <AppDateRangePicker v-model="dateRange" class="w-full sm:w-64" />
-      </UFormField>
-      <UButton
-        v-if="search || status || priority || dateRange"
-        color="neutral"
-        variant="ghost"
-        @click="clearFilters"
-      >
-        Clear filters
-      </UButton>
-    </div>
-
-    <AppEmpty
-      v-if="!filteredAppointments.length"
-      :message="appointments.length ? 'No appointments match these filters.' : 'No related appointments found.'"
-    />
-    <div v-else class="space-y-4">
-      <div class="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900 p-2">
-        <UTable
-          :data="tableRows"
-          :columns="columns"
-          :on-select="selectRow"
-          :ui="{ tr: 'cursor-pointer', separator: 'z-0' }"
-          class="min-w-full"
-        />
-      </div>
-      <AppPagination
+    <div class="space-y-4">
+      <AppDataTable
+        :data="tableRows"
+        :columns="columns"
+        :on-select="selectRow"
+        v-model:search="search"
+        :search-placeholder="'Search by ' + (showClient ? 'client, status, or priority' : 'service, status, or priority')"
+        :filter-count="Number(Boolean(status)) + Number(Boolean(priority)) + Number(Boolean(dateRange))"
         :current-page="page"
         :total="filteredAppointments.length"
-        :per-page="10"
+        :empty-message="appointments.length ? 'No appointments match the selected filters.' : 'No appointments found.'"
+        v-model:per-page="perPage"
         @change="goToPage"
-      />
+        @clear-filters="clearFilters"
+        @filters-open="syncFilterDraft"
+        @apply-filters="applyFilters"
+      >
+        <template #filters>
+          <UFormField label="Status">
+            <USelectMenu v-model="draftStatus" placeholder="All statuses" :items="['Requested', 'Confirmed', 'Completed', 'Cancelled']" clear class="w-full" />
+          </UFormField>
+          <UFormField label="Priority">
+            <USelectMenu v-model="draftPriority" placeholder="All priorities" :items="['Low', 'Medium', 'High']" clear class="w-full" />
+          </UFormField>
+          <UFormField label="Date range">
+            <AppDateRangePicker v-model="draftDateRange" class="w-full" />
+          </UFormField>
+        </template>
+      </AppDataTable>
     </div>
   </section>
 </template>
