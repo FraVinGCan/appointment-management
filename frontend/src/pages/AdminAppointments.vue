@@ -39,7 +39,7 @@ const serviceOptions = computed(() =>
 );
 const tableRows = computed(() =>
   appointments.items.map((appointment) => ({
-    appointment: `${formatDate(appointment.appointmentDate)} ${appointment.startTime} - ${appointment.endTime}`,
+    appointment: `${formatDate(appointment.appointmentDate)} ${formatTime(appointment.startTime)} - ${formatTime(appointment.endTime)}`,
     client: appointment.client?.name || "Unknown client",
     service: appointment.service?.name || "Unknown service",
     priority: appointment.priority,

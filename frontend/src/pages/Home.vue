@@ -34,10 +34,22 @@ function formatDate(date) {
   );
 }
 
+function formatTime(time) {
+  if (!time) return "";
+
+  const [hours, minutes] = String(time).split(":").map(Number);
+  if (!Number.isInteger(hours) || !Number.isInteger(minutes)) return String(time);
+
+  return new Intl.DateTimeFormat(undefined, {
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(1970, 0, 1, hours, minutes));
+}
+
 function formatTimeRange(appointment) {
   if (!appointment.startTime || !appointment.endTime) return "Time unavailable";
 
-  return `${appointment.startTime} - ${appointment.endTime}`;
+  return `${formatTime(appointment.startTime)} - ${formatTime(appointment.endTime)}`;
 }
 
 async function signOut() {

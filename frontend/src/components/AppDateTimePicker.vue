@@ -14,6 +14,9 @@ const open = ref(false);
 const dateFormatter = new Intl.DateTimeFormat(undefined, { dateStyle: "medium" });
 
 const value = computed(() => props.modelValue || {});
+const hasValue = computed(
+  () => Boolean(value.value.date || value.value.startTime || value.value.endTime),
+);
 const label = computed(() => {
   const parts = [];
 
@@ -40,6 +43,11 @@ function formatTime(time) {
 
 function updateValue(key, nextValue) {
   emit("update:modelValue", { ...value.value, [key]: nextValue });
+}
+
+function clear() {
+  emit("update:modelValue", null);
+  open.value = false;
 }
 </script>
 
@@ -79,6 +87,14 @@ function updateValue(key, nextValue) {
               @update:model-value="updateValue('endTime', $event)"
             />
           </div>
+          <UButton
+            color="neutral"
+            variant="ghost"
+            :disabled="!hasValue"
+            @click="clear"
+          >
+            Clear date & time
+          </UButton>
         </div>
       </div>
     </template>
