@@ -168,7 +168,8 @@ async function deactivate() {
     </div>
     <AppPagination
       :current-page="services.pagination?.current_page"
-      :last-page="services.pagination?.last_page"
+      :total="services.pagination?.total"
+      :per-page="services.pagination?.per_page"
       :is-loading="services.isLoading"
       @change="goToPage"
     />

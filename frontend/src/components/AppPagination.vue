@@ -1,7 +1,8 @@
 <script setup>
 defineProps({
   currentPage: { type: Number, default: 1 },
-  lastPage: { type: Number, default: 1 },
+  total: { type: Number, default: 0 },
+  perPage: { type: Number, default: 10 },
   isLoading: { type: Boolean, default: false },
 });
 
@@ -10,27 +11,17 @@ defineEmits(["change"]);
 
 <template>
   <div
-    v-if="lastPage > 1"
-    class="flex items-center justify-between gap-3 px-3 py-4 text-sm text-slate-400 sm:flex-row"
+    v-if="total > perPage"
+    class="flex justify-center px-3 py-4"
   >
-    <UButton
-      color="neutral"
-      variant="outline"
-      size="sm"
-      :disabled="currentPage <= 1 || isLoading"
-      @click="$emit('change', currentPage - 1)"
-    >
-      Previous
-    </UButton>
-    <span class="sm:inline">Page {{ currentPage }} of {{ lastPage }}</span>
-    <UButton
-      color="neutral"
-      variant="outline"
-      size="sm"
-      :disabled="currentPage >= lastPage || isLoading"
-      @click="$emit('change', currentPage + 1)"
-    >
-      Next
-    </UButton>
+    <UPagination
+      :page="currentPage"
+      :total="total"
+      :items-per-page="perPage"
+      :disabled="isLoading"
+      show-edges
+      :ui="{ first: 'hidden', last: 'hidden' }"
+      @update:page="$emit('change', $event)"
+    />
   </div>
 </template>

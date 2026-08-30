@@ -216,7 +216,8 @@ function selectRow(_event, row) {
 
       <AppPagination
         :current-page="clients.pagination?.current_page"
-        :last-page="clients.pagination?.last_page"
+        :total="clients.pagination?.total"
+        :per-page="clients.pagination?.per_page"
         :is-loading="clients.isLoading"
         @change="page"
       />

@@ -125,7 +125,8 @@ async function cancelAppointment() {
 
       <AppPagination
         :current-page="appointments.pagination?.current_page"
-        :last-page="appointments.pagination?.last_page"
+        :total="appointments.pagination?.total"
+        :per-page="appointments.pagination?.per_page"
         :is-loading="appointments.isLoading"
         @change="goToPage"
       />
