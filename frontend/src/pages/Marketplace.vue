@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useAuthStore } from "../stores/auth";
 
 import AppError from "../components/AppError.vue";
@@ -7,13 +7,28 @@ import AppLoading from "../components/AppLoading.vue";
 import AppPagination from "../components/AppPagination.vue";
 import { useServiceStore } from "../stores/services";
 import { useDebouncedWatch } from "../composables/useDebouncedWatch";
+import { useUrlState } from "../composables/useUrlState";
 
 const services = useServiceStore();
 const auth = useAuthStore();
-const search = ref("");
-const category = ref("");
+const urlState = useUrlState({
+  search: "",
+  category: "",
+  page: 1,
+});
 const categorySearchTerm = ref("");
-const page = ref(1);
+const search = computed({
+  get: () => urlState.search.value,
+  set: (value) => updateState({ search: value, page: 1 }),
+});
+const category = computed({
+  get: () => urlState.category.value,
+  set: (value) => updateState({ category: value, page: 1 }),
+});
+const page = computed({
+  get: () => urlState.page.value,
+  set: (value) => updateState({ page: value }, true),
+});
 
 onMounted(async () => {
   if (auth.isClient) await services.fetchActiveCategories();
@@ -26,10 +41,10 @@ useDebouncedWatch(categorySearchTerm, (value) => {
   }
 });
 
-useDebouncedWatch([search, category], () => {
-  page.value = 1;
-  services.fetchActive(query());
-});
+useDebouncedWatch(
+  [() => search.value, () => category.value],
+  () => updateState({ page: 1, search: search.value, category: category.value }, true),
+);
 
 function query(currentPage = page.value) {
   return {
@@ -39,8 +54,19 @@ function query(currentPage = page.value) {
   };
 }
 async function goToPage(value) {
-  page.value = value;
-  await services.fetchActive(query());
+  updateState({ page: value }, true);
+}
+function clearFilters() {
+  updateState({ search: "", category: "", page: 1 }, true);
+}
+function updateState(updates, fetch = false) {
+  if (updates.search !== undefined) urlState.search.value = updates.search;
+  if (updates.category !== undefined) urlState.category.value = updates.category;
+  if (updates.page !== undefined) urlState.page.value = updates.page;
+
+  if (fetch) {
+    services.fetchActive(query());
+  }
 }
 </script>
 
@@ -96,6 +122,14 @@ async function goToPage(value) {
                class="w-full sm:w-48"
              />
           </UFormField>
+          <UButton
+            v-if="search || category"
+            color="neutral"
+            variant="ghost"
+            @click="clearFilters"
+          >
+            Clear filters
+          </UButton>
         </div>
 
         <div

@@ -1,10 +1,14 @@
 <script setup>
-import { computed, h, ref } from "vue";
+import { computed, h } from "vue";
+import { parseDate } from "@internationalized/date";
+import { useRouter } from "vue-router";
 
 import AppEmpty from "./AppEmpty.vue";
 import AppDateRangePicker from "./AppDateRangePicker.vue";
+import AppPagination from "./AppPagination.vue";
 import AppointmentTableActions from "./AppointmentTableActions.vue";
 import EnumBadge from "./EnumBadge.vue";
+import { useUrlState } from "../composables/useUrlState";
 
 const props = defineProps({
   appointments: { type: Array, default: () => [] },
@@ -12,10 +16,50 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["action"]);
-const search = ref("");
-const status = ref("");
-const priority = ref("");
-const dateRange = ref(null);
+const router = useRouter();
+const urlState = useUrlState({
+  appointment_search: "",
+  appointment_status: "",
+  appointment_priority: "",
+  appointment_date_from: "",
+  appointment_date_to: "",
+  appointment_page: 1,
+});
+const search = computed({
+  get: () => urlState.appointment_search.value,
+  set: (value) => updateState({ appointment_search: value, appointment_page: 1 }),
+});
+const status = computed({
+  get: () => urlState.appointment_status.value,
+  set: (value) => updateState({ appointment_status: value, appointment_page: 1 }),
+});
+const priority = computed({
+  get: () => urlState.appointment_priority.value,
+  set: (value) => updateState({ appointment_priority: value, appointment_page: 1 }),
+});
+const dateRange = computed({
+  get: () => {
+    const start = urlState.appointment_date_from.value;
+    const end = urlState.appointment_date_to.value;
+
+    if (!start) return null;
+
+    return {
+      start: parseDateValue(start),
+      end: end ? parseDateValue(end) : undefined,
+    };
+  },
+  set: (value) =>
+    updateState({
+      appointment_date_from: value?.start?.toString() || "",
+      appointment_date_to: value?.end?.toString() || "",
+      appointment_page: 1,
+    }),
+});
+const page = computed({
+  get: () => urlState.appointment_page.value,
+  set: (value) => updateState({ appointment_page: value }),
+});
 const showClient = computed(() => props.relationship === "service");
 
 const filteredAppointments = computed(() => {
@@ -43,7 +87,7 @@ const filteredAppointments = computed(() => {
 });
 
 const tableRows = computed(() =>
-  filteredAppointments.value.map((appointment) => ({
+  paginatedAppointments.value.map((appointment) => ({
     appointment: `${formatDate(appointment.appointmentDate)} ${formatTime(appointment.startTime)} - ${formatTime(appointment.endTime)}`,
     client: appointment.client?.name || "Unknown client",
     service: appointment.service?.name || "Unknown service",
@@ -52,6 +96,46 @@ const tableRows = computed(() =>
     id: appointment.id,
   })),
 );
+
+const paginatedAppointments = computed(() => {
+  const start = (page.value - 1) * 10;
+  return filteredAppointments.value.slice(start, start + 10);
+});
+
+function parseDateValue(value) {
+  if (!value || typeof value !== "string") return undefined;
+
+  try {
+    return parseDate(value);
+  } catch {
+    return undefined;
+  }
+}
+
+function updateState(updates) {
+  Object.entries(updates).forEach(([key, value]) => {
+    urlState[key].value = value;
+  });
+}
+
+function clearFilters() {
+  updateState({
+    appointment_search: "",
+    appointment_status: "",
+    appointment_priority: "",
+    appointment_date_from: "",
+    appointment_date_to: "",
+    appointment_page: 1,
+  });
+}
+
+function goToPage(value) {
+  page.value = value;
+}
+
+function selectRow(_event, row) {
+  router.push(`/appointments/${row.original.id}`);
+}
 
 const columns = computed(() => [
   {
@@ -120,7 +204,7 @@ function formatTime(time) {
       <UInput
         v-model="search"
         icon="i-lucide-search"
-        :placeholder="showClient ? 'Client, status, or priority' : 'Service, status, or priority'"
+        :placeholder="'Search by ' + (showClient ? 'client, status, or priority' : 'service, status, or priority')"
         class="mt-2 w-full"
       />
     </label>
@@ -150,7 +234,7 @@ function formatTime(time) {
         v-if="search || status || priority || dateRange"
         color="neutral"
         variant="ghost"
-        @click="search = ''; status = ''; priority = ''; dateRange = null"
+        @click="clearFilters"
       >
         Clear filters
       </UButton>
@@ -160,12 +244,21 @@ function formatTime(time) {
       v-if="!filteredAppointments.length"
       :message="appointments.length ? 'No appointments match these filters.' : 'No related appointments found.'"
     />
-    <div v-else class="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900 p-2">
-      <UTable
-        :data="tableRows"
-        :columns="columns"
-        :ui="{ separator: 'z-0' }"
-        class="min-w-full"
+    <div v-else class="space-y-4">
+      <div class="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900 p-2">
+        <UTable
+          :data="tableRows"
+          :columns="columns"
+          :on-select="selectRow"
+          :ui="{ tr: 'cursor-pointer', separator: 'z-0' }"
+          class="min-w-full"
+        />
+      </div>
+      <AppPagination
+        :current-page="page"
+        :total="filteredAppointments.length"
+        :per-page="10"
+        @change="goToPage"
       />
     </div>
   </section>

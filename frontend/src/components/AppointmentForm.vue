@@ -203,7 +203,6 @@ async function submit() {
             name="appointmentDateTime"
             required
             :error="dateTimeError"
-            class="sm:col-span-2"
           ><AppDateTimePicker v-model="appointmentDateTime" /></UFormField>
         </div>
         <UFormField

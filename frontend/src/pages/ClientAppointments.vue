@@ -1,5 +1,6 @@
 <script setup>
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
+import { parseDate } from "@internationalized/date";
 
 import AppConfirm from "../components/AppConfirm.vue";
 import AppDateRangePicker from "../components/AppDateRangePicker.vue";
@@ -10,17 +11,66 @@ import AppPageHeader from "../components/AppPageHeader.vue";
 import AppPagination from "../components/AppPagination.vue";
 import { useAppointmentStore } from "../stores/appointments";
 import { useDebouncedWatch } from "../composables/useDebouncedWatch";
+import { useUrlState } from "../composables/useUrlState";
 
 const appointments = useAppointmentStore();
 const toast = useToast();
 const appointmentToCancel = ref(null);
-const search = ref("");
-const status = ref("");
-const dateRange = ref(null);
+const urlState = useUrlState({
+  search: "",
+  status: "",
+  date_from: "",
+  date_to: "",
+  page: 1,
+});
 
-onMounted(() => appointments.fetchClientList());
+const search = computed({
+  get: () => urlState.search.value,
+  set: (value) => updateState({ search: value, page: 1 }),
+});
+const status = computed({
+  get: () => urlState.status.value,
+  set: (value) => updateState({ status: value, page: 1 }),
+});
+const dateRange = computed({
+  get: () => {
+    const start = urlState.date_from.value;
+    const end = urlState.date_to.value;
 
-useDebouncedWatch([search, status, dateRange], () => appointments.fetchClientList(query(1)));
+    if (!start) return null;
+
+    return {
+      start: parseDateValue(start),
+      end: end ? parseDateValue(end) : undefined,
+    };
+  },
+  set: (value) => {
+    const start = value?.start ? value.start.toString() : "";
+    const end = value?.end ? value.end.toString() : "";
+    updateState({ date_from: start, date_to: end, page: 1 });
+  },
+});
+const page = computed({
+  get: () => urlState.page.value,
+  set: (value) => updateState({ page: value }, true),
+});
+
+onMounted(() => appointments.fetchClientList(query()));
+
+useDebouncedWatch(
+  [() => search.value, () => status.value, () => dateRange.value],
+  () => updateState({ page: 1 }, true),
+);
+
+function parseDateValue(value) {
+  if (!value || typeof value !== "string") return undefined;
+
+  try {
+    return parseDate(value);
+  } catch {
+    return undefined;
+  }
+}
 
 function canCancel(appointment) {
   return ["Requested", "Confirmed"].includes(appointment.status);
@@ -44,18 +94,43 @@ function formatTime(time) {
   }).format(new Date(1970, 0, 1, hours, minutes));
 }
 
-async function goToPage(page) {
-  await appointments.fetchClientList(query(page));
+async function goToPage(value) {
+  updateState({ page: value }, true);
 }
 
-function query(page) {
+function query(pageValue = page.value) {
   return {
-    page,
+    page: pageValue,
     ...(search.value.trim() ? { search: search.value.trim() } : {}),
     ...(status.value ? { status: status.value } : {}),
-    ...(dateRange.value?.start ? { date_from: dateRange.value.start.toString() } : {}),
-    ...(dateRange.value?.end ? { date_to: dateRange.value.end.toString() } : {}),
+    ...(urlState.date_from.value ? { date_from: urlState.date_from.value } : {}),
+    ...(urlState.date_to.value ? { date_to: urlState.date_to.value } : {}),
   };
+}
+
+function clearFilters() {
+  updateState(
+    {
+      search: "",
+      status: "",
+      date_from: "",
+      date_to: "",
+      page: 1,
+    },
+    true,
+  );
+}
+
+function updateState(updates, fetch = false) {
+  if (updates.search !== undefined) urlState.search.value = updates.search;
+  if (updates.status !== undefined) urlState.status.value = updates.status;
+  if (updates.date_from !== undefined) urlState.date_from.value = updates.date_from;
+  if (updates.date_to !== undefined) urlState.date_to.value = updates.date_to;
+  if (updates.page !== undefined) urlState.page.value = updates.page;
+
+  if (fetch) {
+    appointments.fetchClientList(query());
+  }
 }
 
 async function cancelAppointment() {
@@ -103,7 +178,7 @@ async function cancelAppointment() {
       <UFormField label="Date range">
         <AppDateRangePicker v-model="dateRange" class="w-full sm:w-64" />
       </UFormField>
-      <UButton v-if="search || status || dateRange" color="neutral" variant="ghost" @click="search = ''; status = ''; dateRange = null">Clear filters</UButton>
+      <UButton v-if="search || status || dateRange" color="neutral" variant="ghost" @click="clearFilters">Clear filters</UButton>
     </div>
 
     <AppLoading
@@ -114,7 +189,7 @@ async function cancelAppointment() {
       v-else-if="appointments.error"
       :message="appointments.error"
       :retry="true"
-      @retry="appointments.fetchClientList(query(appointments.pagination?.current_page || 1))"
+      @retry="appointments.fetchClientList(query())"
     />
     <AppEmpty
       v-else-if="!appointments.items.length"

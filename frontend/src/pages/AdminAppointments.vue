@@ -1,5 +1,6 @@
 <script setup>
 import { computed, h, onMounted, ref } from "vue";
+import { parseDate } from "@internationalized/date";
 import { useRouter } from "vue-router";
 
 import AppConfirm from "../components/AppConfirm.vue";
@@ -16,18 +17,67 @@ import { useAppointmentStore } from "../stores/appointments";
 import { useClientStore } from "../stores/clients";
 import { useServiceStore } from "../stores/services";
 import { useDebouncedWatch } from "../composables/useDebouncedWatch";
+import { useUrlState } from "../composables/useUrlState";
 
 const appointments = useAppointmentStore();
 const clients = useClientStore();
 const services = useServiceStore();
 const toast = useToast();
 const router = useRouter();
-const search = ref("");
-const status = ref("");
-const priority = ref("");
-const clientId = ref("");
-const serviceId = ref("");
-const dateRange = ref(null);
+const urlState = useUrlState({
+  search: "",
+  status: "",
+  priority: "",
+  client_id: "",
+  service_id: "",
+  date_from: "",
+  date_to: "",
+  page: 1,
+});
+
+const search = computed({
+  get: () => urlState.search.value,
+  set: (value) => updateState({ search: value, page: 1 }),
+});
+const status = computed({
+  get: () => urlState.status.value,
+  set: (value) => updateState({ status: value, page: 1 }),
+});
+const priority = computed({
+  get: () => urlState.priority.value,
+  set: (value) => updateState({ priority: value, page: 1 }),
+});
+const clientId = computed({
+  get: () => urlState.client_id.value,
+  set: (value) => updateState({ client_id: value, page: 1 }),
+});
+const serviceId = computed({
+  get: () => urlState.service_id.value,
+  set: (value) => updateState({ service_id: value, page: 1 }),
+});
+const dateRange = computed({
+  get: () => {
+    const start = urlState.date_from.value;
+    const end = urlState.date_to.value;
+
+    if (!start) return null;
+
+    return {
+      start: parseDateValue(start),
+      end: end ? parseDateValue(end) : undefined,
+    };
+  },
+  set: (value) => {
+    const start = value?.start ? value.start.toString() : "";
+    const end = value?.end ? value.end.toString() : "";
+    updateState({ date_from: start, date_to: end, page: 1 });
+  },
+});
+const page = computed({
+  get: () => urlState.page.value,
+  set: (value) => updateState({ page: value }, true),
+});
+
 const clientSearchTerm = ref("");
 const serviceSearchTerm = ref("");
 const pendingAction = ref(null);
@@ -94,14 +144,15 @@ const columns = [
 
 onMounted(async () => {
   await Promise.all([
-    appointments.fetchList(),
+    appointments.fetchList(query()),
     clients.fetchList({ per_page: 10 }),
     services.fetchAll({ limit: 10 }),
   ]);
 });
 
-useDebouncedWatch([search, status, priority, clientId, serviceId, dateRange], () =>
-  appointments.fetchList(query(1)),
+useDebouncedWatch(
+  [() => search.value, () => status.value, () => priority.value, () => clientId.value, () => serviceId.value, () => dateRange.value],
+  () => updateState({ page: 1 }, true),
 );
 useDebouncedWatch(clientSearchTerm, (value) =>
   clients.fetchList({ search: value.trim(), per_page: 10 }),
@@ -110,6 +161,15 @@ useDebouncedWatch(serviceSearchTerm, (value) =>
   services.fetchAll(value.trim() ? { search: value.trim(), limit: 10 } : { limit: 10 }),
 );
 
+function parseDateValue(value) {
+  if (!value || typeof value !== "string") return undefined;
+
+  try {
+    return parseDate(value);
+  } catch {
+    return undefined;
+  }
+}
 function canConfirm(appointment) {
   return appointment.status === "Requested";
 }
@@ -175,20 +235,49 @@ function formatTime(time) {
     minute: "2-digit",
   }).format(new Date(1970, 0, 1, hours, minutes));
 }
-function query(page) {
+function query(pageValue = page.value) {
   return {
-    page,
+    page: pageValue,
     ...(search.value ? { search: search.value } : {}),
     ...(status.value ? { status: status.value } : {}),
     ...(priority.value ? { priority: priority.value } : {}),
     ...(clientId.value ? { client_id: clientId.value } : {}),
     ...(serviceId.value ? { service_id: serviceId.value } : {}),
-    ...(dateRange.value?.start ? { date_from: dateRange.value.start.toString() } : {}),
-    ...(dateRange.value?.end ? { date_to: dateRange.value.end.toString() } : {}),
+    ...(urlState.date_from.value ? { date_from: urlState.date_from.value } : {}),
+    ...(urlState.date_to.value ? { date_to: urlState.date_to.value } : {}),
   };
 }
-async function goToPage(page) {
-  await appointments.fetchList(query(page));
+async function goToPage(value) {
+  updateState({ page: value }, true);
+}
+function clearFilters() {
+  updateState(
+    {
+      search: "",
+      status: "",
+      priority: "",
+      client_id: "",
+      service_id: "",
+      date_from: "",
+      date_to: "",
+      page: 1,
+    },
+    true,
+  );
+}
+function updateState(updates, fetch = false) {
+  if (updates.search !== undefined) urlState.search.value = updates.search;
+  if (updates.status !== undefined) urlState.status.value = updates.status;
+  if (updates.priority !== undefined) urlState.priority.value = updates.priority;
+  if (updates.client_id !== undefined) urlState.client_id.value = updates.client_id;
+  if (updates.service_id !== undefined) urlState.service_id.value = updates.service_id;
+  if (updates.date_from !== undefined) urlState.date_from.value = updates.date_from;
+  if (updates.date_to !== undefined) urlState.date_to.value = updates.date_to;
+  if (updates.page !== undefined) urlState.page.value = updates.page;
+
+  if (fetch) {
+    appointments.fetchList(query());
+  }
 }
 function selectRow(_event, row) {
   router.push(`/appointments/${row.original.id}`);
@@ -216,7 +305,7 @@ function selectRow(_event, row) {
       <UInput
         v-model="search"
         icon="i-lucide-search"
-        placeholder="Client, service, status, or priority"
+        placeholder="Search by client, service, status, or priority"
         class="mt-2 w-full"
       />
     </label>
@@ -274,13 +363,7 @@ function selectRow(_event, row) {
         v-if="status || priority || clientId || serviceId || dateRange"
         color="neutral"
         variant="ghost"
-        @click="
-          status = '';
-          priority = '';
-          clientId = '';
-          serviceId = '';
-          dateRange = null;
-        "
+        @click="clearFilters"
         >Clear filters</UButton
       >
     </div>
@@ -293,11 +376,7 @@ function selectRow(_event, row) {
       v-else-if="appointments.error"
       :message="appointments.error"
       :retry="true"
-      @retry="
-        appointments.fetchList(
-          query(appointments.pagination?.current_page || 1),
-        )
-      "
+      @retry="appointments.fetchList(query())"
     />
     <AppEmpty
       v-else-if="!appointments.items.length"

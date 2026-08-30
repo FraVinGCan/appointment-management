@@ -1,6 +1,6 @@
 <script setup>
 import { computed, h, onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 
 import AppBreadcrumbs from "../components/AppBreadcrumbs.vue";
 import AppConfirm from "../components/AppConfirm.vue";
@@ -13,12 +13,29 @@ import ClientActiveToggle from "../components/ClientActiveToggle.vue";
 import ClientTableActions from "../components/ClientTableActions.vue";
 import { useClientStore } from "../stores/clients";
 import { useDebouncedWatch } from "../composables/useDebouncedWatch";
+import { useUrlState } from "../composables/useUrlState";
 
 const clients = useClientStore();
 const toast = useToast();
 const router = useRouter();
-const search = ref("");
-const active = ref("");
+const route = useRoute();
+const urlState = useUrlState({
+  search: "",
+  active: "",
+  page: 1,
+});
+const search = computed({
+  get: () => urlState.search.value,
+  set: (value) => updateState({ search: value, page: 1 }),
+});
+const active = computed({
+  get: () => urlState.active.value,
+  set: (value) => updateState({ active: value, page: 1 }),
+});
+const page = computed({
+  get: () => urlState.page.value,
+  set: (value) => updateState({ page: value }),
+});
 const selected = ref(null);
 const rows = computed(() => clients.items);
 const columns = [
@@ -60,8 +77,14 @@ const columns = [
     cell: ({ row }) => h(ClientTableActions, { id: row.original.id }),
   },
 ];
-onMounted(() => clients.fetchList());
-useDebouncedWatch([search, active], () => clients.fetchList(query(1)));
+
+onMounted(() => clients.fetchList(query()));
+
+useDebouncedWatch(
+  [() => search.value, () => active.value],
+  () => updateState({ page: 1, search: search.value, active: active.value }, true),
+);
+
 const pendingActive = ref(true);
 async function toggleActive(client, value) {
   if (!value) {
@@ -87,15 +110,27 @@ async function updateActive(client, value) {
     /* Store state is rendered below. */
   }
 }
-async function page(value) {
-  await clients.fetchList(query(value));
+async function goToPage(value) {
+  updateState({ page: value }, true);
 }
-function query(page) {
+function query() {
   return {
-    page,
+    page: page.value,
     ...(search.value.trim() ? { search: search.value.trim() } : {}),
     ...(active.value !== "" ? { active: active.value === "true" ? 1 : 0 } : {}),
   };
+}
+function clearFilters() {
+  updateState({ search: "", active: "", page: 1 }, true);
+}
+function updateState(updates, fetch = false) {
+  if (updates.search !== undefined) urlState.search.value = updates.search;
+  if (updates.active !== undefined) urlState.active.value = updates.active;
+  if (updates.page !== undefined) urlState.page.value = updates.page;
+
+  if (fetch) {
+    clients.fetchList(query());
+  }
 }
 function selectRow(_event, row) {
   router.push(`/clients/${row.original.id}`);
@@ -140,7 +175,7 @@ function selectRow(_event, row) {
         v-if="search || active"
         color="neutral"
         variant="ghost"
-        @click="search = ''; active = ''"
+        @click="clearFilters"
         >Clear filters</UButton
       >
     </div>
@@ -149,7 +184,7 @@ function selectRow(_event, row) {
       v-else-if="clients.error"
       :message="clients.error"
       :retry="true"
-      @retry="clients.fetchList()"
+      @retry="clients.fetchList(query())"
     />
     <AppEmpty v-else-if="!clients.items.length" message="No clients found." />
 
@@ -213,7 +248,7 @@ function selectRow(_event, row) {
         :total="clients.pagination?.total"
         :per-page="clients.pagination?.per_page"
         :is-loading="clients.isLoading"
-        @change="page"
+        @change="goToPage"
       />
     </div>
 

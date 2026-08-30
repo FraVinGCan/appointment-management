@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import AppConfirm from "../components/AppConfirm.vue";
 import AppEmpty from "../components/AppEmpty.vue";
 import AppError from "../components/AppError.vue";
@@ -8,14 +8,34 @@ import AppPagination from "../components/AppPagination.vue";
 import AppPageHeader from "../components/AppPageHeader.vue";
 import { useServiceStore } from "../stores/services";
 import { useDebouncedWatch } from "../composables/useDebouncedWatch";
+import { useUrlState } from "../composables/useUrlState";
+
 const services = useServiceStore();
 const toast = useToast();
+const urlState = useUrlState({
+  search: "",
+  category: "",
+  active: "",
+  page: 1,
+});
 const selected = ref(null);
-const search = ref("");
-const category = ref("");
-const active = ref("");
 const categorySearchTerm = ref("");
-const page = ref(1);
+const search = computed({
+  get: () => urlState.search.value,
+  set: (value) => updateState({ search: value, page: 1 }),
+});
+const category = computed({
+  get: () => urlState.category.value,
+  set: (value) => updateState({ category: value, page: 1 }),
+});
+const active = computed({
+  get: () => urlState.active.value,
+  set: (value) => updateState({ active: value, page: 1 }),
+});
+const page = computed({
+  get: () => urlState.page.value,
+  set: (value) => updateState({ page: value }, true),
+});
 
 onMounted(async () => {
   await Promise.all([services.fetchCategories(), services.fetchAll(query())]);
@@ -25,10 +45,10 @@ useDebouncedWatch(categorySearchTerm, (value) =>
   services.fetchCategories(value.trim() ? { search: value.trim() } : {}),
 );
 
-useDebouncedWatch([search, category, active], () => {
-  page.value = 1;
-  services.fetchAll(query());
-});
+useDebouncedWatch(
+  [() => search.value, () => category.value, () => active.value],
+  () => updateState({ page: 1, search: search.value, category: category.value, active: active.value }, true),
+);
 
 function query(currentPage = page.value) {
   return {
@@ -39,8 +59,7 @@ function query(currentPage = page.value) {
   };
 }
 async function goToPage(value) {
-  page.value = value;
-  await services.fetchAll(query());
+  updateState({ page: value }, true);
 }
 async function deactivate() {
   try {
@@ -67,6 +86,19 @@ async function activate(service) {
     });
   } catch {
     /* Store state is rendered below. */
+  }
+}
+function clearFilters() {
+  updateState({ search: "", category: "", active: "", page: 1 }, true);
+}
+function updateState(updates, fetch = false) {
+  if (updates.search !== undefined) urlState.search.value = updates.search;
+  if (updates.category !== undefined) urlState.category.value = updates.category;
+  if (updates.active !== undefined) urlState.active.value = updates.active;
+  if (updates.page !== undefined) urlState.page.value = updates.page;
+
+  if (fetch) {
+    services.fetchAll(query());
   }
 }
 </script>
@@ -123,7 +155,7 @@ async function activate(service) {
         v-if="search || category || active"
         color="neutral"
         variant="ghost"
-        @click="search = ''; category = ''; active = ''"
+        @click="clearFilters"
         >Clear filters</UButton
       >
     </div>
