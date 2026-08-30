@@ -14,6 +14,7 @@ export function messageForStatus(status) {
   return (
     {
       401: "Your session has expired. Please sign in again.",
+      429: "Too many requests. Try again later.",
       404: "The requested resource was not found.",
       409: "This action cannot be completed right now.",
       403: "You do not have permission to perform this action.",
@@ -25,6 +26,7 @@ export function messageForStatus(status) {
 
 export function errorCategory(status) {
   if (status === 401) return "authentication";
+  if (status === 429) return "rate-limit";
   if (status === 404) return "not-found";
   if (status === 409) return "conflict";
   if (status === 422) return "validation";

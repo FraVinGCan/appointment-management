@@ -8,14 +8,16 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ServiceController;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/login', [AuthController::class, 'login']);
-Route::post('/client/register', [AuthController::class, 'registerClient']);
-Route::get('/services', [ServiceController::class, 'index']);
-Route::get('/services/categories', [ServiceController::class, 'categories']);
-Route::get('/services/{service}', [ServiceController::class, 'show']);
-Route::get('/user', [AuthController::class, 'user']);
+Route::middleware('throttle:public')->group(function (): void {
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login');
+    Route::post('/client/register', [AuthController::class, 'registerClient'])->middleware('throttle:register');
+    Route::get('/services', [ServiceController::class, 'index']);
+    Route::get('/services/categories', [ServiceController::class, 'categories']);
+    Route::get('/services/{service}', [ServiceController::class, 'show']);
+    Route::get('/user', [AuthController::class, 'user']);
+});
 
-Route::middleware('auth:sanctum')->group(function (): void {
+Route::middleware(['auth:sanctum', 'throttle:authenticated'])->group(function (): void {
     Route::post('/logout', [AuthController::class, 'logout']);
 
     Route::middleware('admin')->group(function (): void {
@@ -35,7 +37,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
     });
 
     Route::middleware('client')->group(function (): void {
-        Route::post('/booking-requests', [ClientAppointmentController::class, 'store']);
+        Route::post('/booking-requests', [ClientAppointmentController::class, 'store'])->middleware('throttle:booking');
         Route::get('/client/dashboard', [ClientAppointmentController::class, 'dashboard']);
         Route::get('/client/appointments', [ClientAppointmentController::class, 'index']);
         Route::patch('/client/appointments/{appointment}/cancel', [ClientAppointmentController::class, 'cancel']);
