@@ -1,6 +1,7 @@
 <script setup>
 import { CalendarDate, Time } from "@internationalized/date";
 import { computed, onMounted, reactive, ref } from "vue";
+import { useRoute } from "vue-router";
 
 import AppDatePicker from "./AppDatePicker.vue";
 import AppError from "./AppError.vue";
@@ -8,10 +9,13 @@ import AppLoading from "./AppLoading.vue";
 import { useAppointmentStore } from "../stores/appointments";
 import { useClientStore } from "../stores/clients";
 import { useServiceStore } from "../stores/services";
+import * as clientService from "../services/clientService";
+import * as serviceApi from "../services/serviceService";
 import { useDebouncedWatch } from "../composables/useDebouncedWatch";
 
 const props = defineProps({ appointment: { type: Object, default: null } });
 const emit = defineEmits(["saved"]);
+const route = useRoute();
 const appointments = useAppointmentStore();
 const clients = useClientStore();
 const services = useServiceStore();
@@ -53,10 +57,26 @@ onMounted(async () => {
       appointmentDate: new CalendarDate(year, month, day),
       startTime: toTime(props.appointment.startTime),
       endTime: toTime(props.appointment.endTime),
-      notes: props.appointment.notes || "",
-    });
+       notes: props.appointment.notes || "",
+      });
+    return;
   }
+
+  const clientId = String(route.query.clientId || "");
+  const serviceId = String(route.query.serviceId || "");
+  await Promise.all([
+    addSelectedOption(clientId, clients.items, clientService.get),
+    addSelectedOption(serviceId, services.items, serviceApi.get),
+  ]);
+  Object.assign(form, { clientId, serviceId });
 });
+
+async function addSelectedOption(id, options, fetchOption) {
+  if (!id || options.some((option) => String(option.id) === id)) return;
+
+  const option = await fetchOption(id);
+  if (option) options.push(option);
+}
 
 useDebouncedWatch(clientSearchTerm, (value) =>
   clients.fetchList({ search: value.trim(), per_page: 10 }),

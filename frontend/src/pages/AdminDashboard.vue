@@ -303,7 +303,7 @@ function selectRow(_event, row) {
               :data="upcomingRows"
               :columns="columns"
               :on-select="selectRow"
-              :ui="{ tr: 'cursor-pointer' }"
+              :ui="{ tr: 'cursor-pointer', separator: 'z-0' }"
               class="min-w-full"
             />
           </div>

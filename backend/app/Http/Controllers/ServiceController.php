@@ -59,7 +59,12 @@ class ServiceController extends Controller
         }
 
         if ($request->user()?->isAdmin()) {
-            $service->load('appointments');
+            $service->load([
+                'appointments' => fn ($query) => $query
+                    ->with('client.user')
+                    ->orderByDesc('appointment_date')
+                    ->orderByDesc('start_time'),
+            ]);
         }
 
         return new ServiceResource($service);

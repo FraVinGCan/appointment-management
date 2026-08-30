@@ -55,6 +55,28 @@ test('admins can create, view, update, search, paginate, and delete appointments
     $this->assertDatabaseMissing('appointments', ['id' => $appointmentId]);
 });
 
+test('admin detail responses include related appointments for clients and services', function () {
+    $admin = adminUser();
+    $client = Client::factory()->create(['name' => 'Maria Santos']);
+    $service = Service::factory()->create(['name' => 'Initial Consultation']);
+    $appointment = Appointment::factory()->create([
+        'client_id' => $client->id,
+        'service_id' => $service->id,
+    ]);
+
+    $this->actingAs($admin)
+        ->getJson('/api/clients/'.$client->id)
+        ->assertOk()
+        ->assertJsonPath('data.appointments.0.id', $appointment->id)
+        ->assertJsonPath('data.appointments.0.service.name', $service->name);
+
+    $this->actingAs($admin)
+        ->getJson('/api/services/'.$service->id)
+        ->assertOk()
+        ->assertJsonPath('data.appointments.0.id', $appointment->id)
+        ->assertJsonPath('data.appointments.0.client.name', $client->name);
+});
+
 test('appointment validation rejects status, invalid times, and overlapping confirmed bookings', function () {
     $admin = adminUser();
     $client = Client::factory()->create();

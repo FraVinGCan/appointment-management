@@ -33,7 +33,13 @@ class ClientController extends Controller
     {
         $this->authorize('view', $client);
 
-        return new ClientResource($client->load('user'));
+        return new ClientResource($client->load([
+            'user',
+            'appointments' => fn ($query) => $query
+                ->with('service')
+                ->orderByDesc('appointment_date')
+                ->orderByDesc('start_time'),
+        ]));
     }
 
     public function store(StoreClientRequest $request): JsonResponse

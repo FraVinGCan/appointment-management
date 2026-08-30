@@ -19,6 +19,7 @@ declare module 'vue' {
     AppLoading: typeof import('./src/components/AppLoading.vue')['default']
     AppNotFound: typeof import('./src/components/AppNotFound.vue')['default']
     AppointmentForm: typeof import('./src/components/AppointmentForm.vue')['default']
+    AppointmentRelationshipManager: typeof import('./src/components/AppointmentRelationshipManager.vue')['default']
     AppointmentTableActions: typeof import('./src/components/AppointmentTableActions.vue')['default']
     AppPageHeader: typeof import('./src/components/AppPageHeader.vue')['default']
     AppPagination: typeof import('./src/components/AppPagination.vue')['default']
