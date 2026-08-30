@@ -74,14 +74,14 @@ function clear() {
 
         <div class="grid gap-3 border-t border-(--ui-border) pt-4">
           <div class="grid gap-1.5">
-            <span class="text-sm font-medium text-highlighted">Start time</span>
+            <span class="text-sm font-medium text-highlighted">Start time <span class="text-error">*</span></span>
             <AppTimePicker
               :model-value="value.startTime"
               @update:model-value="updateValue('startTime', $event)"
             />
           </div>
           <div class="grid gap-1.5">
-            <span class="text-sm font-medium text-highlighted">End time</span>
+            <span class="text-sm font-medium text-highlighted">End time <span class="text-error">*</span></span>
             <AppTimePicker
               :model-value="value.endTime"
               @update:model-value="updateValue('endTime', $event)"
