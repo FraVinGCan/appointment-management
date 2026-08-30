@@ -31,6 +31,16 @@ test('invalid credentials return unauthorized', function () {
         ->assertJsonPath('message', 'The provided credentials are incorrect.');
 });
 
+test('inactive clients cannot log in', function () {
+    $client = Client::factory()->create(['active' => false]);
+
+    $this->postJson('/api/login', ['email' => $client->user->email, 'password' => 'password'])
+        ->assertUnauthorized()
+        ->assertJsonPath('message', 'The provided credentials are incorrect.');
+
+    $this->assertGuest('web');
+});
+
 test('a client can register with a linked profile and is logged in', function () {
     $response = $this->postJson('/api/client/register', [
         'name' => 'New Client',
@@ -58,7 +68,7 @@ test('client registration rejects duplicate email addresses', function () {
 });
 
 test('authenticated users can log out', function () {
-    $user = User::factory()->create(['password' => 'password']);
+    $user = Client::factory()->create()->user;
 
     $this->postJson('/api/login', ['email' => $user->email, 'password' => 'password'])->assertOk();
     $this->postJson('/api/logout')->assertOk();

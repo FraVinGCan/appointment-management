@@ -44,6 +44,11 @@ export async function listClient(params = {}) {
   return data;
 }
 
+export async function getClientDashboard() {
+  const { data } = await api.get("/client/dashboard");
+  return data;
+}
+
 export async function createBooking(payload) {
   const { data } = await api.post("/booking-requests", payload);
   return data.data;

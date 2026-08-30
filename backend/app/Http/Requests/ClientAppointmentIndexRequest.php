@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\AppointmentStatus;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ClientAppointmentIndexRequest extends FormRequest
 {
@@ -18,6 +20,8 @@ class ClientAppointmentIndexRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'search' => ['nullable', 'string', 'max:255'],
+            'status' => ['nullable', Rule::enum(AppointmentStatus::class)],
             'page' => ['nullable', 'integer', 'min:1'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ];

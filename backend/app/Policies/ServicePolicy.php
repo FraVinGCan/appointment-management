@@ -38,4 +38,12 @@ class ServicePolicy
     {
         return $user->isAdmin();
     }
+
+    /**
+     * Only admins may activate services.
+     */
+    public function activate(User $user, Service $service): bool
+    {
+        return $user->isAdmin();
+    }
 }

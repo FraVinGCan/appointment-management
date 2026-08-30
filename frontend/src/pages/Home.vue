@@ -15,40 +15,16 @@ const appointments = useAppointmentStore();
 const router = useRouter();
 
 onMounted(() => {
-  if (!auth.isAdmin) appointments.fetchClientList({ per_page: 100 });
+  if (!auth.isAdmin) appointments.fetchClientDashboard();
 });
 
 const pendingAppointments = computed(
-  () => appointments.items.filter(({ status }) => status === "Requested").length,
+  () => appointments.clientDashboard?.pending || 0,
 );
 const completedAppointments = computed(
-  () => appointments.items.filter(({ status }) => status === "Completed").length,
+  () => appointments.clientDashboard?.completed || 0,
 );
-const upcomingAppointments = computed(() =>
-  appointments.items
-    .filter(
-      ({ status, appointmentDate, startTime }) =>
-        ["Requested", "Confirmed"].includes(status) &&
-        appointmentDate &&
-        `${appointmentDate}T${startTime || "00:00"}` >= toLocalDateTime(),
-    )
-    .sort((first, second) => appointmentDateTime(first).localeCompare(appointmentDateTime(second)))
-    .slice(0, 3),
-);
-
-function toLocalDateTime() {
-  const now = new Date();
-  const date = [now.getFullYear(), now.getMonth() + 1, now.getDate()]
-    .map((part, index) => (index ? String(part).padStart(2, "0") : part))
-    .join("-");
-  const time = now.toTimeString().slice(0, 5);
-
-  return `${date}T${time}`;
-}
-
-function appointmentDateTime(appointment) {
-  return `${appointment.appointmentDate}T${appointment.startTime || "00:00"}`;
-}
+const upcomingAppointments = computed(() => appointments.clientDashboard?.upcoming || []);
 
 function formatDate(date) {
   if (!date) return "Date unavailable";
@@ -107,7 +83,7 @@ async function signOut() {
       v-else-if="appointments.error"
       :message="appointments.error"
       :retry="true"
-      @retry="appointments.fetchClientList({ per_page: 100 })"
+      @retry="appointments.fetchClientDashboard()"
     />
     <template v-else>
       <div class="grid gap-4 sm:grid-cols-3">

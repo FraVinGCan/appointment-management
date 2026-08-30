@@ -1,5 +1,5 @@
 <script setup>
-import { computed, h, onMounted, ref, watch } from "vue";
+import { computed, h, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
 import AppBreadcrumbs from "../components/AppBreadcrumbs.vue";
@@ -12,6 +12,7 @@ import AppPagination from "../components/AppPagination.vue";
 import ClientActiveToggle from "../components/ClientActiveToggle.vue";
 import ClientTableActions from "../components/ClientTableActions.vue";
 import { useClientStore } from "../stores/clients";
+import { useDebouncedWatch } from "../composables/useDebouncedWatch";
 
 const clients = useClientStore();
 const toast = useToast();
@@ -19,7 +20,6 @@ const router = useRouter();
 const search = ref("");
 const active = ref("");
 const selected = ref(null);
-let timer;
 const rows = computed(() => clients.items);
 const columns = [
   {
@@ -61,14 +61,7 @@ const columns = [
   },
 ];
 onMounted(() => clients.fetchList());
-watch(search, (value) => {
-  window.clearTimeout(timer);
-  timer = window.setTimeout(
-    () => clients.fetchList(query(1)),
-    250,
-  );
-});
-watch(active, () => clients.fetchList(query(1)));
+useDebouncedWatch([search, active], () => clients.fetchList(query(1)));
 const pendingActive = ref(true);
 async function toggleActive(client, value) {
   if (!value) {
@@ -101,7 +94,7 @@ function query(page) {
   return {
     page,
     ...(search.value.trim() ? { search: search.value.trim() } : {}),
-    ...(active.value !== "" ? { active: active.value === "true" } : {}),
+    ...(active.value !== "" ? { active: active.value === "true" ? 1 : 0 } : {}),
   };
 }
 function selectRow(_event, row) {
@@ -132,15 +125,16 @@ function selectRow(_event, row) {
     />
     <div class="flex flex-wrap items-end gap-4">
       <UFormField label="Status">
-        <USelect
-          v-model="active"
+         <USelectMenu
+           v-model="active"
           placeholder="All statuses"
           :items="[
             { label: 'Active', value: 'true' },
             { label: 'Inactive', value: 'false' },
-          ]"
-          class="w-full sm:w-40"
-        />
+           ]"
+           clear
+           class="w-full sm:w-40"
+         />
       </UFormField>
       <UButton
         v-if="search || active"

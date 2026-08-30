@@ -1,5 +1,5 @@
 <script setup>
-import { computed, h, onMounted, ref, watch } from "vue";
+import { computed, h, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
 import AppConfirm from "../components/AppConfirm.vue";
@@ -14,6 +14,7 @@ import EnumBadge from "../components/EnumBadge.vue";
 import { useAppointmentStore } from "../stores/appointments";
 import { useClientStore } from "../stores/clients";
 import { useServiceStore } from "../stores/services";
+import { useDebouncedWatch } from "../composables/useDebouncedWatch";
 
 const appointments = useAppointmentStore();
 const clients = useClientStore();
@@ -28,9 +29,6 @@ const serviceId = ref("");
 const clientSearchTerm = ref("");
 const serviceSearchTerm = ref("");
 const pendingAction = ref(null);
-let searchTimer;
-let clientSearchTimer;
-let serviceSearchTimer;
 const clientOptions = computed(() =>
   clients.items.map((client) => ({ label: client.name, value: String(client.id) })),
 );
@@ -100,25 +98,15 @@ onMounted(async () => {
   ]);
 });
 
-watch(search, (value) => {
-  window.clearTimeout(searchTimer);
-  searchTimer = window.setTimeout(() => appointments.fetchList(query(1)), 250);
-});
-watch([status, priority, clientId, serviceId], () => appointments.fetchList(query(1)));
-watch(clientSearchTerm, (value) => {
-  window.clearTimeout(clientSearchTimer);
-  clientSearchTimer = window.setTimeout(
-    () => clients.fetchList({ search: value.trim(), per_page: 10 }),
-    250,
-  );
-});
-watch(serviceSearchTerm, (value) => {
-  window.clearTimeout(serviceSearchTimer);
-  serviceSearchTimer = window.setTimeout(
-    () => services.fetchAll(value.trim() ? { search: value.trim(), limit: 10 } : { limit: 10 }),
-    250,
-  );
-});
+useDebouncedWatch([search, status, priority, clientId, serviceId], () =>
+  appointments.fetchList(query(1)),
+);
+useDebouncedWatch(clientSearchTerm, (value) =>
+  clients.fetchList({ search: value.trim(), per_page: 10 }),
+);
+useDebouncedWatch(serviceSearchTerm, (value) =>
+  services.fetchAll(value.trim() ? { search: value.trim(), limit: 10 } : { limit: 10 }),
+);
 
 function canConfirm(appointment) {
   return appointment.status === "Requested";
@@ -232,27 +220,30 @@ function selectRow(_event, row) {
       class="grid grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:items-end sm:gap-4"
     >
       <UFormField label="Status">
-        <USelect
-          v-model="status"
-          placeholder="All statuses"
-          :items="['Requested', 'Confirmed', 'Completed', 'Cancelled']"
-          class="w-full sm:w-48"
+        <USelectMenu
+           v-model="status"
+           placeholder="All statuses"
+           :items="['Requested', 'Confirmed', 'Completed', 'Cancelled']"
+           clear
+           class="w-full sm:w-48"
         />
       </UFormField>
       <UFormField label="Priority">
-        <USelect
-          v-model="priority"
-          placeholder="All priorities"
-          :items="['Low', 'Medium', 'High']"
-          class="w-full sm:w-48"
+        <USelectMenu
+           v-model="priority"
+           placeholder="All priorities"
+           :items="['Low', 'Medium', 'High']"
+           clear
+           class="w-full sm:w-48"
         />
       </UFormField>
       <UFormField label="Client">
         <USelectMenu
           v-model="clientId"
           v-model:search-term="clientSearchTerm"
-          value-key="value"
-          :items="clientOptions"
+           value-key="value"
+           :items="clientOptions"
+           ignore-filter
           placeholder="All clients"
           :search-input="{ placeholder: 'Search clients...', variant: 'none' }"
           clear
@@ -263,8 +254,9 @@ function selectRow(_event, row) {
         <USelectMenu
           v-model="serviceId"
           v-model:search-term="serviceSearchTerm"
-          value-key="value"
-          :items="serviceOptions"
+           value-key="value"
+           :items="serviceOptions"
+           ignore-filter
           placeholder="All services"
           :search-input="{ placeholder: 'Search services...', variant: 'none' }"
           clear

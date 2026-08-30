@@ -30,11 +30,13 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::get('/management/services', [ServiceController::class, 'index']);
         Route::get('/management/services/categories', [ServiceController::class, 'categories']);
         Route::patch('/services/{service}/deactivate', [ServiceController::class, 'deactivate']);
+        Route::patch('/services/{service}/activate', [ServiceController::class, 'activate']);
         Route::get('/dashboard/stats', [DashboardController::class, 'index']);
     });
 
     Route::middleware('client')->group(function (): void {
         Route::post('/booking-requests', [ClientAppointmentController::class, 'store']);
+        Route::get('/client/dashboard', [ClientAppointmentController::class, 'dashboard']);
         Route::get('/client/appointments', [ClientAppointmentController::class, 'index']);
         Route::patch('/client/appointments/{appointment}/cancel', [ClientAppointmentController::class, 'cancel']);
     });

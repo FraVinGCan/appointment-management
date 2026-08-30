@@ -21,6 +21,18 @@ test('admins can view unique service categories including inactive services', fu
         ->assertJsonPath('data', ['Category', 'Other']);
 });
 
+test('service category search is handled by the server', function () {
+    $admin = User::factory()->create(['is_admin' => true]);
+
+    Service::factory()->create(['category' => 'Consulting']);
+    Service::factory()->create(['category' => 'Hair Care']);
+
+    $this->actingAs($admin)
+        ->getJson('/api/management/services/categories?search=consult')
+        ->assertOk()
+        ->assertJsonPath('data', ['Consulting']);
+});
+
 test('service categories are restricted to admins', function () {
     $client = Client::factory()->create();
 

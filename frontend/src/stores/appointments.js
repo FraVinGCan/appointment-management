@@ -7,6 +7,7 @@ export const useAppointmentStore = defineStore("appointments", {
   state: () => ({
     items: [],
     pagination: null,
+    clientDashboard: null,
     current: null,
     isLoading: false,
     isSaving: false,
@@ -36,6 +37,14 @@ export const useAppointmentStore = defineStore("appointments", {
         this.items = response.data;
         this.pagination = response.meta;
         return this.items;
+      });
+    },
+
+    async fetchClientDashboard() {
+      return this.run(async () => {
+        const response = await appointmentService.getClientDashboard();
+        this.clientDashboard = response.data;
+        return this.clientDashboard;
       });
     },
 

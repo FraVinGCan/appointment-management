@@ -33,15 +33,15 @@ export const useServiceStore = defineStore("services", {
         return this.items;
       });
     },
-    async fetchCategories() {
+    async fetchCategories(params = {}) {
       return this.run(async () => {
-        this.categories = await serviceApi.listCategories();
+        this.categories = await serviceApi.listCategories(params);
         return this.categories;
       });
     },
-    async fetchActiveCategories() {
+    async fetchActiveCategories(params = {}) {
       return this.run(async () => {
-        this.categories = await serviceApi.listActiveCategories();
+        this.categories = await serviceApi.listActiveCategories(params);
         return this.categories;
       });
     },
@@ -59,6 +59,14 @@ export const useServiceStore = defineStore("services", {
     },
     async deactivate(id) {
       return this.mutate(() => serviceApi.deactivate(id));
+    },
+    async activate(id) {
+      return this.mutate(() => serviceApi.activate(id));
+    },
+    updateItem(item) {
+      const index = this.items.findIndex((service) => service.id === item.id);
+      if (index >= 0) this.items.splice(index, 1, item);
+      if (this.current?.id === item.id) this.current = item;
     },
     async run(action) {
       this.isLoading = true;

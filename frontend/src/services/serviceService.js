@@ -10,13 +10,13 @@ export async function listAll(params = {}) {
   return data;
 }
 
-export async function listCategories() {
-  const { data } = await api.get("/management/services/categories");
+export async function listCategories(params = {}) {
+  const { data } = await api.get("/management/services/categories", { params });
   return data.data;
 }
 
-export async function listActiveCategories() {
-  const { data } = await api.get("/services/categories", { params: { active: 1 } });
+export async function listActiveCategories(params = {}) {
+  const { data } = await api.get("/services/categories", { params: { active: 1, ...params } });
   return data.data;
 }
 
@@ -37,5 +37,10 @@ export async function update(id, payload) {
 
 export async function deactivate(id) {
   const { data } = await api.patch(`/services/${id}/deactivate`);
+  return data.data;
+}
+
+export async function activate(id) {
+  const { data } = await api.patch(`/services/${id}/activate`);
   return data.data;
 }

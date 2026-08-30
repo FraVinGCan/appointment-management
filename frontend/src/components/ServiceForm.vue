@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, reactive } from "vue";
 import { useServiceStore } from "../stores/services";
+import { useDebouncedWatch } from "../composables/useDebouncedWatch";
 
 const props = defineProps({ service: { type: Object, default: null } });
 const emit = defineEmits(["saved"]);
@@ -41,6 +42,10 @@ async function submit() {
 }
 
 onMounted(() => services.fetchCategories().catch(() => {}));
+useDebouncedWatch(
+  () => form.category,
+  (value) => services.fetchCategories(value.trim() ? { search: value.trim() } : {}),
+);
 </script>
 
 <template>
@@ -62,8 +67,10 @@ onMounted(() => services.fetchCategories().catch(() => {}));
             :error="error('category')"
           ><UInputMenu
             v-model="form.category"
-            mode="autocomplete"
-            create-item
+             mode="autocomplete"
+             create-item
+             ignore-filter
+             clear
             :items="services.categories"
             placeholder="Select or type a category"
             class="w-full"
@@ -75,7 +82,7 @@ onMounted(() => services.fetchCategories().catch(() => {}));
           :error="error('description')"
           ><UTextarea v-model="form.description" :rows="4" class="w-full"
         /></UFormField>
-        <UCheckbox v-model="form.active" label="Active service" />
+        <USwitch v-model="form.active" label="Active service" />
         <UAlert
           v-if="services.error"
           color="error"

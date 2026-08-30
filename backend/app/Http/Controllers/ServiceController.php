@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ServiceCategoryIndexRequest;
 use App\Http\Requests\ServiceIndexRequest;
 use App\Http\Requests\StoreServiceRequest;
 use App\Http\Requests\UpdateServiceRequest;
@@ -31,11 +32,14 @@ class ServiceController extends Controller
         return ServiceResource::collection($services)->response();
     }
 
-    public function categories(Request $request): JsonResponse
+    public function categories(ServiceCategoryIndexRequest $request): JsonResponse
     {
+        $filters = $request->validated();
+        $search = trim((string) ($filters['search'] ?? ''));
         $categories = Service::query()
             ->whereNotNull('category')
-            ->when($request->boolean('active'), fn ($query) => $query->where('active', true))
+            ->when($filters['active'] ?? false, fn ($query) => $query->where('active', true))
+            ->when($search !== '', fn ($query) => $query->where('category', 'like', "%{$search}%"))
             ->orderBy('category')
             ->pluck('category')
             ->map(fn (string $category): string => Str::squish($category))
@@ -98,6 +102,15 @@ class ServiceController extends Controller
         $this->authorize('deactivate', $service);
 
         $service->update(['active' => false]);
+
+        return new ServiceResource($service->fresh());
+    }
+
+    public function activate(Service $service): ServiceResource
+    {
+        $this->authorize('activate', $service);
+
+        $service->update(['active' => true]);
 
         return new ServiceResource($service->fresh());
     }

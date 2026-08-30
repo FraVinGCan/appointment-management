@@ -10,15 +10,25 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
     public function login(LoginRequest $request): JsonResponse
     {
-        if (! Auth::attempt($request->validated())) {
+        $credentials = $request->validated();
+        $user = User::query()
+            ->with('client')
+            ->where('email', $credentials['email'])
+            ->first();
+
+        if (! $user
+            || ! Hash::check($credentials['password'], $user->password)
+            || (! $user->isAdmin() && ! $user->client?->active)) {
             return response()->json(['message' => 'The provided credentials are incorrect.'], 401);
         }
 
+        Auth::login($user);
         $request->session()->regenerate();
 
         return response()->json(['user' => $this->userData($request->user())]);

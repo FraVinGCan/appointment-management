@@ -8,12 +8,17 @@ import AppLoading from "../components/AppLoading.vue";
 import AppPageHeader from "../components/AppPageHeader.vue";
 import AppPagination from "../components/AppPagination.vue";
 import { useAppointmentStore } from "../stores/appointments";
+import { useDebouncedWatch } from "../composables/useDebouncedWatch";
 
 const appointments = useAppointmentStore();
 const toast = useToast();
 const appointmentToCancel = ref(null);
+const search = ref("");
+const status = ref("");
 
 onMounted(() => appointments.fetchClientList());
+
+useDebouncedWatch([search, status], () => appointments.fetchClientList(query(1)));
 
 function canCancel(appointment) {
   return ["Requested", "Confirmed"].includes(appointment.status);
@@ -26,7 +31,15 @@ function formatDate(date) {
 }
 
 async function goToPage(page) {
-  await appointments.fetchClientList({ page });
+  await appointments.fetchClientList(query(page));
+}
+
+function query(page) {
+  return {
+    page,
+    ...(search.value.trim() ? { search: search.value.trim() } : {}),
+    ...(status.value ? { status: status.value } : {}),
+  };
 }
 
 async function cancelAppointment() {
@@ -63,6 +76,17 @@ async function cancelAppointment() {
       </template>
     </AppPageHeader>
 
+    <div class="grid gap-3 sm:flex sm:flex-wrap sm:items-end">
+      <label class="block min-w-64 flex-1 text-sm font-medium">
+        Search appointments
+        <UInput v-model="search" icon="i-lucide-search" placeholder="Search by service" class="mt-2 w-full" />
+      </label>
+      <UFormField label="Status">
+      <USelectMenu v-model="status" placeholder="All statuses" :items="['Requested', 'Confirmed', 'Completed', 'Cancelled']" clear class="w-full sm:w-48" />
+      </UFormField>
+      <UButton v-if="search || status" color="neutral" variant="ghost" @click="search = ''; status = ''">Clear filters</UButton>
+    </div>
+
     <AppLoading
       v-if="appointments.isLoading"
       message="Loading your appointments..."
@@ -71,7 +95,7 @@ async function cancelAppointment() {
       v-else-if="appointments.error"
       :message="appointments.error"
       :retry="true"
-      @retry="appointments.fetchClientList()"
+      @retry="appointments.fetchClientList(query(appointments.pagination?.current_page || 1))"
     />
     <AppEmpty
       v-else-if="!appointments.items.length"

@@ -1,30 +1,34 @@
 <script setup>
-import { onMounted, ref, watch } from "vue";
+import { onMounted, ref } from "vue";
 import { useAuthStore } from "../stores/auth";
 
 import AppError from "../components/AppError.vue";
 import AppLoading from "../components/AppLoading.vue";
 import AppPagination from "../components/AppPagination.vue";
 import { useServiceStore } from "../stores/services";
+import { useDebouncedWatch } from "../composables/useDebouncedWatch";
 
 const services = useServiceStore();
 const auth = useAuthStore();
 const search = ref("");
 const category = ref("");
+const categorySearchTerm = ref("");
 const page = ref(1);
-let searchTimer;
 
 onMounted(async () => {
   if (auth.isClient) await services.fetchActiveCategories();
   await services.fetchActive(query());
 });
 
-watch([search, category], () => {
-  window.clearTimeout(searchTimer);
-  searchTimer = window.setTimeout(() => {
-    page.value = 1;
-    services.fetchActive(query());
-  }, 250);
+useDebouncedWatch(categorySearchTerm, (value) => {
+  if (auth.isClient) {
+    services.fetchActiveCategories(value.trim() ? { search: value.trim() } : {});
+  }
+});
+
+useDebouncedWatch([search, category], () => {
+  page.value = 1;
+  services.fetchActive(query());
 });
 
 function query(currentPage = page.value) {
@@ -81,12 +85,16 @@ async function goToPage(value) {
             class="w-full sm:max-w-sm"
           />
           <UFormField v-if="auth.isClient" label="Category">
-            <USelect
-              v-model="category"
-              placeholder="All categories"
-              :items="services.categories"
-              class="w-full sm:w-48"
-            />
+             <USelectMenu
+               v-model="category"
+               v-model:search-term="categorySearchTerm"
+               placeholder="All categories"
+               :items="services.categories"
+               ignore-filter
+               :search-input="{ placeholder: 'Search categories...', variant: 'none' }"
+               clear
+               class="w-full sm:w-48"
+             />
           </UFormField>
         </div>
 

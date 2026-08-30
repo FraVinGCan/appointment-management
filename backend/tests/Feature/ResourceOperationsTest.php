@@ -152,6 +152,12 @@ test('admin listings support client and service status filters', function () {
         ->assertJsonCount(1, 'data')
         ->assertJsonPath('data.0.id', $inactiveClient->id);
 
+    $this->actingAs($admin)
+        ->getJson('/api/clients?active=1')
+        ->assertSuccessful()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $activeClient->id);
+
     Service::factory()->create(['category' => 'Consulting', 'active' => true]);
     $inactiveService = Service::factory()->inactive()->create(['category' => 'Consulting']);
     Service::factory()->create(['category' => 'Other', 'active' => true]);
@@ -161,6 +167,11 @@ test('admin listings support client and service status filters', function () {
         ->assertSuccessful()
         ->assertJsonCount(1, 'data')
         ->assertJsonPath('data.0.id', $inactiveService->id);
+
+    $this->actingAs($admin)
+        ->getJson('/api/management/services?active=1')
+        ->assertSuccessful()
+        ->assertJsonCount(2, 'data');
 });
 
 test('service listing supports category filtering for clients while guests see no filter controls', function () {
@@ -292,6 +303,53 @@ test('clients can only view and cancel their own eligible appointments', functio
         ->assertJsonPath('data.status', AppointmentStatus::Cancelled->value);
 });
 
+test('clients can search and filter their appointments server side', function () {
+    $client = Client::factory()->create();
+    $matchingService = Service::factory()->create(['name' => 'Deep Tissue Massage']);
+    $otherService = Service::factory()->create(['name' => 'Hair Styling']);
+
+    $matchingAppointment = Appointment::factory()->create([
+        'client_id' => $client->id,
+        'service_id' => $matchingService->id,
+        'status' => AppointmentStatus::Confirmed,
+    ]);
+    Appointment::factory()->create([
+        'client_id' => $client->id,
+        'service_id' => $otherService->id,
+        'status' => AppointmentStatus::Requested,
+    ]);
+
+    $this->actingAs($client->user)
+        ->getJson('/api/client/appointments?search=massage&status=Confirmed')
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $matchingAppointment->id);
+});
+
+test('clients receive dashboard aggregates and only their upcoming appointments', function () {
+    $client = Client::factory()->create();
+    $service = Service::factory()->create();
+    $upcoming = Appointment::factory()->create([
+        'client_id' => $client->id,
+        'service_id' => $service->id,
+        'status' => AppointmentStatus::Confirmed,
+        'appointment_date' => now()->addDay()->format('Y-m-d'),
+    ]);
+    Appointment::factory()->create([
+        'client_id' => $client->id,
+        'service_id' => $service->id,
+        'status' => AppointmentStatus::Completed,
+        'appointment_date' => now()->subDay()->format('Y-m-d'),
+    ]);
+
+    $this->actingAs($client->user)
+        ->getJson('/api/client/dashboard')
+        ->assertOk()
+        ->assertJsonPath('data.pending', 0)
+        ->assertJsonPath('data.completed', 1)
+        ->assertJsonPath('data.upcoming.0.id', $upcoming->id);
+});
+
 test('admins can manage and deactivate clients and services', function () {
     $admin = adminUser();
     $client = Client::factory()->create();
@@ -326,6 +384,10 @@ test('admins can manage and deactivate clients and services', function () {
     $this->actingAs($admin)->patchJson('/api/services/'.$service->id.'/deactivate')
         ->assertOk()
         ->assertJsonPath('data.active', false);
+
+    $this->actingAs($admin)->patchJson('/api/services/'.$service->id.'/activate')
+        ->assertOk()
+        ->assertJsonPath('data.active', true);
 });
 
 test('protected endpoints reject unauthenticated requests', function () {

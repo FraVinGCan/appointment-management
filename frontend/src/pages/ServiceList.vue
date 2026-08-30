@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, watch } from "vue";
+import { onMounted, ref } from "vue";
 import AppConfirm from "../components/AppConfirm.vue";
 import AppEmpty from "../components/AppEmpty.vue";
 import AppError from "../components/AppError.vue";
@@ -7,27 +7,25 @@ import AppLoading from "../components/AppLoading.vue";
 import AppPagination from "../components/AppPagination.vue";
 import AppPageHeader from "../components/AppPageHeader.vue";
 import { useServiceStore } from "../stores/services";
+import { useDebouncedWatch } from "../composables/useDebouncedWatch";
 const services = useServiceStore();
 const toast = useToast();
 const selected = ref(null);
 const search = ref("");
 const category = ref("");
 const active = ref("");
+const categorySearchTerm = ref("");
 const page = ref(1);
-let searchTimer;
 
 onMounted(async () => {
   await Promise.all([services.fetchCategories(), services.fetchAll(query())]);
 });
 
-watch(search, () => {
-  window.clearTimeout(searchTimer);
-  searchTimer = window.setTimeout(() => {
-    page.value = 1;
-    services.fetchAll(query());
-  }, 250);
-});
-watch([category, active], () => {
+useDebouncedWatch(categorySearchTerm, (value) =>
+  services.fetchCategories(value.trim() ? { search: value.trim() } : {}),
+);
+
+useDebouncedWatch([search, category, active], () => {
   page.value = 1;
   services.fetchAll(query());
 });
@@ -37,7 +35,7 @@ function query(currentPage = page.value) {
     page: currentPage,
     ...(search.value.trim() ? { search: search.value.trim() } : {}),
     ...(category.value ? { category: category.value } : {}),
-    ...(active.value !== "" ? { active: active.value === "true" } : {}),
+    ...(active.value !== "" ? { active: active.value === "true" ? 1 : 0 } : {}),
   };
 }
 async function goToPage(value) {
@@ -47,14 +45,26 @@ async function goToPage(value) {
 async function deactivate() {
   try {
     const item = await services.deactivate(selected.value.id);
-    const index = services.items.findIndex((service) => service.id === item.id);
-    if (index >= 0) services.items.splice(index, 1, item);
+    services.updateItem(item);
     toast.add({
       title: "Service deactivated",
       description: "The service is no longer bookable by clients.",
       color: "success",
     });
     selected.value = null;
+  } catch {
+    /* Store state is rendered below. */
+  }
+}
+async function activate(service) {
+  try {
+    const item = await services.activate(service.id);
+    services.updateItem(item);
+    toast.add({
+      title: "Service activated",
+      description: "The service is now bookable by clients.",
+      color: "success",
+    });
   } catch {
     /* Store state is rendered below. */
   }
@@ -86,23 +96,28 @@ async function deactivate() {
         />
       </label>
       <UFormField label="Category">
-        <USelect
-          v-model="category"
-          placeholder="All categories"
-          :items="services.categories"
-          class="w-full sm:w-48"
-        />
+         <USelectMenu
+           v-model="category"
+           v-model:search-term="categorySearchTerm"
+           placeholder="All categories"
+           :items="services.categories"
+           ignore-filter
+           :search-input="{ placeholder: 'Search categories...', variant: 'none' }"
+           clear
+           class="w-full sm:w-48"
+         />
       </UFormField>
       <UFormField label="Status">
-        <USelect
-          v-model="active"
+         <USelectMenu
+           v-model="active"
           placeholder="All statuses"
           :items="[
             { label: 'Active', value: 'true' },
             { label: 'Inactive', value: 'false' },
-          ]"
-          class="w-full sm:w-40"
-        />
+           ]"
+           clear
+           class="w-full sm:w-40"
+         />
       </UFormField>
       <UButton
         v-if="search || category || active"
@@ -156,12 +171,21 @@ async function deactivate() {
             >Edit</UButton
           >
           <UButton
-            v-if="service.active"
+           v-if="service.active"
             size="sm"
             color="error"
             variant="link"
             @click="selected = service"
             >Deactivate</UButton
+          >
+          <UButton
+            v-else
+            size="sm"
+            color="success"
+            variant="link"
+            :disabled="services.isSaving"
+            @click="activate(service)"
+            >Activate</UButton
           >
         </div>
       </UCard>

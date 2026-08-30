@@ -45,6 +45,11 @@ export const useClientStore = defineStore("clients", {
     async activate(id) {
       return this.mutate(() => clientService.activate(id));
     },
+    updateItem(item) {
+      const index = this.items.findIndex((client) => client.id === item.id);
+      if (index >= 0) this.items.splice(index, 1, item);
+      if (this.current?.id === item.id) this.current = item;
+    },
     async run(action) {
       this.isLoading = true;
       this.clearError();

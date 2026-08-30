@@ -1,6 +1,6 @@
 <script setup>
 import { CalendarDate, Time } from "@internationalized/date";
-import { computed, onMounted, reactive } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 
 import AppDatePicker from "./AppDatePicker.vue";
 import AppError from "./AppError.vue";
@@ -8,12 +8,15 @@ import AppLoading from "./AppLoading.vue";
 import { useAppointmentStore } from "../stores/appointments";
 import { useClientStore } from "../stores/clients";
 import { useServiceStore } from "../stores/services";
+import { useDebouncedWatch } from "../composables/useDebouncedWatch";
 
 const props = defineProps({ appointment: { type: Object, default: null } });
 const emit = defineEmits(["saved"]);
 const appointments = useAppointmentStore();
 const clients = useClientStore();
 const services = useServiceStore();
+const clientSearchTerm = ref("");
+const serviceSearchTerm = ref("");
 const form = reactive({
   clientId: "",
   serviceId: "",
@@ -32,8 +35,8 @@ const availableServices = computed(() =>
 
 onMounted(async () => {
   await Promise.all([
-    clients.fetchList({ per_page: 100 }),
-    services.fetchAll({ per_page: 100 }),
+     clients.fetchList({ per_page: 10 }),
+     services.fetchAll({ per_page: 10 }),
   ]);
   if (props.appointment) {
     const [year, month, day] = props.appointment.appointmentDate
@@ -54,6 +57,13 @@ onMounted(async () => {
     });
   }
 });
+
+useDebouncedWatch(clientSearchTerm, (value) =>
+  clients.fetchList({ search: value.trim(), per_page: 10 }),
+);
+useDebouncedWatch(serviceSearchTerm, (value) =>
+  services.fetchAll(value.trim() ? { search: value.trim(), per_page: 10 } : { per_page: 10 }),
+);
 
 function fieldError(field) {
   return appointments.validationErrors[field]?.[0];
@@ -103,6 +113,7 @@ async function submit() {
             :error="fieldError('clientId')"
             ><USelectMenu
               v-model="form.clientId"
+              v-model:search-term="clientSearchTerm"
               value-key="value"
               :items="
                 clients.items.map((client) => ({
@@ -110,8 +121,11 @@ async function submit() {
                   value: String(client.id),
                 }))
               "
-              placeholder="Select a client"
-              class="w-full"
+               placeholder="Select a client"
+               ignore-filter
+               :search-input="{ placeholder: 'Search clients...', variant: 'none' }"
+               clear
+               class="w-full"
           /></UFormField>
           <UFormField
             label="Service"
@@ -120,6 +134,7 @@ async function submit() {
             :error="fieldError('serviceId')"
             ><USelectMenu
               v-model="form.serviceId"
+              v-model:search-term="serviceSearchTerm"
               value-key="value"
               :items="
                 availableServices.map((service) => ({
@@ -127,8 +142,11 @@ async function submit() {
                   value: String(service.id),
                 }))
               "
-              placeholder="Select a service"
-              class="w-full"
+               placeholder="Select a service"
+               ignore-filter
+               :search-input="{ placeholder: 'Search services...', variant: 'none' }"
+               clear
+               class="w-full"
           /></UFormField>
         </div>
         <div class="grid gap-5 sm:grid-cols-2">
@@ -137,9 +155,10 @@ async function submit() {
             name="priority"
             required
             :error="fieldError('priority')"
-            ><USelect
+            ><USelectMenu
               v-model="form.priority"
               :items="['Low', 'Medium', 'High']"
+              clear
               class="w-full" /></UFormField
           ><UFormField
             label="Date"
