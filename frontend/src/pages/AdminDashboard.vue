@@ -1,6 +1,6 @@
 <script setup>
 import { computed, h, onMounted } from "vue";
-import { useRouter } from "vue-router";
+import { RouterLink, useRouter } from "vue-router";
 
 import AppEmpty from "../components/AppEmpty.vue";
 import AppError from "../components/AppError.vue";
@@ -33,7 +33,9 @@ const upcomingRows = computed(() =>
     id: appointment.id,
     slot: `${formatDate(appointment.appointmentDate)} ${formatTime(appointment.startTime)} - ${formatTime(appointment.endTime)}`,
     client: appointment.client?.name || "Unknown client",
+    clientId: appointment.client?.id ?? appointment.clientId,
     service: appointment.service?.name || "Unknown service",
+    serviceId: appointment.service?.id ?? appointment.serviceId,
     status: appointment.status,
     priority: appointment.priority,
   })),
@@ -44,19 +46,23 @@ const columns = [
     accessorKey: "slot",
     header: "Date & time",
     cell: ({ row }) =>
-      h("div", { class: "min-w-0 truncate" }, row.original.slot),
+      h(
+        "div",
+        { class: "min-w-0 truncate font-semibold text-cyan-300" },
+        row.original.slot,
+      ),
   },
   {
     accessorKey: "client",
     header: "Client",
     cell: ({ row }) =>
-      h("div", { class: "min-w-0 truncate" }, row.original.client),
+      relationshipCell(row.original.client, row.original.clientId, "clients"),
   },
   {
     accessorKey: "service",
     header: "Service",
     cell: ({ row }) =>
-      h("div", { class: "min-w-0 truncate" }, row.original.service),
+      relationshipCell(row.original.service, row.original.serviceId, "services"),
   },
   {
     accessorKey: "status",
@@ -71,6 +77,20 @@ const columns = [
       h(EnumBadge, { value: row.original.priority, kind: "priority" }),
   },
 ];
+
+function relationshipCell(label, id, resource) {
+  return id
+    ? h(
+        RouterLink,
+        {
+          to: `/${resource}/${id}/edit`,
+          class: "min-w-0 truncate text-primary-400 hover:underline",
+          onClick: (event) => event.stopPropagation(),
+        },
+        () => label,
+      )
+    : h("div", { class: "min-w-0 truncate" }, label);
+}
 
 function donutOptions(distribution, totalLabel) {
   if (!distribution) return {};
@@ -320,10 +340,26 @@ function selectRow(_event, row) {
                 {{ formatTime(appointment.endTime) }}
               </p>
               <p class="mt-1 truncate text-sm text-slate-400">
-                {{ appointment.client?.name || "Unknown client" }}
+                <RouterLink
+                  v-if="appointment.client?.id"
+                  :to="`/clients/${appointment.client.id}/edit`"
+                  class="text-primary-400 hover:underline"
+                  @click.stop
+                >
+                  {{ appointment.client.name }}
+                </RouterLink>
+                <span v-else>{{ appointment.client?.name || "Unknown client" }}</span>
               </p>
               <p class="truncate text-sm text-slate-400">
-                {{ appointment.service?.name || "Unknown service" }}
+                <RouterLink
+                  v-if="appointment.service?.id"
+                  :to="`/services/${appointment.service.id}/edit`"
+                  class="text-primary-400 hover:underline"
+                  @click.stop
+                >
+                  {{ appointment.service.name }}
+                </RouterLink>
+                <span v-else>{{ appointment.service?.name || "Unknown service" }}</span>
               </p>
               <div class="mt-2 flex flex-wrap items-center gap-2">
                 <EnumBadge :value="appointment.status" kind="status" />

@@ -1,7 +1,7 @@
 <script setup>
 import { computed, h, onMounted, ref } from "vue";
 import { parseDate } from "@internationalized/date";
-import { useRouter } from "vue-router";
+import { RouterLink, useRouter } from "vue-router";
 
 import AppConfirm from "../components/AppConfirm.vue";
 import AppDateRangePicker from "../components/AppDateRangePicker.vue";
@@ -91,7 +91,9 @@ const tableRows = computed(() =>
   appointments.items.map((appointment) => ({
     appointment: `${formatDate(appointment.appointmentDate)} ${formatTime(appointment.startTime)} - ${formatTime(appointment.endTime)}`,
     client: appointment.client?.name || "Unknown client",
+    clientId: appointment.client?.id ?? appointment.clientId,
     service: appointment.service?.name || "Unknown service",
+    serviceId: appointment.service?.id ?? appointment.serviceId,
     priority: appointment.priority,
     status: appointment.status,
     id: appointment.id,
@@ -102,19 +104,43 @@ const columns = [
     accessorKey: "appointment",
     header: "Appointment",
     cell: ({ row }) =>
-      h("div", { class: "min-w-0 truncate" }, row.original.appointment),
+      h(
+        "div",
+        { class: "min-w-0 truncate font-semibold text-cyan-300" },
+        row.original.appointment,
+      ),
   },
   {
     accessorKey: "client",
     header: "Client",
     cell: ({ row }) =>
-      h("div", { class: "min-w-0 truncate" }, row.original.client),
+      row.original.clientId
+        ? h(
+            RouterLink,
+            {
+              to: `/clients/${row.original.clientId}/edit`,
+              class: "min-w-0 truncate text-primary-400 hover:underline",
+              onClick: (event) => event.stopPropagation(),
+            },
+            () => row.original.client,
+          )
+        : h("div", { class: "min-w-0 truncate" }, row.original.client),
   },
   {
     accessorKey: "service",
     header: "Service",
     cell: ({ row }) =>
-      h("div", { class: "min-w-0 truncate" }, row.original.service),
+      row.original.serviceId
+        ? h(
+            RouterLink,
+            {
+              to: `/services/${row.original.serviceId}/edit`,
+              class: "min-w-0 truncate text-primary-400 hover:underline",
+              onClick: (event) => event.stopPropagation(),
+            },
+            () => row.original.service,
+          )
+        : h("div", { class: "min-w-0 truncate" }, row.original.service),
   },
   {
     accessorKey: "status",
@@ -413,10 +439,26 @@ function selectRow(_event, row) {
                 {{ formatTime(appointment.endTime) }}
               </p>
               <p class="mt-1 text-sm text-slate-400 truncate">
-                {{ appointment.client?.name || "Unknown client" }}
+                <RouterLink
+                  v-if="appointment.client?.id"
+                  :to="`/clients/${appointment.client.id}/edit`"
+                  class="text-primary-400 hover:underline"
+                  @click.stop
+                >
+                  {{ appointment.client.name }}
+                </RouterLink>
+                <span v-else>{{ appointment.client?.name || "Unknown client" }}</span>
               </p>
               <p class="mt-1 text-sm text-slate-400 truncate">
-                {{ appointment.service?.name || "Unknown service" }}
+                <RouterLink
+                  v-if="appointment.service?.id"
+                  :to="`/services/${appointment.service.id}/edit`"
+                  class="text-primary-400 hover:underline"
+                  @click.stop
+                >
+                  {{ appointment.service.name }}
+                </RouterLink>
+                <span v-else>{{ appointment.service?.name || "Unknown service" }}</span>
               </p>
               <div class="mt-2 flex flex-wrap items-center gap-2">
                 <EnumBadge :value="appointment.status" kind="status" />

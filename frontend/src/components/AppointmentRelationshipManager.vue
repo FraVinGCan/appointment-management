@@ -1,7 +1,7 @@
 <script setup>
 import { computed, h } from "vue";
 import { parseDate } from "@internationalized/date";
-import { useRouter } from "vue-router";
+import { RouterLink, useRouter } from "vue-router";
 
 import AppEmpty from "./AppEmpty.vue";
 import AppDateRangePicker from "./AppDateRangePicker.vue";
@@ -90,7 +90,9 @@ const tableRows = computed(() =>
   paginatedAppointments.value.map((appointment) => ({
     appointment: `${formatDate(appointment.appointmentDate)} ${formatTime(appointment.startTime)} - ${formatTime(appointment.endTime)}`,
     client: appointment.client?.name || "Unknown client",
+    clientId: appointment.client?.id ?? appointment.clientId,
     service: appointment.service?.name || "Unknown service",
+    serviceId: appointment.service?.id ?? appointment.serviceId,
     priority: appointment.priority,
     status: appointment.status,
     id: appointment.id,
@@ -141,13 +143,18 @@ const columns = computed(() => [
   {
     accessorKey: "appointment",
     header: "Appointment",
-    cell: ({ row }) => h("div", { class: "min-w-0 truncate" }, row.original.appointment),
+    cell: ({ row }) =>
+      h(
+        "div",
+        { class: "min-w-0 truncate font-semibold text-cyan-300" },
+        row.original.appointment,
+      ),
   },
   {
     accessorKey: showClient.value ? "client" : "service",
     header: showClient.value ? "Client" : "Service",
     cell: ({ row }) =>
-      h("div", { class: "min-w-0 truncate" }, row.original[showClient.value ? "client" : "service"]),
+      relatedLink(row),
   },
   {
     accessorKey: "status",
@@ -170,6 +177,24 @@ const columns = computed(() => [
       }),
   },
 ]);
+
+function relatedLink({ original }) {
+  const isClient = showClient.value;
+  const id = original[isClient ? "clientId" : "serviceId"];
+  const label = original[isClient ? "client" : "service"];
+
+  return id
+    ? h(
+        RouterLink,
+        {
+          to: `/${isClient ? "clients" : "services"}/${id}/edit`,
+          class: "min-w-0 truncate text-primary-400 hover:underline",
+          onClick: (event) => event.stopPropagation(),
+        },
+        () => label,
+      )
+    : h("div", { class: "min-w-0 truncate" }, label);
+}
 
 function formatDate(date) {
   return new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(

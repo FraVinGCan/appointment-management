@@ -58,11 +58,10 @@ async function submit() {
             autocomplete="tel"
             class="w-full"
         /></UFormField>
-        <UFormField label="Account status" name="active"
+        <UFormField name="active"
           ><USwitch
             v-model="form.active"
-            label="Active client"
-            description="Inactive clients cannot access booking routes."
+            label="Active status"
         /></UFormField>
         <div v-if="!client" class="grid gap-5 sm:grid-cols-2">
           <UFormField

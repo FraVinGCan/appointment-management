@@ -82,7 +82,7 @@ useDebouncedWatch(
           :error="error('description')"
           ><UTextarea v-model="form.description" :rows="4" class="w-full"
         /></UFormField>
-        <USwitch v-model="form.active" label="Active service" />
+        <USwitch v-model="form.active" label="Active status" />
         <UAlert
           v-if="services.error"
           color="error"

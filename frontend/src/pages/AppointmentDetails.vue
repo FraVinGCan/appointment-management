@@ -152,9 +152,16 @@ async function runConfirmation() {
       <div class="flex flex-wrap items-start justify-between gap-4">
         <div class="min-w-0">
           <h2 class="text-xl sm:text-2xl font-semibold truncate">
-            {{ appointment.service?.name }}
+            <RouterLink
+              v-if="appointment.service?.id"
+              :to="`/services/${appointment.service.id}/edit`"
+              class="text-primary-400 hover:underline"
+            >
+              {{ appointment.service.name }}
+            </RouterLink>
+            <span v-else>{{ appointment.service?.name }}</span>
           </h2>
-          <p class="mt-1 text-slate-400">
+          <p class="mt-1 font-semibold text-cyan-300">
             {{ formatDate(appointment.appointmentDate) }} ·
             {{ formatTime(appointment.startTime) }} - {{ formatTime(appointment.endTime) }}
           </p>
@@ -164,7 +171,16 @@ async function runConfirmation() {
       <dl class="mt-8 grid gap-5 border-t border-slate-800 pt-6 sm:grid-cols-2">
         <div>
           <dt class="text-xs uppercase tracking-wide text-slate-500">Client</dt>
-          <dd class="mt-1 truncate">{{ appointment.client?.name }}</dd>
+          <dd class="mt-1 truncate">
+            <RouterLink
+              v-if="appointment.client?.id"
+              :to="`/clients/${appointment.client.id}/edit`"
+              class="text-primary-400 hover:underline"
+            >
+              {{ appointment.client.name }}
+            </RouterLink>
+            <span v-else>{{ appointment.client?.name }}</span>
+          </dd>
         </div>
         <div>
           <dt class="text-xs uppercase tracking-wide text-slate-500">
@@ -178,7 +194,16 @@ async function runConfirmation() {
           <dt class="text-xs uppercase tracking-wide text-slate-500">
             Service
           </dt>
-          <dd class="mt-1 truncate">{{ appointment.service?.name }}</dd>
+          <dd class="mt-1 truncate">
+            <RouterLink
+              v-if="appointment.service?.id"
+              :to="`/services/${appointment.service.id}/edit`"
+              class="text-primary-400 hover:underline"
+            >
+              {{ appointment.service.name }}
+            </RouterLink>
+            <span v-else>{{ appointment.service?.name }}</span>
+          </dd>
         </div>
         <div>
           <dt class="text-xs uppercase tracking-wide text-slate-500">Notes</dt>

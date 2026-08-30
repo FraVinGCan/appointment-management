@@ -144,7 +144,7 @@ async function signOut() {
                 <p class="truncate font-semibold text-slate-100">
                   {{ appointment.service?.name || "Appointment" }}
                 </p>
-                <p class="mt-1 text-sm text-slate-400">
+                <p class="mt-1 text-sm font-semibold text-cyan-300">
                   {{ formatDate(appointment.appointmentDate) }} · {{ formatTimeRange(appointment) }}
                 </p>
               </div>

@@ -119,6 +119,12 @@ async function submit() {
       <UForm class="space-y-5" :state="form" @submit="submit">
         <UCard variant="subtle" class="p-4 sm:p-6">
           <div class="space-y-6">
+            <div>
+              <h2 class="text-lg font-semibold">Request an appointment</h2>
+              <p class="mt-1 text-sm text-slate-400">
+                Choose a date and time that works for you.
+              </p>
+            </div>
             <div class="grid gap-5 sm:grid-cols-2">
               <UFormField
                 label="Date & time"

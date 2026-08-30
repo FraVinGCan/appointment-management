@@ -210,7 +210,7 @@ async function cancelAppointment() {
             <h2 class="text-lg font-semibold truncate">
               {{ appointment.service?.name || "Appointment" }}
             </h2>
-            <p class="mt-1 text-sm text-slate-400">
+            <p class="mt-1 text-sm font-semibold text-cyan-300">
               {{ formatDate(appointment.appointmentDate) }} ·
               {{ formatTime(appointment.startTime) }} - {{ formatTime(appointment.endTime) }}
             </p>
