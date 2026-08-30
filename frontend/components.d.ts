@@ -13,8 +13,8 @@ declare module 'vue' {
   export interface GlobalComponents {
     AppBreadcrumbs: typeof import('./src/components/AppBreadcrumbs.vue')['default']
     AppConfirm: typeof import('./src/components/AppConfirm.vue')['default']
-    AppDatePicker: typeof import('./src/components/AppDatePicker.vue')['default']
     AppDateRangePicker: typeof import('./src/components/AppDateRangePicker.vue')['default']
+    AppDateTimePicker: typeof import('./src/components/AppDateTimePicker.vue')['default']
     AppEmpty: typeof import('./src/components/AppEmpty.vue')['default']
     AppError: typeof import('./src/components/AppError.vue')['default']
     AppLoading: typeof import('./src/components/AppLoading.vue')['default']
@@ -24,6 +24,7 @@ declare module 'vue' {
     AppointmentTableActions: typeof import('./src/components/AppointmentTableActions.vue')['default']
     AppPageHeader: typeof import('./src/components/AppPageHeader.vue')['default']
     AppPagination: typeof import('./src/components/AppPagination.vue')['default']
+    AppTimePicker: typeof import('./src/components/AppTimePicker.vue')['default']
     ClientActiveToggle: typeof import('./src/components/ClientActiveToggle.vue')['default']
     ClientForm: typeof import('./src/components/ClientForm.vue')['default']
     ClientTableActions: typeof import('./src/components/ClientTableActions.vue')['default']

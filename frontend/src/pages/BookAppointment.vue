@@ -3,7 +3,7 @@ import { CalendarDate } from "@internationalized/date";
 import { computed, onMounted, reactive } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
-import AppDatePicker from "../components/AppDatePicker.vue";
+import AppDateTimePicker from "../components/AppDateTimePicker.vue";
 import AppError from "../components/AppError.vue";
 import AppLoading from "../components/AppLoading.vue";
 import AppPageHeader from "../components/AppPageHeader.vue";
@@ -29,12 +29,31 @@ const today = computed(
       new Date().getDate(),
     ),
 );
+const appointmentDateTime = computed({
+  get: () => ({
+    date: form.appointmentDate,
+    startTime: form.startTime,
+    endTime: form.endTime,
+  }),
+  set: (value) => {
+    form.appointmentDate = value?.date || null;
+    form.startTime = value?.startTime || null;
+    form.endTime = value?.endTime || null;
+  },
+});
 
 onMounted(() => services.fetch(route.params.id));
 
 function fieldError(field) {
   return appointments.validationErrors[field]?.[0];
 }
+
+const dateTimeError = computed(
+  () =>
+    fieldError("appointmentDate") ||
+    fieldError("startTime") ||
+    fieldError("endTime"),
+);
 
 function formatTime(time) {
   return `${String(time.hour).padStart(2, "0")}:${String(time.minute).padStart(2, "0")}`;
@@ -102,38 +121,15 @@ async function submit() {
           <div class="space-y-6">
             <div class="grid gap-5 sm:grid-cols-2">
               <UFormField
-                label="Date"
-                name="appointmentDate"
+                label="Date & time"
+                name="appointmentDateTime"
                 required
-                :error="fieldError('appointmentDate')"
+                :error="dateTimeError"
+                class="sm:col-span-2"
               >
-                <AppDatePicker
-                  v-model="form.appointmentDate"
+                <AppDateTimePicker
+                  v-model="appointmentDateTime"
                   :min-value="today"
-                />
-              </UFormField>
-              <UFormField
-                label="Start time"
-                name="startTime"
-                required
-                :error="fieldError('startTime')"
-              >
-                <UInputTime
-                  v-model="form.startTime"
-                  hide-time-zone
-                  class="w-full"
-                />
-              </UFormField>
-              <UFormField
-                label="End time"
-                name="endTime"
-                required
-                :error="fieldError('endTime')"
-              >
-                <UInputTime
-                  v-model="form.endTime"
-                  hide-time-zone
-                  class="w-full"
                 />
               </UFormField>
             </div>
