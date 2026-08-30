@@ -6,6 +6,7 @@ use App\Enums\AppointmentPriority;
 use App\Enums\AppointmentStatus;
 use App\Exceptions\AppointmentWorkflowException;
 use App\Http\Requests\BookingRequest;
+use App\Http\Requests\ClientAppointmentIndexRequest;
 use App\Http\Resources\AppointmentResource;
 use App\Models\Appointment;
 use App\Services\AppointmentWorkflowService;
@@ -14,14 +15,15 @@ use Illuminate\Http\Request;
 
 class ClientAppointmentController extends Controller
 {
-    public function index(Request $request): JsonResponse
+    public function index(ClientAppointmentIndexRequest $request): JsonResponse
     {
+        $filters = $request->validated();
         $appointments = Appointment::query()
             ->withDetails()
             ->where('client_id', $request->user()->client->id)
             ->orderByDesc('appointment_date')
             ->orderByDesc('start_time')
-            ->paginate((int) $request->query('per_page', 10));
+            ->paginate((int) ($filters['per_page'] ?? 10));
 
         return AppointmentResource::collection($appointments)->response();
     }

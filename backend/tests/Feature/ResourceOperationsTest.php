@@ -274,6 +274,10 @@ test('clients can only view and cancel their own eligible appointments', functio
     $appointment = Appointment::factory()->create(['client_id' => $firstClient->id, 'service_id' => $service->id]);
     $otherAppointment = Appointment::factory()->create(['client_id' => $secondClient->id, 'service_id' => $service->id, 'start_time' => '10:00', 'end_time' => '10:30']);
 
+    $this->actingAs($firstClient->user)->getJson('/api/client/appointments?per_page=101')
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['per_page']);
+
     $this->actingAs($firstClient->user)->getJson('/api/client/appointments')
         ->assertOk()
         ->assertJsonCount(1, 'data')
