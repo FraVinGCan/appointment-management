@@ -91,7 +91,7 @@ async function activate(service) {
         <UInput
           v-model="search"
           icon="i-lucide-search"
-          placeholder="Search by service name"
+          placeholder="Search by name or short description"
           class="mt-2 w-full"
         />
       </label>

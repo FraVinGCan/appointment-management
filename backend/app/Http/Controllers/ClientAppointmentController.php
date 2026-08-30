@@ -26,6 +26,8 @@ class ClientAppointmentController extends Controller
                 $query->whereHas('service', fn ($query) => $query->where('name', 'like', "%{$search}%"));
             })
             ->when($filters['status'] ?? null, fn ($query, string $status) => $query->where('status', $status))
+            ->when(isset($filters['date_from']), fn ($query) => $query->whereDate('appointment_date', '>=', $filters['date_from']))
+            ->when(isset($filters['date_to']), fn ($query) => $query->whereDate('appointment_date', '<=', $filters['date_to']))
             ->orderByDesc('appointment_date')
             ->orderByDesc('start_time')
             ->paginate((int) ($filters['per_page'] ?? 10));

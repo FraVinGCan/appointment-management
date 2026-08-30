@@ -14,6 +14,7 @@ declare module 'vue' {
     AppBreadcrumbs: typeof import('./src/components/AppBreadcrumbs.vue')['default']
     AppConfirm: typeof import('./src/components/AppConfirm.vue')['default']
     AppDatePicker: typeof import('./src/components/AppDatePicker.vue')['default']
+    AppDateRangePicker: typeof import('./src/components/AppDateRangePicker.vue')['default']
     AppEmpty: typeof import('./src/components/AppEmpty.vue')['default']
     AppError: typeof import('./src/components/AppError.vue')['default']
     AppLoading: typeof import('./src/components/AppLoading.vue')['default']

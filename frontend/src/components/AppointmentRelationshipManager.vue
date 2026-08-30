@@ -2,6 +2,7 @@
 import { computed, h, ref } from "vue";
 
 import AppEmpty from "./AppEmpty.vue";
+import AppDateRangePicker from "./AppDateRangePicker.vue";
 import AppointmentTableActions from "./AppointmentTableActions.vue";
 import EnumBadge from "./EnumBadge.vue";
 
@@ -14,6 +15,7 @@ const emit = defineEmits(["action"]);
 const search = ref("");
 const status = ref("");
 const priority = ref("");
+const dateRange = ref(null);
 const showClient = computed(() => props.relationship === "service");
 
 const filteredAppointments = computed(() => {
@@ -33,7 +35,9 @@ const filteredAppointments = computed(() => {
     return (
       matchesSearch &&
       (!status.value || appointment.status === status.value) &&
-      (!priority.value || appointment.priority === priority.value)
+      (!priority.value || appointment.priority === priority.value) &&
+      (!dateRange.value?.start || appointment.appointmentDate >= dateRange.value.start.toString()) &&
+      (!dateRange.value?.end || appointment.appointmentDate <= dateRange.value.end.toString())
     );
   });
 });
@@ -139,11 +143,14 @@ function formatTime(time) {
           class="w-full sm:w-48"
         />
       </UFormField>
+      <UFormField label="Date range">
+        <AppDateRangePicker v-model="dateRange" class="w-full sm:w-64" />
+      </UFormField>
       <UButton
-        v-if="search || status || priority"
+        v-if="search || status || priority || dateRange"
         color="neutral"
         variant="ghost"
-        @click="search = ''; status = ''; priority = ''"
+        @click="search = ''; status = ''; priority = ''; dateRange = null"
       >
         Clear filters
       </UButton>

@@ -3,6 +3,7 @@ import { computed, h, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
 import AppConfirm from "../components/AppConfirm.vue";
+import AppDateRangePicker from "../components/AppDateRangePicker.vue";
 import AppEmpty from "../components/AppEmpty.vue";
 import AppError from "../components/AppError.vue";
 import AppLoading from "../components/AppLoading.vue";
@@ -26,6 +27,7 @@ const status = ref("");
 const priority = ref("");
 const clientId = ref("");
 const serviceId = ref("");
+const dateRange = ref(null);
 const clientSearchTerm = ref("");
 const serviceSearchTerm = ref("");
 const pendingAction = ref(null);
@@ -98,7 +100,7 @@ onMounted(async () => {
   ]);
 });
 
-useDebouncedWatch([search, status, priority, clientId, serviceId], () =>
+useDebouncedWatch([search, status, priority, clientId, serviceId, dateRange], () =>
   appointments.fetchList(query(1)),
 );
 useDebouncedWatch(clientSearchTerm, (value) =>
@@ -181,6 +183,8 @@ function query(page) {
     ...(priority.value ? { priority: priority.value } : {}),
     ...(clientId.value ? { client_id: clientId.value } : {}),
     ...(serviceId.value ? { service_id: serviceId.value } : {}),
+    ...(dateRange.value?.start ? { date_from: dateRange.value.start.toString() } : {}),
+    ...(dateRange.value?.end ? { date_to: dateRange.value.end.toString() } : {}),
   };
 }
 async function goToPage(page) {
@@ -263,8 +267,11 @@ function selectRow(_event, row) {
           class="w-full sm:w-56"
         />
       </UFormField>
+      <UFormField label="Date range">
+        <AppDateRangePicker v-model="dateRange" class="w-full sm:w-64" />
+      </UFormField>
       <UButton
-        v-if="status || priority || clientId || serviceId"
+        v-if="status || priority || clientId || serviceId || dateRange"
         color="neutral"
         variant="ghost"
         @click="
@@ -272,6 +279,7 @@ function selectRow(_event, row) {
           priority = '';
           clientId = '';
           serviceId = '';
+          dateRange = null;
         "
         >Clear filters</UButton
       >

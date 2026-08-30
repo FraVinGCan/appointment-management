@@ -2,6 +2,7 @@
 import { onMounted, ref } from "vue";
 
 import AppConfirm from "../components/AppConfirm.vue";
+import AppDateRangePicker from "../components/AppDateRangePicker.vue";
 import AppEmpty from "../components/AppEmpty.vue";
 import AppError from "../components/AppError.vue";
 import AppLoading from "../components/AppLoading.vue";
@@ -15,10 +16,11 @@ const toast = useToast();
 const appointmentToCancel = ref(null);
 const search = ref("");
 const status = ref("");
+const dateRange = ref(null);
 
 onMounted(() => appointments.fetchClientList());
 
-useDebouncedWatch([search, status], () => appointments.fetchClientList(query(1)));
+useDebouncedWatch([search, status, dateRange], () => appointments.fetchClientList(query(1)));
 
 function canCancel(appointment) {
   return ["Requested", "Confirmed"].includes(appointment.status);
@@ -39,6 +41,8 @@ function query(page) {
     page,
     ...(search.value.trim() ? { search: search.value.trim() } : {}),
     ...(status.value ? { status: status.value } : {}),
+    ...(dateRange.value?.start ? { date_from: dateRange.value.start.toString() } : {}),
+    ...(dateRange.value?.end ? { date_to: dateRange.value.end.toString() } : {}),
   };
 }
 
@@ -84,7 +88,10 @@ async function cancelAppointment() {
       <UFormField label="Status">
       <USelectMenu v-model="status" placeholder="All statuses" :items="['Requested', 'Confirmed', 'Completed', 'Cancelled']" clear class="w-full sm:w-48" />
       </UFormField>
-      <UButton v-if="search || status" color="neutral" variant="ghost" @click="search = ''; status = ''">Clear filters</UButton>
+      <UFormField label="Date range">
+        <AppDateRangePicker v-model="dateRange" class="w-full sm:w-64" />
+      </UFormField>
+      <UButton v-if="search || status || dateRange" color="neutral" variant="ghost" @click="search = ''; status = ''; dateRange = null">Clear filters</UButton>
     </div>
 
     <AppLoading

@@ -120,7 +120,7 @@ function selectRow(_event, row) {
     <UInput
       v-model="search"
       icon="i-lucide-search"
-      placeholder="Search clients"
+      placeholder="Search by name, email, or phone"
       class="w-full max-w-xl"
     />
     <div class="flex flex-wrap items-end gap-4">

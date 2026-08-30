@@ -20,7 +20,12 @@ class ServiceController extends Controller
         $search = trim((string) ($filters['search'] ?? ''));
         $query = Service::query()
             ->when(! $request->user()?->isAdmin(), fn ($query) => $query->where('active', true))
-            ->when($search !== '', fn ($query) => $query->where('name', 'like', "%{$search}%"))
+            ->when($search !== '', function ($query) use ($search): void {
+                $query->where(function ($query) use ($search): void {
+                    $query->where('name', 'like', "%{$search}%")
+                        ->orWhere('short_description', 'like', "%{$search}%");
+                });
+            })
             ->when(isset($filters['category']), fn ($query) => $query->whereRaw('LOWER(category) = ?', [strtolower($filters['category'])]))
             ->when($request->user()?->isAdmin() && array_key_exists('active', $filters), fn ($query) => $query->where('active', $filters['active']))
             ->orderBy('name');

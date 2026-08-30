@@ -215,6 +215,23 @@ test('service listing supports category filtering for clients while guests see n
     expect($inactive->active)->toBeFalse();
 });
 
+test('guests and clients can search services by short description', function () {
+    $matching = Service::factory()->create([
+        'short_description' => 'Specialized support for workplace wellbeing.',
+    ]);
+    Service::factory()->create([
+        'short_description' => 'A different service summary.',
+    ]);
+    $client = Client::factory()->create();
+
+    foreach ([$this, $this->actingAs($client->user)] as $request) {
+        $request->getJson('/api/services?search=workplace%20wellbeing')
+            ->assertSuccessful()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.id', $matching->id);
+    }
+});
+
 test('service listings are paginated by default and support page parameters', function () {
     $admin = adminUser();
     Service::factory()->count(3)->create();
@@ -226,6 +243,24 @@ test('service listings are paginated by default and support page parameters', fu
         ->assertJsonPath('meta.current_page', 2)
         ->assertJsonPath('meta.per_page', 2)
         ->assertJsonPath('meta.last_page', 2);
+});
+
+test('service listings can search by short description', function () {
+    $admin = adminUser();
+    $matching = Service::factory()->create([
+        'name' => 'Consultation',
+        'short_description' => 'Specialized support for workplace wellbeing.',
+    ]);
+    Service::factory()->create([
+        'name' => 'Another Service',
+        'short_description' => 'A different service summary.',
+    ]);
+
+    $this->actingAs($admin)
+        ->getJson('/api/management/services?search=workplace%20wellbeing')
+        ->assertSuccessful()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $matching->id);
 });
 
 test('public services only include active services and clients can book them', function () {
@@ -348,6 +383,47 @@ test('clients can search and filter their appointments server side', function ()
         ->assertJsonPath('data.0.id', $matchingAppointment->id);
 });
 
+test('appointment listings support inclusive date ranges', function () {
+    $admin = adminUser();
+    $client = Client::factory()->create();
+    $service = Service::factory()->create();
+    Appointment::factory()->create([
+        'client_id' => $client->id,
+        'service_id' => $service->id,
+        'appointment_date' => '2026-09-01',
+    ]);
+    $start = Appointment::factory()->create([
+        'client_id' => $client->id,
+        'service_id' => $service->id,
+        'appointment_date' => '2026-09-02',
+        'start_time' => '10:00',
+        'end_time' => '10:30',
+    ]);
+    $end = Appointment::factory()->create([
+        'client_id' => $client->id,
+        'service_id' => $service->id,
+        'appointment_date' => '2026-09-03',
+        'start_time' => '11:00',
+        'end_time' => '11:30',
+    ]);
+
+    $query = '?date_from=2026-09-02&date_to=2026-09-03';
+
+    $this->actingAs($admin)
+        ->getJson('/api/appointments'.$query)
+        ->assertSuccessful()
+        ->assertJsonCount(2, 'data')
+        ->assertJsonPath('data.0.id', $start->id)
+        ->assertJsonPath('data.1.id', $end->id);
+
+    $this->actingAs($client->user)
+        ->getJson('/api/client/appointments'.$query)
+        ->assertSuccessful()
+        ->assertJsonCount(2, 'data')
+        ->assertJsonPath('data.0.id', $end->id)
+        ->assertJsonPath('data.1.id', $start->id);
+});
+
 test('clients receive dashboard aggregates and only their upcoming appointments', function () {
     $client = Client::factory()->create();
     $service = Service::factory()->create();
@@ -410,6 +486,28 @@ test('admins can manage and deactivate clients and services', function () {
     $this->actingAs($admin)->patchJson('/api/services/'.$service->id.'/activate')
         ->assertOk()
         ->assertJsonPath('data.active', true);
+});
+
+test('admins can search clients by name email or phone', function () {
+    $admin = adminUser();
+    $nameMatch = Client::factory()->create(['name' => 'Name Match']);
+    $emailMatch = Client::factory()->create(['name' => 'Email Client']);
+    $phoneMatch = Client::factory()->create(['name' => 'Phone Client']);
+
+    $emailMatch->user->update(['email' => 'search-email@example.com']);
+    $phoneMatch->update(['phone' => '555-SEARCH']);
+
+    foreach ([
+        'Name' => $nameMatch,
+        'search-email@example.com' => $emailMatch,
+        '555-SEARCH' => $phoneMatch,
+    ] as $search => $client) {
+        $this->actingAs($admin)
+            ->getJson('/api/clients?search='.urlencode($search))
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.id', $client->id);
+    }
 });
 
 test('protected endpoints reject unauthenticated requests', function () {

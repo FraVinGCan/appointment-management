@@ -81,7 +81,7 @@ async function goToPage(value) {
           <UInput
             v-model="search"
             icon="i-lucide-search"
-            placeholder="Search services..."
+            placeholder="Search by name or short description"
             class="w-full sm:max-w-sm"
           />
           <UFormField v-if="auth.isClient" label="Category">

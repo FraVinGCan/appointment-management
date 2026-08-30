@@ -26,6 +26,8 @@ class AppointmentIndexRequest extends FormRequest
             'priority' => ['nullable', new Enum(AppointmentPriority::class)],
             'client_id' => ['nullable', 'integer', 'exists:clients,id'],
             'service_id' => ['nullable', 'integer', 'exists:services,id'],
+            'date_from' => ['nullable', 'date_format:Y-m-d'],
+            'date_to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:date_from'],
             'page' => ['nullable', 'integer', 'min:1'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ];

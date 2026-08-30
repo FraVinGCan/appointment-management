@@ -21,7 +21,13 @@ class ClientController extends Controller
         $search = trim((string) ($filters['search'] ?? ''));
         $clients = Client::query()
             ->with('user')
-            ->when($search !== '', fn ($query) => $query->where('name', 'like', "%{$search}%"))
+            ->when($search !== '', function ($query) use ($search): void {
+                $query->where(function ($query) use ($search): void {
+                    $query->where('name', 'like', "%{$search}%")
+                        ->orWhereHas('user', fn ($query) => $query->where('email', 'like', "%{$search}%"))
+                        ->orWhere('phone', 'like', "%{$search}%");
+                });
+            })
             ->when(array_key_exists('active', $filters), fn ($query) => $query->where('active', $filters['active']))
             ->orderBy('name')
             ->paginate((int) ($filters['per_page'] ?? 10));
