@@ -32,7 +32,10 @@ function saved() {
       ]"
     />
     <AppPageHeader title="Edit service" />
-    <AppLoading v-if="services.isLoading" message="Loading service..." />
+    <AppLoading
+      v-if="services.isLoading && !services.current"
+      message="Loading service..."
+    />
     <AppError
       v-else-if="services.error && services.errorStatus !== 404"
       :message="services.error"
