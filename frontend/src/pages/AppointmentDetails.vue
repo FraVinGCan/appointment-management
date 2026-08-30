@@ -55,6 +55,14 @@ function formatDate(date) {
     new Date(`${date}T00:00:00`),
   );
 }
+function formatDateTime(date) {
+  if (!date) return "Not available";
+
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(date));
+}
 const actionPastTense = {
   confirm: "confirmed",
   complete: "completed",
@@ -164,6 +172,22 @@ async function runConfirmation() {
           <dt class="text-xs uppercase tracking-wide text-slate-500">Notes</dt>
           <dd class="mt-1 text-slate-300">
             {{ appointment.notes || "No notes" }}
+          </dd>
+        </div>
+        <div>
+          <dt class="text-xs uppercase tracking-wide text-slate-500">
+            Created
+          </dt>
+          <dd class="mt-1 text-slate-300">
+            {{ formatDateTime(appointment.createdAt) }}
+          </dd>
+        </div>
+        <div>
+          <dt class="text-xs uppercase tracking-wide text-slate-500">
+            Last updated
+          </dt>
+          <dd class="mt-1 text-slate-300">
+            {{ formatDateTime(appointment.updatedAt) }}
           </dd>
         </div>
       </dl>

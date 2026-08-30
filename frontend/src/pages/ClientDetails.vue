@@ -11,6 +11,14 @@ import { useClientStore } from "../stores/clients";
 const route = useRoute();
 const clients = useClientStore();
 onMounted(() => clients.fetch(route.params.id));
+function formatDateTime(date) {
+  if (!date) return "Not available";
+
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(date));
+}
 </script>
 <template>
   <section class="space-y-6">
@@ -61,6 +69,22 @@ onMounted(() => clients.fetch(route.params.id));
               :value="clients.current.active === false ? 'Inactive' : 'Active'"
               kind="active"
             />
+          </dd>
+        </div>
+        <div>
+          <dt class="text-xs uppercase tracking-wide text-slate-500">
+            Created
+          </dt>
+          <dd class="mt-1 text-slate-300">
+            {{ formatDateTime(clients.current.createdAt) }}
+          </dd>
+        </div>
+        <div>
+          <dt class="text-xs uppercase tracking-wide text-slate-500">
+            Last updated
+          </dt>
+          <dd class="mt-1 text-slate-300">
+            {{ formatDateTime(clients.current.updatedAt) }}
           </dd>
         </div>
       </dl>

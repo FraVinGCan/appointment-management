@@ -11,6 +11,14 @@ import { useServiceStore } from "../stores/services";
 const route = useRoute();
 const services = useServiceStore();
 onMounted(() => services.fetch(route.params.id));
+function formatDateTime(date) {
+  if (!date) return "Not available";
+
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(date));
+}
 </script>
 <template>
   <section class="space-y-6">
@@ -66,6 +74,24 @@ onMounted(() => services.fetch(route.params.id));
       <p class="mt-5 text-slate-400">
         {{ services.current.description || "No description" }}
       </p>
+      <dl class="mt-6 grid gap-5 border-t border-slate-800 pt-6 sm:grid-cols-2">
+        <div>
+          <dt class="text-xs uppercase tracking-wide text-slate-500">
+            Created
+          </dt>
+          <dd class="mt-1 text-slate-300">
+            {{ formatDateTime(services.current.createdAt) }}
+          </dd>
+        </div>
+        <div>
+          <dt class="text-xs uppercase tracking-wide text-slate-500">
+            Last updated
+          </dt>
+          <dd class="mt-1 text-slate-300">
+            {{ formatDateTime(services.current.updatedAt) }}
+          </dd>
+        </div>
+      </dl>
     </div>
   </section>
 </template>
