@@ -151,7 +151,7 @@ async function signOut() {
               <EnumBadge :value="appointment.status" />
             </div>
           </div>
-<AppEmpty v-else class="mt-5" message="No upcoming appointments found." :action="{ to: '/client/marketplace', label: 'Find a service', icon: 'i-lucide-search' }" />
+        <AppEmpty v-else class="mt-5" message="No upcoming appointments found." :action="{ to: '/client/marketplace', label: 'Find a service', icon: 'i-lucide-search' }" />
         </UCard>
 
         <UCard variant="subtle" class="border-slate-800 bg-slate-900/60">

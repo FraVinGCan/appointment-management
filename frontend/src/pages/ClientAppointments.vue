@@ -11,17 +11,17 @@ import AppPageHeader from "../components/AppPageHeader.vue";
 import AppPagination from "../components/AppPagination.vue";
 import { useAppointmentStore } from "../stores/appointments";
 import { useDebouncedWatch } from "../composables/useDebouncedWatch";
-import { useUrlState } from "../composables/useUrlState";
+import { useUrlState, dateOnly, integerRange, oneOf } from "../composables/useUrlState";
 
 const appointments = useAppointmentStore();
 const toast = useToast();
 const appointmentToCancel = ref(null);
 const urlState = useUrlState({
   search: "",
-  status: "",
-  date_from: "",
-  date_to: "",
-  page: 1,
+  status: { default: "", sanitize: oneOf(["Requested", "Confirmed", "Completed", "Cancelled"]) },
+  date_from: { default: "", sanitize: dateOnly() },
+  date_to: { default: "", sanitize: dateOnly() },
+  page: { default: 1, sanitize: integerRange(1) },
 });
 
 const search = computed({
@@ -76,6 +76,16 @@ function canCancel(appointment) {
   return ["Requested", "Confirmed"].includes(appointment.status);
 }
 
+const hasActiveFilters = computed(
+  () => Boolean(search.value.trim()) || Boolean(status.value) || Boolean(dateRange.value),
+);
+
+const emptyAction = computed(() =>
+  hasActiveFilters.value
+    ? { label: "Clear filters", icon: "i-lucide-x", onClick: clearFilters }
+    : { to: "/client/marketplace", label: "Browse services", icon: "i-lucide-store" },
+);
+
 function formatDate(date) {
   return new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(
     new Date(`${date}T00:00:00`),
@@ -103,9 +113,21 @@ function query(pageValue = page.value) {
     page: pageValue,
     ...(search.value.trim() ? { search: search.value.trim() } : {}),
     ...(status.value ? { status: status.value } : {}),
-    ...(urlState.date_from.value ? { date_from: urlState.date_from.value } : {}),
-    ...(urlState.date_to.value ? { date_to: urlState.date_to.value } : {}),
+    ...(dateParams() ? { ...dateParams() } : {}),
   };
+}
+
+function dateParams() {
+  const start = urlState.date_from.value;
+  const end = urlState.date_to.value;
+
+  if (!start) return end ? { date_to: end } : null;
+
+  if (end && parseDateValue(end)?.compare(parseDateValue(start)) < 0) {
+    return { date_from: start };
+  }
+
+  return end ? { date_from: start, date_to: end } : { date_from: start };
 }
 
 function clearFilters() {
@@ -193,9 +215,9 @@ async function cancelAppointment() {
     />
     <AppEmpty
       v-else-if="!appointments.items.length"
-      message="No appointments found."
+      :message="hasActiveFilters ? 'No appointments match your filters.' : 'No appointments found.'"
       icon="i-lucide-calendar-check"
-      :action="{ to: '/client/marketplace', label: 'Browse services', icon: 'i-lucide-store' }"
+      :action="emptyAction"
     />
     <div v-else class="space-y-4">
       <article

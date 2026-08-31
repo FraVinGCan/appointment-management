@@ -15,7 +15,7 @@ import { useAppointmentStore } from "../stores/appointments";
 import { useClientStore } from "../stores/clients";
 import { useServiceStore } from "../stores/services";
 import { useDebouncedWatch } from "../composables/useDebouncedWatch";
-import { useUrlState } from "../composables/useUrlState";
+import { useUrlState, dateOnly, integerRange, oneOf } from "../composables/useUrlState";
 
 const appointments = useAppointmentStore();
 const UButton = resolveComponent("UButton");
@@ -25,16 +25,16 @@ const toast = useToast();
 const router = useRouter();
 const urlState = useUrlState({
   search: "",
-  status: "",
-  priority: "",
-  client_id: "",
-  service_id: "",
-  date_from: "",
-  date_to: "",
-  page: 1,
-  per_page: 10,
-  sort_by: "appointment_date",
-  sort_direction: "asc",
+  status: { default: "", sanitize: oneOf(["Requested", "Confirmed", "Completed", "Cancelled"]) },
+  priority: { default: "", sanitize: oneOf(["Low", "Medium", "High"]) },
+  client_id: { default: "", sanitize: integerRange(1) },
+  service_id: { default: "", sanitize: integerRange(1) },
+  date_from: { default: "", sanitize: dateOnly() },
+  date_to: { default: "", sanitize: dateOnly() },
+  page: { default: 1, sanitize: integerRange(1) },
+  per_page: { default: 10, sanitize: integerRange(1, 100) },
+  sort_by: { default: "appointment_date", sanitize: oneOf(["appointment_date", "client", "service", "status", "priority"]) },
+  sort_direction: { default: "asc", sanitize: oneOf(["asc", "desc"]) },
 });
 
 const search = computed({
@@ -285,9 +285,22 @@ function query(pageValue = page.value) {
     ...(priority.value ? { priority: priority.value } : {}),
     ...(clientId.value ? { client_id: clientId.value } : {}),
     ...(serviceId.value ? { service_id: serviceId.value } : {}),
-    ...(urlState.date_from.value ? { date_from: urlState.date_from.value } : {}),
-    ...(urlState.date_to.value ? { date_to: urlState.date_to.value } : {}),
+    ...(dateParams() ? { ...dateParams() } : {}),
   };
+}
+
+function dateParams() {
+  const start = urlState.date_from.value;
+  const end = urlState.date_to.value;
+
+  if (!start) return end ? { date_to: end } : null;
+
+  // Drop the end date when it falls before the start date.
+  if (end && parseDateValue(end)?.compare(parseDateValue(start)) < 0) {
+    return { date_from: start };
+  }
+
+  return end ? { date_from: start, date_to: end } : { date_from: start };
 }
 async function goToPage(value) {
   updateState({ page: value }, true);

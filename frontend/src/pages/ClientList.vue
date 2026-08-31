@@ -11,7 +11,7 @@ import ClientActiveToggle from "../components/ClientActiveToggle.vue";
 import ClientTableActions from "../components/ClientTableActions.vue";
 import { useClientStore } from "../stores/clients";
 import { useDebouncedWatch } from "../composables/useDebouncedWatch";
-import { useUrlState } from "../composables/useUrlState";
+import { useUrlState, integerRange, oneOf } from "../composables/useUrlState";
 
 const clients = useClientStore();
 const UButton = resolveComponent("UButton");
@@ -20,11 +20,11 @@ const router = useRouter();
 const route = useRoute();
 const urlState = useUrlState({
   search: "",
-  active: "",
-  page: 1,
-  per_page: 10,
-  sort_by: "name",
-  sort_direction: "asc",
+  active: { default: "", sanitize: oneOf(["", "true", "false"]) },
+  page: { default: 1, sanitize: integerRange(1) },
+  per_page: { default: 10, sanitize: integerRange(1, 100) },
+  sort_by: { default: "name", sanitize: oneOf(["name", "email", "phone", "active"]) },
+  sort_direction: { default: "asc", sanitize: oneOf(["asc", "desc"]) },
 });
 const search = computed({
   get: () => urlState.search.value,
@@ -236,6 +236,7 @@ function selectRow(_event, row) {
           <UFormField label="Status">
             <USelectMenu
               v-model="draftActive"
+              value-key="value"
               placeholder="All statuses"
               :items="[
                 { label: 'Active', value: 'true' },

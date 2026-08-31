@@ -8,15 +8,15 @@ import AppPagination from "../components/AppPagination.vue";
 import AppPageHeader from "../components/AppPageHeader.vue";
 import { useServiceStore } from "../stores/services";
 import { useDebouncedWatch } from "../composables/useDebouncedWatch";
-import { useUrlState } from "../composables/useUrlState";
+import { useUrlState, integerRange, oneOf } from "../composables/useUrlState";
 
 const services = useServiceStore();
 const toast = useToast();
 const urlState = useUrlState({
   search: "",
   category: "",
-  active: "",
-  page: 1,
+  active: { default: "", sanitize: oneOf(["", "true", "false"]) },
+  page: { default: 1, sanitize: integerRange(1) },
 });
 const selected = ref(null);
 const categorySearchTerm = ref("");
@@ -142,6 +142,7 @@ function updateState(updates, fetch = false) {
       <UFormField label="Status">
          <USelectMenu
            v-model="active"
+           value-key="value"
           placeholder="All statuses"
           :items="[
             { label: 'Active', value: 'true' },

@@ -7,14 +7,14 @@ import AppLoading from "../components/AppLoading.vue";
 import AppPagination from "../components/AppPagination.vue";
 import { useServiceStore } from "../stores/services";
 import { useDebouncedWatch } from "../composables/useDebouncedWatch";
-import { useUrlState } from "../composables/useUrlState";
+import { useUrlState, integerRange } from "../composables/useUrlState";
 
 const services = useServiceStore();
 const auth = useAuthStore();
 const urlState = useUrlState({
   search: "",
   category: "",
-  page: 1,
+  page: { default: 1, sanitize: integerRange(1) },
 });
 const categorySearchTerm = ref("");
 const search = computed({
@@ -96,12 +96,6 @@ function updateState(updates, fetch = false) {
         v-if="services.isLoading"
         message="Loading available services..."
       />
-      <AppError
-        v-else-if="services.error"
-        :message="services.error"
-        :retry="true"
-        @retry="services.fetchActive(query())"
-      />
       <template v-else>
         <div class="grid gap-3 sm:flex sm:flex-wrap sm:items-end">
           <UInput
@@ -132,8 +126,15 @@ function updateState(updates, fetch = false) {
           </UButton>
         </div>
 
+        <AppError
+          v-if="services.error"
+          :message="services.error"
+          :retry="true"
+          @retry="services.fetchActive(query())"
+          class="mt-6"
+        />
         <div
-          v-if="services.items.length"
+          v-else-if="services.items.length"
           class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
         >
           <UCard
