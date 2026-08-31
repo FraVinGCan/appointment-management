@@ -1,10 +1,8 @@
 <script setup>
 import { computed, onMounted, ref } from "vue";
 import AppConfirm from "../components/AppConfirm.vue";
-import AppEmpty from "../components/AppEmpty.vue";
+import AppDataTable from "../components/AppDataTable.vue";
 import AppError from "../components/AppError.vue";
-import AppLoading from "../components/AppLoading.vue";
-import AppPagination from "../components/AppPagination.vue";
 import AppPageHeader from "../components/AppPageHeader.vue";
 import { useServiceStore } from "../stores/services";
 import { useDebouncedWatch } from "../composables/useDebouncedWatch";
@@ -17,9 +15,12 @@ const urlState = useUrlState({
   category: "",
   active: { default: "", sanitize: oneOf(["", "true", "false"]) },
   page: { default: 1, sanitize: integerRange(1) },
+  per_page: { default: 10, sanitize: integerRange(1, 100) },
 });
 const selected = ref(null);
 const categorySearchTerm = ref("");
+const draftCategory = ref("");
+const draftActive = ref("");
 const search = computed({
   get: () => urlState.search.value,
   set: (value) => updateState({ search: value, page: 1 }),
@@ -35,6 +36,10 @@ const active = computed({
 const page = computed({
   get: () => urlState.page.value,
   set: (value) => updateState({ page: value }, true),
+});
+const perPage = computed({
+  get: () => urlState.per_page.value,
+  set: (value) => updateState({ per_page: value, page: 1 }, true),
 });
 
 onMounted(async () => {
@@ -53,6 +58,7 @@ useDebouncedWatch(
 function query(currentPage = page.value) {
   return {
     page: currentPage,
+    per_page: perPage.value,
     ...(search.value.trim() ? { search: search.value.trim() } : {}),
     ...(category.value ? { category: category.value } : {}),
     ...(active.value !== "" ? { active: active.value === "true" ? 1 : 0 } : {}),
@@ -89,13 +95,29 @@ async function activate(service) {
   }
 }
 function clearFilters() {
+  draftCategory.value = "";
+  draftActive.value = "";
   updateState({ search: "", category: "", active: "", page: 1 }, true);
+}
+function syncFilterDraft(open) {
+  if (!open) return;
+
+  draftCategory.value = category.value;
+  draftActive.value = active.value;
+}
+function applyFilters() {
+  updateState({
+    category: draftCategory.value,
+    active: draftActive.value,
+    page: 1,
+  });
 }
 function updateState(updates, fetch = false) {
   if (updates.search !== undefined) urlState.search.value = updates.search;
   if (updates.category !== undefined) urlState.category.value = updates.category;
   if (updates.active !== undefined) urlState.active.value = updates.active;
   if (updates.page !== undefined) urlState.page.value = updates.page;
+  if (updates.per_page !== undefined) urlState.per_page.value = updates.per_page;
 
   if (fetch) {
     services.fetchAll(query());
@@ -117,119 +139,112 @@ function updateState(updates, fetch = false) {
         >
       </template>
     </AppPageHeader>
-    <div class="grid grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:items-end sm:gap-4">
-      <label class="block min-w-64 flex-1 text-sm font-medium">
-        Search services
-        <UInput
-          v-model="search"
-          icon="i-lucide-search"
-          placeholder="Search by name or short description"
-          class="mt-2 w-full"
-        />
-      </label>
-      <UFormField label="Category">
-         <USelectMenu
-           v-model="category"
-           v-model:search-term="categorySearchTerm"
-           placeholder="All categories"
-           :items="services.categories"
-           ignore-filter
-           :search-input="{ placeholder: 'Search categories...', variant: 'none' }"
-           clear
-           class="w-full sm:w-48"
-         />
-      </UFormField>
-      <UFormField label="Status">
-         <USelectMenu
-           v-model="active"
-           value-key="value"
-          placeholder="All statuses"
-          :items="[
-            { label: 'Active', value: 'true' },
-            { label: 'Inactive', value: 'false' },
-           ]"
-           clear
-           class="w-full sm:w-40"
-         />
-      </UFormField>
-      <UButton
-        v-if="search || category || active"
-        color="neutral"
-        variant="ghost"
-        @click="clearFilters"
-        >Clear filters</UButton
-      >
-    </div>
-    <AppLoading v-if="services.isLoading" message="Loading services..." />
     <AppError
-      v-else-if="services.error"
+      v-if="services.error"
       :message="services.error"
       :retry="true"
       @retry="services.fetchAll(query())"
     />
-    <AppEmpty v-else-if="!services.items.length" message="No services found." icon="i-lucide-briefcase-business" :action="{ to: '/services/create', label: 'Add service', icon: 'i-lucide-plus' }" />
-    <div v-else class="grid gap-4 md:grid-cols-2">
-      <UCard
-        v-for="service in services.items"
-        :key="service.id"
-        variant="subtle"
+
+    <div v-else class="space-y-4">
+      <AppDataTable
+        layout="grid"
+        :data="services.items"
+        v-model:search="search"
+        search-placeholder="Search by name or short description"
+        :filter-count="Number(Boolean(category)) + Number(Boolean(active))"
+        :current-page="services.pagination?.current_page || page"
+        :total="services.pagination?.total || 0"
+        v-model:per-page="perPage"
+        :is-loading="services.isLoading"
+        empty-message="No services found."
+        empty-icon="i-lucide-briefcase-business"
+        :empty-action="{ to: '/services/create', label: 'Add service', icon: 'i-lucide-plus' }"
+        @change="goToPage"
+        @clear-filters="clearFilters"
+        @filters-open="syncFilterDraft"
+        @apply-filters="applyFilters"
       >
-        <div class="flex flex-wrap items-start justify-between gap-3">
-          <h2 class="font-semibold truncate">{{ service.name }}</h2>
-          <UBadge
-            :color="service.active ? 'success' : 'neutral'"
-            variant="subtle"
-          >
-            {{ service.active ? "Active" : "Inactive" }}
-          </UBadge>
-        </div>
-        <UBadge v-if="service.category" class="mt-3" color="primary" variant="subtle">
-          {{ service.category }}
-        </UBadge>
-        <p v-if="service.shortDescription" class="mt-3 text-sm text-slate-300">
-          {{ service.shortDescription }}
-        </p>
-        <p class="mt-3 line-clamp-2 text-sm text-slate-400">
-          {{ service.description || "No description" }}
-        </p>
-        <div class="mt-5 flex flex-wrap gap-2">
-          <UButton size="sm" variant="link" :to="`/services/${service.id}`"
-            >View</UButton
-          >
-          <UButton
-            size="sm"
-            color="neutral"
-            variant="link"
-            :to="`/services/${service.id}/edit`"
-            >Edit</UButton
-          >
-          <UButton
-           v-if="service.active"
-            size="sm"
-            color="error"
-            variant="link"
-            @click="selected = service"
-            >Deactivate</UButton
-          >
-          <UButton
-            v-else
-            size="sm"
-            color="success"
-            variant="link"
-            :disabled="services.isSaving"
-            @click="activate(service)"
-            >Activate</UButton
-          >
-        </div>
-      </UCard>
+        <template #filters>
+          <UFormField label="Category">
+            <USelectMenu
+              v-model="draftCategory"
+              v-model:search-term="categorySearchTerm"
+              placeholder="All categories"
+              :items="services.categories"
+              ignore-filter
+              :search-input="{ placeholder: 'Search categories...', variant: 'none' }"
+              clear
+              class="w-full"
+            />
+          </UFormField>
+          <UFormField label="Status">
+            <USelectMenu
+              v-model="draftActive"
+              value-key="value"
+              placeholder="All statuses"
+              :items="[
+                { label: 'Active', value: 'true' },
+                { label: 'Inactive', value: 'false' },
+              ]"
+              clear
+              class="w-full"
+            />
+          </UFormField>
+        </template>
+        <template #item="{ item }">
+          <UCard variant="subtle">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <h2 class="font-semibold truncate">{{ item.name }}</h2>
+              <UBadge
+                :color="item.active ? 'success' : 'neutral'"
+                variant="subtle"
+              >
+                {{ item.active ? "Active" : "Inactive" }}
+              </UBadge>
+            </div>
+            <UBadge v-if="item.category" class="mt-3" color="primary" variant="subtle">
+              {{ item.category }}
+            </UBadge>
+            <p v-if="item.shortDescription" class="mt-3 text-sm text-slate-300">
+              {{ item.shortDescription }}
+            </p>
+            <p class="mt-3 line-clamp-2 text-sm text-slate-400">
+              {{ item.description || "No description" }}
+            </p>
+            <div class="mt-5 flex flex-wrap gap-2">
+              <UButton size="sm" variant="link" :to="`/services/${item.id}`"
+                >View</UButton
+              >
+              <UButton
+                size="sm"
+                color="neutral"
+                variant="link"
+                :to="`/services/${item.id}/edit`"
+                >Edit</UButton
+              >
+              <UButton
+                v-if="item.active"
+                size="sm"
+                color="error"
+                variant="link"
+                @click="selected = item"
+                >Deactivate</UButton
+              >
+              <UButton
+                v-else
+                size="sm"
+                color="success"
+                variant="link"
+                :disabled="services.isSaving"
+                @click="activate(item)"
+                >Activate</UButton
+              >
+            </div>
+          </UCard>
+        </template>
+      </AppDataTable>
     </div>
-    <AppPagination
-      :current-page="services.pagination?.current_page"
-      :total="services.pagination?.total"
-      :per-page="services.pagination?.per_page"
-      :is-loading="services.isLoading"
-      @change="goToPage"
-    />
     <AppConfirm
       :open="Boolean(selected)"
       title="Deactivate service?"

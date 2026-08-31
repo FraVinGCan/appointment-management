@@ -247,49 +247,55 @@ function selectRow(_event, row) {
             />
           </UFormField>
         </template>
-      </AppDataTable>
-
-      <div class="sm:hidden space-y-3">
-        <div
-          v-for="client in clients.items"
-          :key="client.id"
-          class="rounded-xl border border-slate-800 bg-slate-900 p-4"
-        >
-          <div class="flex flex-wrap items-start justify-between gap-3">
-            <div class="min-w-0 flex-1">
-              <p class="font-medium truncate">{{ client.name }}</p>
-              <p class="mt-1 text-sm text-slate-400 truncate break-all">
-                {{ client.email }}
-              </p>
-              <p class="mt-1 text-sm text-slate-400">
-                {{ client.phone || "Not provided" }}
-              </p>
-              <ClientActiveToggle
-                :model-value="client.active"
-                :disabled="clients.isSaving"
-                @toggle="toggleActive(client, $event)"
-              />
+        <template #item="{ item }">
+          <UCard variant="subtle">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <h2 class="font-semibold truncate">{{ item.name }}</h2>
+              <UBadge
+                :color="item.active ? 'success' : 'neutral'"
+                variant="subtle"
+              >
+                {{ item.active ? "Active" : "Inactive" }}
+              </UBadge>
             </div>
-            <div class="flex items-center gap-2 shrink-0">
+            <p class="mt-3 text-sm text-slate-400 truncate break-all">
+              {{ item.email }}
+            </p>
+            <p class="mt-1 text-sm text-slate-400">
+              {{ item.phone || "Not provided" }}
+            </p>
+            <div class="mt-5 flex flex-wrap gap-2">
+              <UButton size="sm" variant="link" :to="`/clients/${item.id}`"
+                >View</UButton
+              >
               <UButton
                 size="sm"
-                variant="outline"
-                @click.stop="selectRow(null, { original: client })"
+                color="neutral"
+                variant="link"
+                :to="`/clients/${item.id}/edit`"
+                >Edit</UButton
               >
-                View
-              </UButton>
               <UButton
+                v-if="item.active"
                 size="sm"
                 color="error"
-                variant="outline"
-                @click.stop="toggleActive(client, false)"
+                variant="link"
+                @click="toggleActive(item, false)"
+                >Deactivate</UButton
               >
-                Deactivate
-              </UButton>
+              <UButton
+                v-else
+                size="sm"
+                color="success"
+                variant="link"
+                :disabled="clients.isSaving"
+                @click="toggleActive(item, true)"
+                >Activate</UButton
+              >
             </div>
-          </div>
-        </div>
-      </div>
+          </UCard>
+        </template>
+      </AppDataTable>
 
     </div>
 

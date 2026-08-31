@@ -2,7 +2,7 @@
 import { computed, h, onMounted } from "vue";
 import { RouterLink, useRouter } from "vue-router";
 
-import AppEmpty from "../components/AppEmpty.vue";
+import AppDataTable from "../components/AppDataTable.vue";
 import AppError from "../components/AppError.vue";
 import AppLoading from "../components/AppLoading.vue";
 import AppPageHeader from "../components/AppPageHeader.vue";
@@ -306,70 +306,57 @@ function selectRow(_event, row) {
         </UCard>
       </div>
 
-      <UCard variant="subtle" class="border-slate-800 bg-slate-900/60">
+      <div class="space-y-4">
         <h3 class="text-base font-semibold text-slate-100">
           Upcoming & open appointments
         </h3>
-        <AppEmpty
-          v-if="!upcomingRows.length"
-          class="mt-4"
-          message="No upcoming or open appointments found."
-          icon="i-lucide-calendar-clock"
-        />
-        <template v-else>
-          <div
-            class="mt-4 hidden overflow-x-auto rounded-xl border border-slate-800 sm:block"
-          >
-            <UTable
-              :data="upcomingRows"
-              :columns="columns"
-              :on-select="selectRow"
-              :ui="{ tr: 'cursor-pointer', separator: 'z-0' }"
-              class="min-w-full"
-            />
-          </div>
-          <div class="mt-4 space-y-3 sm:hidden">
-            <div
-              v-for="appointment in dashboard.stats.upcoming"
-              :key="appointment.id"
-              class="rounded-xl border border-slate-800 bg-slate-900 p-4"
-              @click="router.push(`/appointments/${appointment.id}`)"
+        <AppDataTable
+          :data="upcomingRows"
+          :columns="columns"
+          :on-select="selectRow"
+          :show-toolbar="false"
+          :show-pagination="false"
+          table-class="hidden sm:block"
+          empty-message="No upcoming or open appointments found."
+          empty-icon="i-lucide-calendar-clock"
+        >
+          <template #item="{ item }">
+            <UCard
+              variant="subtle"
+              class="cursor-pointer"
+              @click="router.push(`/appointments/${item.id}`)"
             >
-              <p class="font-medium">
-                {{ formatDate(appointment.appointmentDate) }}
-                {{ formatTime(appointment.startTime) }} -
-                {{ formatTime(appointment.endTime) }}
-              </p>
-              <p class="mt-1 truncate text-sm text-slate-400">
+              <h2 class="font-semibold truncate">{{ item.slot }}</h2>
+              <p class="mt-3 text-sm text-slate-400 truncate">
                 <RouterLink
-                  v-if="appointment.client?.id"
-                  :to="`/clients/${appointment.client.id}/edit`"
+                  v-if="item.clientId"
+                  :to="`/clients/${item.clientId}/edit`"
                   class="text-primary-400 hover:underline"
                   @click.stop
                 >
-                  {{ appointment.client.name }}
+                  {{ item.client }}
                 </RouterLink>
-                <span v-else>{{ appointment.client?.name || "Unknown client" }}</span>
+                <span v-else>{{ item.client || "Unknown client" }}</span>
               </p>
-              <p class="truncate text-sm text-slate-400">
+              <p class="mt-1 text-sm text-slate-400 truncate">
                 <RouterLink
-                  v-if="appointment.service?.id"
-                  :to="`/services/${appointment.service.id}/edit`"
+                  v-if="item.serviceId"
+                  :to="`/services/${item.serviceId}/edit`"
                   class="text-primary-400 hover:underline"
                   @click.stop
                 >
-                  {{ appointment.service.name }}
+                  {{ item.service }}
                 </RouterLink>
-                <span v-else>{{ appointment.service?.name || "Unknown service" }}</span>
+                <span v-else>{{ item.service || "Unknown service" }}</span>
               </p>
-              <div class="mt-2 flex flex-wrap items-center gap-2">
-                <EnumBadge :value="appointment.status" kind="status" />
-                <EnumBadge :value="appointment.priority" kind="priority" />
+              <div class="mt-3 flex flex-wrap items-center gap-2">
+                <EnumBadge :value="item.status" kind="status" />
+                <EnumBadge :value="item.priority" kind="priority" />
               </div>
-            </div>
-          </div>
-        </template>
-      </UCard>
+            </UCard>
+          </template>
+        </AppDataTable>
+      </div>
     </div>
   </section>
 </template>

@@ -462,84 +462,76 @@ function selectRow(_event, row) {
             <AppDateRangePicker v-model="draftDateRange" class="w-full" />
           </UFormField>
         </template>
-      </AppDataTable>
-
-      <div class="sm:hidden space-y-3">
-        <div
-          v-for="appointment in appointments.items"
-          :key="appointment.id"
-          class="rounded-xl border border-slate-800 bg-slate-900 p-4"
-        >
-          <div class="flex flex-wrap items-start justify-between gap-3">
-            <div class="min-w-0 flex-1">
-              <p class="font-medium truncate">
-                {{ formatDate(appointment.appointmentDate) }}
-                {{ formatTime(appointment.startTime) }} -
-                {{ formatTime(appointment.endTime) }}
-              </p>
-              <p class="mt-1 text-sm text-slate-400 truncate">
-                <RouterLink
-                  v-if="appointment.client?.id"
-                  :to="`/clients/${appointment.client.id}/edit`"
-                  class="text-primary-400 hover:underline"
-                  @click.stop
-                >
-                  {{ appointment.client.name }}
-                </RouterLink>
-                <span v-else>{{ appointment.client?.name || "Unknown client" }}</span>
-              </p>
-              <p class="mt-1 text-sm text-slate-400 truncate">
-                <RouterLink
-                  v-if="appointment.service?.id"
-                  :to="`/services/${appointment.service.id}/edit`"
-                  class="text-primary-400 hover:underline"
-                  @click.stop
-                >
-                  {{ appointment.service.name }}
-                </RouterLink>
-                <span v-else>{{ appointment.service?.name || "Unknown service" }}</span>
-              </p>
-              <div class="mt-2 flex flex-wrap items-center gap-2">
-                <EnumBadge :value="appointment.status" kind="status" />
-                <EnumBadge :value="appointment.priority" kind="priority" />
-              </div>
+        <template #item="{ item }">
+          <UCard variant="subtle">
+            <h2 class="font-semibold truncate">{{ item.appointment }}</h2>
+            <p class="mt-3 text-sm text-slate-400 truncate">
+              <RouterLink
+                v-if="item.clientId"
+                :to="`/clients/${item.clientId}/edit`"
+                class="text-primary-400 hover:underline"
+                @click.stop
+              >
+                {{ item.client }}
+              </RouterLink>
+              <span v-else>{{ item.client || "Unknown client" }}</span>
+            </p>
+            <p class="mt-1 text-sm text-slate-400 truncate">
+              <RouterLink
+                v-if="item.serviceId"
+                :to="`/services/${item.serviceId}/edit`"
+                class="text-primary-400 hover:underline"
+                @click.stop
+              >
+                {{ item.service }}
+              </RouterLink>
+              <span v-else>{{ item.service || "Unknown service" }}</span>
+            </p>
+            <div class="mt-3 flex flex-wrap items-center gap-2">
+              <EnumBadge :value="item.status" kind="status" />
+              <EnumBadge :value="item.priority" kind="priority" />
             </div>
-            <div class="flex items-center gap-2 shrink-0">
+            <div class="mt-5 flex flex-wrap gap-2">
               <UButton
-                v-if="canConfirm(appointment)"
+                v-if="canConfirm(item)"
                 size="sm"
                 color="success"
-                @click.stop="pendingAction = { id: appointment.id, action: 'confirm' }"
+                variant="link"
+                @click="pendingAction = { id: item.id, action: 'confirm' }"
+                >Confirm</UButton
               >
-                Confirm
-              </UButton>
               <UButton
-                v-else-if="canComplete(appointment)"
+                v-else-if="canComplete(item)"
                 size="sm"
-                color="primary"
-                @click.stop="pendingAction = { id: appointment.id, action: 'complete' }"
+                variant="link"
+                @click="pendingAction = { id: item.id, action: 'complete' }"
+                >Complete</UButton
               >
-                Complete
-              </UButton>
               <UButton
-                v-else-if="canCancel(appointment)"
+                v-else-if="canCancel(item)"
                 size="sm"
                 color="error"
-                @click.stop="pendingAction = { id: appointment.id, action: 'cancel' }"
+                variant="link"
+                @click="pendingAction = { id: item.id, action: 'cancel' }"
+                >Cancel</UButton
               >
-                Cancel
-              </UButton>
               <UButton
                 size="sm"
-                variant="outline"
-                @click.stop="selectRow(null, { original: appointment })"
+                variant="link"
+                :to="`/appointments/${item.id}`"
+                >View</UButton
               >
-                View
-              </UButton>
+              <UButton
+                size="sm"
+                color="neutral"
+                variant="link"
+                :to="`/appointments/${item.id}/edit`"
+                >Edit</UButton
+              >
             </div>
-          </div>
-        </div>
-      </div>
+          </UCard>
+        </template>
+      </AppDataTable>
 
     </div>
 

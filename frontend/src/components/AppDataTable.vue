@@ -2,9 +2,10 @@
 import { computed, ref } from "vue";
 
 import AppEmpty from "./AppEmpty.vue";
+import AppLoading from "./AppLoading.vue";
 
 const props = defineProps({
-  columns: { type: Array, required: true },
+  columns: { type: Array, default: () => [] },
   data: { type: Array, default: () => [] },
   search: { type: String, default: "" },
   searchPlaceholder: { type: String, default: "Search..." },
@@ -14,7 +15,11 @@ const props = defineProps({
   perPage: { type: Number, default: 10 },
   isLoading: { type: Boolean, default: false },
   onSelect: { type: Function, default: undefined },
+  layout: { type: String, default: "table" },
+  gridClass: { type: String, default: "grid gap-4 p-4 md:grid-cols-2" },
   tableClass: { type: String, default: "" },
+  showToolbar: { type: Boolean, default: true },
+  showPagination: { type: Boolean, default: true },
   emptyMessage: { type: String, default: "No results found." },
   emptyIcon: { type: String, default: "" },
   emptyAction: { type: Object, default: () => ({}) },
@@ -40,7 +45,7 @@ const lastResult = computed(() =>
 
 <template>
   <div class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900">
-    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 p-4">
+    <div v-if="showToolbar" class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 p-4">
       <UInput
         :model-value="search"
         icon="i-lucide-search"
@@ -88,25 +93,51 @@ const lastResult = computed(() =>
       <slot name="toolbar" />
     </div>
 
-    <div class="overflow-x-auto" :class="tableClass">
-      <UTable
-        :data="data"
-        :columns="columns"
-        :on-select="onSelect"
-        :loading="isLoading"
-        :ui="{ tr: 'cursor-pointer', separator: 'z-0' }"
-        class="min-w-full"
-      >
-        <template #empty>
-          <AppEmpty :message="emptyMessage" :icon="emptyIcon" :action="emptyAction" class="p-6" />
-        </template>
-      </UTable>
-    </div>
-    <div v-if="!data.length && !isLoading" class="p-4 sm:hidden">
-      <AppEmpty :message="emptyMessage" :icon="emptyIcon" :action="emptyAction" />
+    <template v-if="layout === 'table'">
+      <div class="overflow-x-auto" :class="tableClass">
+        <UTable
+          :data="data"
+          :columns="columns"
+          :on-select="onSelect"
+          :loading="isLoading"
+          :ui="{ tr: 'cursor-pointer', separator: 'z-0' }"
+          class="min-w-full"
+        >
+          <template #empty>
+            <div class="m-4">
+              <AppEmpty :message="emptyMessage" :icon="emptyIcon" :action="emptyAction" />
+            </div>
+          </template>
+        </UTable>
+      </div>
+      <div v-if="$slots.item" class="sm:hidden">
+        <AppLoading v-if="isLoading && !data.length" message="Loading..." class="p-6" />
+        <div v-else-if="!data.length" class="m-4">
+          <AppEmpty :message="emptyMessage" :icon="emptyIcon" :action="emptyAction" />
+        </div>
+        <div v-else class="grid gap-4 p-4">
+          <slot v-for="(item, index) in data" :key="item.id ?? index" name="item" :item="item" />
+        </div>
+      </div>
+      <div v-else-if="!data.length && !isLoading" class="m-4 sm:hidden">
+        <AppEmpty :message="emptyMessage" :icon="emptyIcon" :action="emptyAction" />
+      </div>
+    </template>
+    <div v-else>
+      <AppLoading v-if="isLoading && !data.length" message="Loading..." class="p-6" />
+      <div v-else-if="!data.length" class="m-4">
+        <AppEmpty
+          :message="emptyMessage"
+          :icon="emptyIcon"
+          :action="emptyAction"
+        />
+      </div>
+      <div v-else :class="gridClass">
+        <slot v-for="(item, index) in data" :key="item.id ?? index" name="item" :item="item" />
+      </div>
     </div>
 
-    <div class="grid items-center gap-3 border-t border-slate-800 px-4 py-3 text-sm text-slate-400 sm:grid-cols-[1fr_auto_1fr]">
+    <div v-if="showPagination" class="grid items-center gap-3 border-t border-slate-800 px-4 py-3 text-sm text-slate-400 sm:grid-cols-[1fr_auto_1fr]">
       <span class="text-center sm:text-left">Showing {{ firstResult }} to {{ lastResult }} of {{ total }} results</span>
       <label class="flex items-center justify-center gap-2">
         <span>Rows</span>
