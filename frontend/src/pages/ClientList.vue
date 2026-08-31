@@ -302,8 +302,9 @@ function selectRow(_event, row) {
     <AppConfirm
       :open="Boolean(selected)"
       title="Deactivate client?"
-      message="This client will no longer be able to use client booking routes."
+      description="This client will no longer be able to use client booking routes."
       confirm-label="Deactivate"
+      variant="warning"
       :loading="clients.isSaving"
       @cancel="selected = null"
       @confirm="updateActive(selected, false)"

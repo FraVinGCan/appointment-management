@@ -221,20 +221,23 @@ function canCancel(appointment) {
 const actionCopy = {
   confirm: {
     title: "Confirm appointment?",
-    message: "The client will see this booking as confirmed.",
+    description: "The client will see this booking as confirmed.",
     confirmLabel: "Confirm appointment",
+    variant: "info",
   },
   complete: {
     title: "Complete appointment?",
-    message:
+    description:
       "This marks the appointment as completed and cannot be changed afterwards.",
     confirmLabel: "Complete appointment",
+    variant: "success",
   },
   cancel: {
     title: "Cancel appointment?",
-    message:
+    description:
       "This appointment will be marked as cancelled and cannot be restored.",
     confirmLabel: "Cancel appointment",
+    variant: "warning",
   },
 };
 const pendingActionConfig = computed(

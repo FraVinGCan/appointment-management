@@ -248,8 +248,9 @@ function updateState(updates, fetch = false) {
     <AppConfirm
       :open="Boolean(selected)"
       title="Deactivate service?"
-      message="The service will stop appearing in new client bookings while historical appointments remain available."
+      description="The service will stop appearing in new client bookings while historical appointments remain available."
       confirm-label="Deactivate"
+      variant="warning"
       :loading="services.isSaving"
       @cancel="selected = null"
       @confirm="deactivate"

@@ -21,23 +21,27 @@ const pendingAction = ref(null);
 const appointmentActions = {
   confirm: {
     title: "Confirm appointment?",
-    message: "The client will see this booking as confirmed.",
+    description: "The client will see this booking as confirmed.",
     confirmLabel: "Confirm appointment",
+    variant: "info",
   },
   complete: {
     title: "Complete appointment?",
-    message: "This marks the appointment as completed and cannot be changed afterwards.",
+    description: "This marks the appointment as completed and cannot be changed afterwards.",
     confirmLabel: "Complete appointment",
+    variant: "success",
   },
   cancel: {
     title: "Cancel appointment?",
-    message: "This appointment will be marked as cancelled and cannot be restored.",
+    description: "This appointment will be marked as cancelled and cannot be restored.",
     confirmLabel: "Cancel appointment",
+    variant: "warning",
   },
   delete: {
     title: "Delete appointment?",
-    message: "This appointment will be permanently deleted.",
+    description: "This appointment will be permanently deleted.",
     confirmLabel: "Delete",
+    variant: "error",
   },
 };
 const pendingActionConfig = computed(

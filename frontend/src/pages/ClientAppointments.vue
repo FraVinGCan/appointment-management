@@ -273,8 +273,9 @@ async function cancelAppointment() {
     <AppConfirm
       :open="Boolean(appointmentToCancel)"
       title="Cancel appointment?"
-      message="This booking request will be marked as cancelled and cannot be restored."
+      description="This booking request will be marked as cancelled and cannot be restored."
       confirm-label="Cancel appointment"
+      variant="warning"
       :loading="appointments.isSaving"
       @cancel="appointmentToCancel = null"
       @confirm="cancelAppointment"
