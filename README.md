@@ -21,7 +21,7 @@ There is no root package manager or test runner — always run commands from the
 - PHP ≥ 8.3, Composer
 - Node.js `^22.18.0 || >=24.12.0`
 - MySQL (or adjust `DB_CONNECTION` in `backend/.env`)
-- On Windows PowerShell, use `npm` instead of `npm` if execution policy blocks `npm.ps1`.
+- On Windows PowerShell, use `npm.cmd` instead of `npm` if execution policy blocks `npm.ps1`.
 
 ## Quick start
 
