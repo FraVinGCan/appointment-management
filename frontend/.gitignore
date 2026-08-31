@@ -25,7 +25,8 @@ coverage
 *.sw?
 
 *.tsbuildinfo
-/components.d.ts
+components.d.ts
+auto-imports.d.ts
 
 .eslintcache
 
