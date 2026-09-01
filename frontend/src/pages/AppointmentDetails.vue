@@ -151,7 +151,7 @@ async function runConfirmation() {
     />
     <div
       v-else-if="appointment"
-      class="max-w-3xl rounded-2xl border border-slate-800 bg-slate-900 p-4 sm:p-6"
+      class="max-w-3xl rounded-2xl border border-default bg-default p-4 sm:p-6"
     >
       <div class="flex flex-wrap items-start justify-between gap-4">
         <div class="min-w-0">
@@ -165,16 +165,16 @@ async function runConfirmation() {
             </RouterLink>
             <span v-else>{{ appointment.service?.name }}</span>
           </h2>
-          <p class="mt-1 font-semibold text-cyan-300">
+          <p class="mt-1 font-semibold text-primary">
             {{ formatDate(appointment.appointmentDate) }} ·
             {{ formatTime(appointment.startTime) }} - {{ formatTime(appointment.endTime) }}
           </p>
         </div>
         <EnumBadge :value="appointment.status" kind="status" />
       </div>
-      <dl class="mt-8 grid gap-5 border-t border-slate-800 pt-6 sm:grid-cols-2">
+      <dl class="mt-8 grid gap-5 border-t border-default pt-6 sm:grid-cols-2">
         <div>
-          <dt class="text-xs uppercase tracking-wide text-slate-500">Client</dt>
+          <dt class="text-xs uppercase tracking-wide text-muted">Client</dt>
           <dd class="mt-1 truncate">
             <RouterLink
               v-if="appointment.client?.id"
@@ -187,7 +187,7 @@ async function runConfirmation() {
           </dd>
         </div>
         <div>
-          <dt class="text-xs uppercase tracking-wide text-slate-500">
+          <dt class="text-xs uppercase tracking-wide text-muted">
             Priority
           </dt>
           <dd class="mt-1">
@@ -195,7 +195,7 @@ async function runConfirmation() {
           </dd>
         </div>
         <div>
-          <dt class="text-xs uppercase tracking-wide text-slate-500">
+          <dt class="text-xs uppercase tracking-wide text-muted">
             Service
           </dt>
           <dd class="mt-1 truncate">
@@ -210,29 +210,29 @@ async function runConfirmation() {
           </dd>
         </div>
         <div>
-          <dt class="text-xs uppercase tracking-wide text-slate-500">Notes</dt>
-          <dd class="mt-1 text-slate-300">
+          <dt class="text-xs uppercase tracking-wide text-muted">Notes</dt>
+          <dd class="mt-1 text-default">
             {{ appointment.notes || "No notes" }}
           </dd>
         </div>
         <div>
-          <dt class="text-xs uppercase tracking-wide text-slate-500">
+          <dt class="text-xs uppercase tracking-wide text-muted">
             Created
           </dt>
-          <dd class="mt-1 text-slate-300">
+          <dd class="mt-1 text-default">
             {{ formatDateTime(appointment.createdAt) }}
           </dd>
         </div>
         <div>
-          <dt class="text-xs uppercase tracking-wide text-slate-500">
+          <dt class="text-xs uppercase tracking-wide text-muted">
             Last updated
           </dt>
-          <dd class="mt-1 text-slate-300">
+          <dd class="mt-1 text-default">
             {{ formatDateTime(appointment.updatedAt) }}
           </dd>
         </div>
       </dl>
-      <div class="mt-8 flex flex-wrap gap-3 border-t border-slate-800 pt-6">
+      <div class="mt-8 flex flex-wrap gap-3 border-t border-default pt-6">
         <UButton
           v-if="canConfirm"
           class="w-full sm:w-auto"

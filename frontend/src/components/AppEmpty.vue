@@ -1,6 +1,6 @@
 <template>
   <UCard v-if="variant !== 'inline'" variant="subtle" class="text-center p-6">
-    <UIcon :name="displayIcon" class="mx-auto mb-3 text-4xl text-slate-400" />
+    <UIcon :name="displayIcon" class="mx-auto mb-3 text-4xl text-muted" />
     <p class="text-sm text-muted">{{ message }}</p>
     <UButton
       v-if="action.to || action.onClick"
@@ -14,7 +14,7 @@
     <slot />
   </UCard>
   <div v-else class="text-center text-sm text-muted p-4">
-    <UIcon :name="displayIcon" class="mx-auto mb-3 text-4xl text-slate-400" />
+    <UIcon :name="displayIcon" class="mx-auto mb-3 text-4xl text-muted" />
     <p>{{ message }}</p>
     <UButton
       v-if="action.to || action.onClick"

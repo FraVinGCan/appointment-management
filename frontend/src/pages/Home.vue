@@ -63,17 +63,17 @@ async function signOut() {
 
   <section v-else class="space-y-6">
     <div
-      class="rounded-2xl border border-cyan-900/80 bg-gradient-to-br from-cyan-950/70 via-slate-900 to-slate-900 p-5 sm:p-8"
+      class="rounded-2xl border border-primary-800/60 bg-gradient-to-br from-primary-950/70 via-default to-default p-5 sm:p-8"
     >
       <div class="flex flex-wrap items-end justify-between gap-5">
         <div>
-          <p class="text-sm font-semibold uppercase tracking-[0.25em] text-cyan-400">
+          <p class="text-sm font-semibold uppercase tracking-[0.25em] text-primary">
             Client overview
           </p>
           <h1 class="mt-3 text-2xl font-semibold sm:text-3xl">
             Welcome back, {{ auth.user?.name }}
           </h1>
-          <p class="mt-2 max-w-xl text-slate-300">
+          <p class="mt-2 max-w-xl text-default">
             Keep track of your visits and find the next service that fits your schedule.
           </p>
         </div>
@@ -99,52 +99,52 @@ async function signOut() {
     />
     <template v-else>
       <div class="grid gap-4 sm:grid-cols-3">
-        <UCard variant="subtle" class="border-slate-800 bg-slate-900/60">
-          <p class="text-sm font-medium text-slate-400">Upcoming visits</p>
-          <p class="mt-2 text-3xl font-semibold text-cyan-300">
+        <UCard variant="subtle" class="border-default bg-default">
+          <p class="text-sm font-medium text-muted">Upcoming visits</p>
+          <p class="mt-2 text-3xl font-semibold text-primary">
             {{ upcomingAppointments.length }}
           </p>
-          <p class="mt-1 text-xs text-slate-500">Requested or confirmed</p>
+          <p class="mt-1 text-xs text-dimmed">Requested or confirmed</p>
         </UCard>
-        <UCard variant="subtle" class="border-slate-800 bg-slate-900/60">
-          <p class="text-sm font-medium text-slate-400">Pending requests</p>
-          <p class="mt-2 text-3xl font-semibold text-amber-300">
+        <UCard variant="subtle" class="border-default bg-default">
+          <p class="text-sm font-medium text-muted">Pending requests</p>
+          <p class="mt-2 text-3xl font-semibold text-warning">
             {{ pendingAppointments }}
           </p>
-          <p class="mt-1 text-xs text-slate-500">Waiting for confirmation</p>
+          <p class="mt-1 text-xs text-dimmed">Waiting for confirmation</p>
         </UCard>
-        <UCard variant="subtle" class="border-slate-800 bg-slate-900/60">
-          <p class="text-sm font-medium text-slate-400">Completed visits</p>
-          <p class="mt-2 text-3xl font-semibold text-emerald-300">
+        <UCard variant="subtle" class="border-default bg-default">
+          <p class="text-sm font-medium text-muted">Completed visits</p>
+          <p class="mt-2 text-3xl font-semibold text-success">
             {{ completedAppointments }}
           </p>
-          <p class="mt-1 text-xs text-slate-500">From your appointment history</p>
+          <p class="mt-1 text-xs text-dimmed">From your appointment history</p>
         </UCard>
       </div>
 
       <div class="grid gap-6 lg:grid-cols-[1.4fr_0.8fr]">
-        <UCard variant="subtle" class="border-slate-800 bg-slate-900/60">
+        <UCard variant="subtle" class="border-default bg-default">
           <div class="flex items-start justify-between gap-4">
             <div>
               <h2 class="text-lg font-semibold">Your next visits</h2>
-              <p class="mt-1 text-sm text-slate-400">Your closest upcoming appointments.</p>
+              <p class="mt-1 text-sm text-muted">Your closest upcoming appointments.</p>
             </div>
             <UButton to="/client/appointments" variant="link" trailing-icon="i-lucide-arrow-right">
               View all
             </UButton>
           </div>
 
-          <div v-if="upcomingAppointments.length" class="mt-5 divide-y divide-slate-800">
+          <div v-if="upcomingAppointments.length" class="mt-5 divide-y divide-default">
             <div
               v-for="appointment in upcomingAppointments"
               :key="appointment.id"
               class="flex flex-wrap items-center justify-between gap-4 py-4 first:pt-0 last:pb-0"
             >
               <div class="min-w-0">
-                <p class="truncate font-semibold text-slate-100">
+                <p class="truncate font-semibold text-default">
                   {{ appointment.service?.name || "Appointment" }}
                 </p>
-                <p class="mt-1 text-sm font-semibold text-cyan-300">
+                <p class="mt-1 text-sm font-semibold text-primary">
                   {{ formatDate(appointment.appointmentDate) }} · {{ formatTimeRange(appointment) }}
                 </p>
               </div>
@@ -154,9 +154,9 @@ async function signOut() {
         <AppEmpty v-else class="mt-5" message="No upcoming appointments found." :action="{ to: '/client/marketplace', label: 'Find a service', icon: 'i-lucide-search' }" />
         </UCard>
 
-        <UCard variant="subtle" class="border-slate-800 bg-slate-900/60">
+        <UCard variant="subtle" class="border-default bg-default">
           <h2 class="text-lg font-semibold">Plan your next visit</h2>
-          <p class="mt-2 text-sm leading-6 text-slate-400">
+          <p class="mt-2 text-sm leading-6 text-muted">
             Browse available services and send a booking request in just a few steps.
           </p>
           <div class="mt-6 space-y-3">

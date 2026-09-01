@@ -127,22 +127,22 @@ async function runPendingAction() {
     />
     <div v-else-if="clients.current" class="space-y-8">
       <div
-        class="max-w-2xl rounded-2xl border border-slate-800 bg-slate-900 p-4 sm:p-6"
+        class="max-w-2xl rounded-2xl border border-default bg-default p-4 sm:p-6"
       >
         <h2 class="truncate text-xl font-semibold sm:text-2xl">
           {{ clients.current.name }}
         </h2>
-        <dl class="mt-6 space-y-4 border-t border-slate-800 pt-6">
+        <dl class="mt-6 space-y-4 border-t border-default pt-6">
           <div>
-            <dt class="text-xs uppercase tracking-wide text-slate-500">Email</dt>
+            <dt class="text-xs uppercase tracking-wide text-muted">Email</dt>
             <dd class="mt-1 break-all truncate">{{ clients.current.email }}</dd>
           </div>
           <div>
-            <dt class="text-xs uppercase tracking-wide text-slate-500">Phone</dt>
+            <dt class="text-xs uppercase tracking-wide text-muted">Phone</dt>
             <dd class="mt-1">{{ clients.current.phone || "Not provided" }}</dd>
           </div>
           <div>
-            <dt class="text-xs uppercase tracking-wide text-slate-500">Status</dt>
+            <dt class="text-xs uppercase tracking-wide text-muted">Status</dt>
             <dd class="mt-1">
               <EnumBadge
                 :value="clients.current.active === false ? 'Inactive' : 'Active'"
@@ -151,14 +151,14 @@ async function runPendingAction() {
             </dd>
           </div>
           <div>
-            <dt class="text-xs uppercase tracking-wide text-slate-500">Created</dt>
-            <dd class="mt-1 text-slate-300">
+            <dt class="text-xs uppercase tracking-wide text-muted">Created</dt>
+            <dd class="mt-1 text-default">
               {{ formatDateTime(clients.current.createdAt) }}
             </dd>
           </div>
           <div>
-            <dt class="text-xs uppercase tracking-wide text-slate-500">Last updated</dt>
-            <dd class="mt-1 text-slate-300">
+            <dt class="text-xs uppercase tracking-wide text-muted">Last updated</dt>
+            <dd class="mt-1 text-default">
               {{ formatDateTime(clients.current.updatedAt) }}
             </dd>
           </div>

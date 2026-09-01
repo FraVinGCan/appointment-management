@@ -223,14 +223,14 @@ async function cancelAppointment() {
       <article
         v-for="appointment in appointments.items"
         :key="appointment.id"
-        class="rounded-2xl border border-slate-800 bg-slate-900 p-5"
+        class="rounded-2xl border border-default bg-default p-5"
       >
         <div class="flex flex-wrap items-start justify-between gap-4">
           <div>
             <h2 class="text-lg font-semibold truncate">
               {{ appointment.service?.name || "Appointment" }}
             </h2>
-            <p class="mt-1 text-sm font-semibold text-cyan-300">
+            <p class="mt-1 text-sm font-semibold text-primary">
               {{ formatDate(appointment.appointmentDate) }} ·
               {{ formatTime(appointment.startTime) }} - {{ formatTime(appointment.endTime) }}
             </p>
@@ -243,12 +243,12 @@ async function cancelAppointment() {
         </div>
         <p
           v-if="appointment.notes"
-          class="mt-3 whitespace-pre-line text-sm text-slate-300"
+          class="mt-3 whitespace-pre-line text-sm text-default"
         >
           {{ appointment.notes }}
         </p>
         <div
-          class="mt-4 flex flex-wrap items-center justify-end gap-4 border-t border-slate-800 pt-4 text-sm"
+          class="mt-4 flex flex-wrap items-center justify-end gap-4 border-t border-default pt-4 text-sm"
         >
           <UButton
             v-if="canCancel(appointment)"

@@ -119,7 +119,7 @@ const columns = [
     cell: ({ row }) =>
       h(
         "div",
-        { class: "min-w-0 truncate font-semibold text-cyan-300" },
+        { class: "min-w-0 truncate font-semibold text-primary" },
         row.original.appointment,
       ),
   },
@@ -468,7 +468,7 @@ function selectRow(_event, row) {
         <template #item="{ item }">
           <UCard variant="subtle">
             <h2 class="font-semibold truncate">{{ item.appointment }}</h2>
-            <p class="mt-3 text-sm text-slate-400 truncate">
+            <p class="mt-3 text-sm text-muted truncate">
               <RouterLink
                 v-if="item.clientId"
                 :to="`/clients/${item.clientId}/edit`"
@@ -479,7 +479,7 @@ function selectRow(_event, row) {
               </RouterLink>
               <span v-else>{{ item.client || "Unknown client" }}</span>
             </p>
-            <p class="mt-1 text-sm text-slate-400 truncate">
+            <p class="mt-1 text-sm text-muted truncate">
               <RouterLink
                 v-if="item.serviceId"
                 :to="`/services/${item.serviceId}/edit`"

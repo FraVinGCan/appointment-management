@@ -206,10 +206,10 @@ function updateState(updates, fetch = false) {
             <UBadge v-if="item.category" class="mt-3" color="primary" variant="subtle">
               {{ item.category }}
             </UBadge>
-            <p v-if="item.shortDescription" class="mt-3 text-sm text-slate-300">
+            <p v-if="item.shortDescription" class="mt-3 text-sm text-default">
               {{ item.shortDescription }}
             </p>
-            <p class="mt-3 line-clamp-2 text-sm text-slate-400">
+            <p class="mt-3 line-clamp-2 text-sm text-muted">
               {{ item.description || "No description" }}
             </p>
             <div class="mt-5 flex flex-wrap gap-2">

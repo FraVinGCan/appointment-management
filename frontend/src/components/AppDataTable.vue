@@ -44,8 +44,8 @@ const lastResult = computed(() =>
 </script>
 
 <template>
-  <div class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900">
-    <div v-if="showToolbar" class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 p-4">
+  <div class="overflow-hidden rounded-2xl border border-default bg-default">
+    <div v-if="showToolbar" class="flex flex-wrap items-center justify-between gap-3 border-b border-default p-4">
       <UInput
         :model-value="search"
         icon="i-lucide-search"
@@ -137,7 +137,7 @@ const lastResult = computed(() =>
       </div>
     </div>
 
-    <div v-if="showPagination" class="grid items-center gap-3 border-t border-slate-800 px-4 py-3 text-sm text-slate-400 sm:grid-cols-[1fr_auto_1fr]">
+    <div v-if="showPagination" class="grid items-center gap-3 border-t border-default px-4 py-3 text-sm text-muted sm:grid-cols-[1fr_auto_1fr]">
       <span class="text-center sm:text-left">Showing {{ firstResult }} to {{ lastResult }} of {{ total }} results</span>
       <label class="flex items-center justify-center gap-2">
         <span>Rows</span>

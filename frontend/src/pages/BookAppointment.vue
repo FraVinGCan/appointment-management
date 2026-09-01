@@ -106,10 +106,10 @@ async function submit() {
             {{ services.current.category }}
           </UBadge>
         </div>
-        <p v-if="services.current.shortDescription" class="mt-2 text-slate-300">
+<p v-if="services.current.shortDescription" class="mt-2 text-default">
           {{ services.current.shortDescription }}
         </p>
-        <p class="text-slate-400">
+        <p class="text-muted">
           {{
             services.current.description ||
             "No description provided for this service yet."
@@ -121,7 +121,7 @@ async function submit() {
           <div class="space-y-6">
             <div>
               <h2 class="text-lg font-semibold">Request an appointment</h2>
-              <p class="mt-1 text-sm text-slate-400">
+<p class="mt-1 text-sm text-muted">
                 Choose a date and time that works for you.
               </p>
             </div>

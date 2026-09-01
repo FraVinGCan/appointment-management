@@ -258,10 +258,10 @@ function selectRow(_event, row) {
                 {{ item.active ? "Active" : "Inactive" }}
               </UBadge>
             </div>
-            <p class="mt-3 text-sm text-slate-400 truncate break-all">
+            <p class="mt-3 text-sm text-muted truncate break-all">
               {{ item.email }}
             </p>
-            <p class="mt-1 text-sm text-slate-400">
+            <p class="mt-1 text-sm text-muted">
               {{ item.phone || "Not provided" }}
             </p>
             <div class="mt-5 flex flex-wrap gap-2">

@@ -3,7 +3,7 @@
   <div class="flex flex-wrap items-end justify-between gap-4">
     <div>
       <h1 class="text-2xl sm:text-3xl font-semibold">{{ title }}</h1>
-      <p v-if="description" class="mt-2 text-slate-400">
+      <p v-if="description" class="mt-2 text-muted">
         {{ description }}
       </p>
     </div>

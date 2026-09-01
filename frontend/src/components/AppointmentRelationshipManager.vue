@@ -177,10 +177,10 @@ function sortableHeader(label, key) {
     "button",
     {
       type: "button",
-      class: "-mx-2.5 inline-flex items-center gap-1 rounded-md px-2.5 py-1.5 font-medium hover:bg-slate-800",
+      class: "-mx-2.5 inline-flex items-center gap-1 rounded-md px-2.5 py-1.5 font-medium hover:bg-muted",
       onClick: () => setSort(key),
     },
-    [label, h("span", { class: "text-xs text-slate-400" }, isSorted ? (sortDirection.value === "asc" ? "↑" : "↓") : "↕")],
+    [label, h("span", { class: "text-xs text-muted" }, isSorted ? (sortDirection.value === "asc" ? "↑" : "↓") : "↕")],
   );
 }
 function setSort(key) {
@@ -206,7 +206,7 @@ const columns = computed(() => [
     cell: ({ row }) =>
       h(
         "div",
-        { class: "min-w-0 truncate font-semibold text-cyan-300" },
+        { class: "min-w-0 truncate font-semibold text-primary" },
         row.original.appointment,
       ),
   },

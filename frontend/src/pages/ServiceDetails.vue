@@ -127,7 +127,7 @@ async function runPendingAction() {
     />
     <div v-else-if="services.current" class="space-y-8">
       <div
-        class="max-w-2xl rounded-2xl border border-slate-800 bg-slate-900 p-4 sm:p-6"
+        class="max-w-2xl rounded-2xl border border-default bg-default p-4 sm:p-6"
       >
         <div class="flex flex-wrap items-start justify-between gap-3">
           <h2 class="truncate text-xl font-semibold sm:text-2xl">
@@ -143,22 +143,22 @@ async function runPendingAction() {
             {{ services.current.category }}
           </UBadge>
         </div>
-        <p v-if="services.current.shortDescription" class="mt-4 text-slate-300">
+        <p v-if="services.current.shortDescription" class="mt-4 text-default">
           {{ services.current.shortDescription }}
         </p>
-        <p class="mt-5 text-slate-400">
+        <p class="mt-5 text-muted">
           {{ services.current.description || "No description" }}
         </p>
-        <dl class="mt-6 grid gap-5 border-t border-slate-800 pt-6 sm:grid-cols-2">
+        <dl class="mt-6 grid gap-5 border-t border-default pt-6 sm:grid-cols-2">
           <div>
-            <dt class="text-xs uppercase tracking-wide text-slate-500">Created</dt>
-            <dd class="mt-1 text-slate-300">
+            <dt class="text-xs uppercase tracking-wide text-muted">Created</dt>
+            <dd class="mt-1 text-default">
               {{ formatDateTime(services.current.createdAt) }}
             </dd>
           </div>
           <div>
-            <dt class="text-xs uppercase tracking-wide text-slate-500">Last updated</dt>
-            <dd class="mt-1 text-slate-300">
+            <dt class="text-xs uppercase tracking-wide text-muted">Last updated</dt>
+            <dd class="mt-1 text-default">
               {{ formatDateTime(services.current.updatedAt) }}
             </dd>
           </div>

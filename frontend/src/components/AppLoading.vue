@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-3 p-5 sm:p-8" role="status">
     <USkeleton class="mx-auto h-4 w-40" />
-    <p class="text-center text-sm text-slate-400">{{ message }}</p>
+    <p class="text-center text-sm text-muted">{{ message }}</p>
   </div>
 </template>
 

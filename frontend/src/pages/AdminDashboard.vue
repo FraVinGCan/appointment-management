@@ -48,7 +48,7 @@ const columns = [
     cell: ({ row }) =>
       h(
         "div",
-        { class: "min-w-0 truncate font-semibold text-cyan-300" },
+        { class: "min-w-0 truncate font-semibold text-primary" },
         row.original.slot,
       ),
   },
@@ -244,8 +244,8 @@ function selectRow(_event, row) {
       </div>
 
       <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <UCard variant="subtle" class="border-slate-800 bg-slate-900/60">
-          <h3 class="text-base font-semibold text-slate-100">
+        <UCard variant="subtle" class="border-default bg-default">
+          <h3 class="text-base font-semibold text-default">
             Appointment status
           </h3>
           <apexchart
@@ -256,8 +256,8 @@ function selectRow(_event, row) {
           />
         </UCard>
 
-        <UCard variant="subtle" class="border-slate-800 bg-slate-900/60">
-          <h3 class="text-base font-semibold text-slate-100">
+        <UCard variant="subtle" class="border-default bg-default">
+          <h3 class="text-base font-semibold text-default">
             Appointment priority
           </h3>
           <apexchart
@@ -272,9 +272,9 @@ function selectRow(_event, row) {
       <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <UCard
           variant="subtle"
-          class="border-slate-800 bg-slate-900/60 lg:col-span-2"
+          class="border-default bg-default lg:col-span-2"
         >
-          <h3 class="text-base font-semibold text-slate-100">
+          <h3 class="text-base font-semibold text-default">
             Appointments over the last 14 days
           </h3>
           <apexchart
@@ -290,8 +290,8 @@ function selectRow(_event, row) {
           />
         </UCard>
 
-        <UCard variant="subtle" class="border-slate-800 bg-slate-900/60">
-          <h3 class="text-base font-semibold text-slate-100">Top services</h3>
+        <UCard variant="subtle" class="border-default bg-default">
+          <h3 class="text-base font-semibold text-default">Top services</h3>
           <apexchart
             type="bar"
             :options="topServicesOptions"
@@ -307,7 +307,7 @@ function selectRow(_event, row) {
       </div>
 
       <div class="space-y-4">
-        <h3 class="text-base font-semibold text-slate-100">
+        <h3 class="text-base font-semibold text-default">
           Upcoming & open appointments
         </h3>
         <AppDataTable
@@ -327,7 +327,7 @@ function selectRow(_event, row) {
               @click="router.push(`/appointments/${item.id}`)"
             >
               <h2 class="font-semibold truncate">{{ item.slot }}</h2>
-              <p class="mt-3 text-sm text-slate-400 truncate">
+              <p class="mt-3 text-sm text-muted truncate">
                 <RouterLink
                   v-if="item.clientId"
                   :to="`/clients/${item.clientId}/edit`"
@@ -338,7 +338,7 @@ function selectRow(_event, row) {
                 </RouterLink>
                 <span v-else>{{ item.client || "Unknown client" }}</span>
               </p>
-              <p class="mt-1 text-sm text-slate-400 truncate">
+              <p class="mt-1 text-sm text-muted truncate">
                 <RouterLink
                   v-if="item.serviceId"
                   :to="`/services/${item.serviceId}/edit`"
