@@ -25,19 +25,17 @@ async function submit() {
 </script>
 
 <template>
-  <main
-    class="min-h-screen bg-slate-950 px-4 py-10 sm:px-6 sm:py-12 text-slate-100"
-  >
-    <UCard class="mx-auto max-w-md" variant="subtle">
+  <main class="flex flex-1 items-center justify-center">
+    <UCard class="w-full max-w-md" variant="subtle">
       <p
-        class="text-sm font-semibold uppercase tracking-[0.25em] text-cyan-400"
+        class="text-sm font-semibold uppercase tracking-[0.25em] text-primary"
       >
         Appointment Desk
       </p>
       <h1 class="mt-4 text-2xl sm:text-3xl font-semibold">
         Create client account
       </h1>
-      <p class="mt-2 text-slate-400">
+      <p class="mt-2 text-muted">
         Register to request and manage your appointments.
       </p>
 
@@ -103,9 +101,9 @@ async function submit() {
         >
       </UForm>
 
-      <p class="mt-6 text-center text-sm text-slate-400">
+      <p class="mt-6 text-center text-sm text-muted">
         Already registered?
-        <ULink to="/login" class="font-semibold text-cyan-400">Sign in</ULink>
+        <ULink to="/login" class="font-semibold text-primary">Sign in</ULink>
       </p>
     </UCard>
   </main>

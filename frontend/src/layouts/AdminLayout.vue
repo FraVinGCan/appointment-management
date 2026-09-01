@@ -1,77 +1,104 @@
 <template>
-  <div class="min-h-screen bg-slate-950 text-slate-100">
-    <header class="lg:hidden border-b border-slate-800 bg-slate-900/90">
-      <div class="flex items-center justify-between px-4 py-3">
-        <UButton
-          variant="ghost"
-          color="neutral"
-          icon="i-lucide-menu"
-          aria-label="Open menu"
-          @click="sidebarOpen = true"
-        />
-        <span class="text-lg font-semibold">Appointment Desk</span>
-        <UButton
-          color="neutral"
-          variant="outline"
-          size="sm"
-          :loading="auth.isLoading"
-          @click="signOut"
-        >
-          Log out
-        </UButton>
-      </div>
-    </header>
+  <div
+    class="flex min-h-screen text-default"
+    :class="isDesktop ? 'bg-neutral-50 dark:bg-neutral-950' : 'bg-default'"
+  >
     <USidebar
       v-model:open="sidebarOpen"
+      :variant="isDesktop ? 'inset' : 'sidebar'"
+      collapsible="icon"
       title="Appointment Desk"
       description="Admin workspace"
-      collapsible
-      class="z-30"
     >
-      <template #default>
+      <template #header="{ close }">
+        <div class="flex w-full items-center justify-between">
+          <UIcon name="i-lucide-calendar-check" class="size-8 text-primary" />
+          <UButton
+            icon="i-lucide-x"
+            color="neutral"
+            variant="ghost"
+            aria-label="Close menu"
+            class="lg:hidden"
+            @click="close"
+          />
+        </div>
+      </template>
+
+      <template #default="{ state }">
         <UNavigationMenu
-          :items="links"
+          :items="getLinks(state)"
           orientation="vertical"
-          highlight
-          class="w-full"
+          :ui="{ link: 'p-1.5 overflow-hidden' }"
         />
       </template>
-      <template #footer>
-        <UButton
-          color="neutral"
-          variant="outline"
-          block
-          :loading="auth.isLoading"
-          @click="signOut"
-          >Log out</UButton
-        >
-      </template>
     </USidebar>
-    <main class="min-h-screen px-4 py-6 sm:px-6 sm:py-8 lg:pl-72">
-      <div class="mx-auto max-w-7xl">
+
+    <div
+      class="flex flex-1 flex-col overflow-hidden bg-default"
+      :class="isDesktop && 'm-4 rounded-xl shadow-sm ring ring-default lg:ms-0'"
+    >
+      <div
+        class="h-(--ui-header-height) shrink-0 flex items-center justify-between px-4 border-b border-default"
+      >
+        <UButton
+          icon="i-lucide-panel-left"
+          color="neutral"
+          variant="ghost"
+          aria-label="Toggle sidebar"
+          @click="sidebarOpen = !sidebarOpen"
+        />
+        <ProfileMenu />
+      </div>
+
+      <div class="flex-1 p-4 overflow-y-auto">
         <slot />
       </div>
-    </main>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
-import { useRouter, useRoute } from "vue-router";
+import { ref, watch, onBeforeUnmount } from "vue";
+import { useRoute } from "vue-router";
 
-import { useAuthStore } from "../stores/auth";
+import ProfileMenu from "../components/ProfileMenu.vue";
 
-const auth = useAuthStore();
-const router = useRouter();
 const route = useRoute();
-const links = [
+
+const sidebarOpen = ref(true);
+
+const mediaQuery = window.matchMedia("(min-width: 1024px)");
+const isDesktop = ref(mediaQuery.matches);
+
+function onMediaChange(event) {
+  isDesktop.value = event.matches;
+}
+
+mediaQuery.addEventListener("change", onMediaChange);
+
+onBeforeUnmount(() => mediaQuery.removeEventListener("change", onMediaChange));
+
+const adminLinks = [
   { label: "Dashboard", to: "/", icon: "i-lucide-house" },
   { label: "Appointments", to: "/appointments", icon: "i-lucide-calendar" },
   { label: "Clients", to: "/clients", icon: "i-lucide-users" },
   { label: "Services", to: "/services", icon: "i-lucide-briefcase-business" },
 ];
 
-const sidebarOpen = ref(true);
+const collapsedLinks = [
+  { icon: "i-lucide-house", to: "/", tooltip: "Dashboard" },
+  { icon: "i-lucide-calendar", to: "/appointments", tooltip: "Appointments" },
+  { icon: "i-lucide-users", to: "/clients", tooltip: "Clients" },
+  {
+    icon: "i-lucide-briefcase-business",
+    to: "/services",
+    tooltip: "Services",
+  },
+];
+
+function getLinks(state) {
+  return state === "collapsed" ? collapsedLinks : adminLinks;
+}
 
 watch(
   () => route.fullPath,
@@ -79,9 +106,4 @@ watch(
     sidebarOpen.value = false;
   },
 );
-
-async function signOut() {
-  await auth.logout();
-  router.push("/login");
-}
 </script>

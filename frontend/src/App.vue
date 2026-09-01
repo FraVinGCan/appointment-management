@@ -11,15 +11,16 @@
 import { computed, onMounted, onUnmounted } from "vue";
 import { useRoute } from "vue-router";
 
-import ClientLayout from "./layouts/ClientLayout.vue";
 import AdminLayout from "./layouts/AdminLayout.vue";
+import ClientLayout from "./layouts/ClientLayout.vue";
+import GuestLayout from "./layouts/GuestLayout.vue";
 import { useAuthStore } from "./stores/auth";
 
 const auth = useAuthStore();
 const toast = useToast();
 const route = useRoute();
 const layout = computed(() => {
-  if (!auth.isAuthenticated || route.meta.guestOnly) return null;
+  if (!auth.isAuthenticated) return GuestLayout;
   return auth.isAdmin ? AdminLayout : ClientLayout;
 });
 

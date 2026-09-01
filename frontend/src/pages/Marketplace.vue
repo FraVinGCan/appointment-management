@@ -71,26 +71,23 @@ function updateState(updates, fetch = false) {
 </script>
 
 <template>
-  <main
-    class="min-h-screen bg-slate-950 px-4 py-10 sm:px-6 sm:py-12 text-slate-100"
-  >
-    <div class="mx-auto max-w-5xl space-y-8">
-      <section
-        class="rounded-2xl border border-slate-800 bg-slate-900 p-5 sm:p-8"
+  <div class="space-y-8">
+    <section
+      class="rounded-2xl border border-default bg-elevated p-5 sm:p-8"
+    >
+      <p
+        class="text-sm font-semibold uppercase tracking-[0.25em] text-primary"
       >
-        <p
-          class="text-sm font-semibold uppercase tracking-[0.25em] text-cyan-400"
-        >
-          Appointment Desk
-        </p>
-        <h1 class="mt-3 text-2xl sm:text-3xl font-semibold">
-          Our service marketplace
-        </h1>
-        <p class="mt-2 max-w-2xl text-slate-400">
-          Browse everything we offer, then choose a service to view its details
-          and request an appointment.
-        </p>
-      </section>
+        Appointment Desk
+      </p>
+      <h1 class="mt-3 text-2xl sm:text-3xl font-semibold">
+        Our service marketplace
+      </h1>
+      <p class="mt-2 max-w-2xl text-muted">
+        Browse everything we offer, then choose a service to view its details
+        and request an appointment.
+      </p>
+    </section>
 
       <AppLoading
         v-if="services.isLoading"
@@ -141,16 +138,16 @@ function updateState(updates, fetch = false) {
             v-for="service in services.items"
             :key="service.id"
             variant="subtle"
-            class="flex flex-col transition-colors hover:border-slate-600"
+            class="flex flex-col transition-colors hover:border-default"
           >
             <div class="flex h-full flex-col">
               <div class="flex items-start justify-between gap-3">
-                <h2 class="font-semibold text-slate-100">{{ service.name }}</h2>
+                <h2 class="font-semibold">{{ service.name }}</h2>
                 <UBadge v-if="service.category" color="primary" variant="subtle">
                   {{ service.category }}
                 </UBadge>
               </div>
-              <p class="mt-2 flex-1 text-sm text-slate-400">
+              <p class="mt-2 flex-1 text-sm text-muted">
                 {{
                   service.shortDescription ||
                   "No description provided for this service yet."
@@ -168,7 +165,7 @@ function updateState(updates, fetch = false) {
             </div>
           </UCard>
         </div>
-        <p v-else class="text-center text-slate-400">
+        <p v-else class="text-center text-muted">
           {{ search || category ? "No services match your filters. Try different criteria." : "No services are available right now. Please check back soon." }}
         </p>
         <AppPagination
@@ -180,5 +177,4 @@ function updateState(updates, fetch = false) {
         />
       </template>
     </div>
-  </main>
 </template>
