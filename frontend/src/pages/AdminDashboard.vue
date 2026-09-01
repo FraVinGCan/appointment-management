@@ -112,14 +112,17 @@ function donutOptions(distribution, totalLabel) {
             total: {
               show: true,
               label: totalLabel,
-              color: "#e2e8f0",
+              color: "var(--ui-text-muted)",
+            },
+            value: {
+              color: "var(--ui-text)",
             },
           },
         },
       },
     },
-    theme: { mode: "dark" },
-    stroke: { show: true, colors: ["#0f172a"], width: 2 },
+    theme: { mode: "light", monochrome: { enabled: false } },
+    stroke: { show: true, colors: ["var(--ui-bg)"], width: 2 },
     dataLabels: { enabled: false },
   };
 }

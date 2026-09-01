@@ -10,7 +10,19 @@ export default defineConfig({
   plugins: [
     vue(),
     vueDevTools(),
-    ui(),
+    ui({
+      ui: {
+        colors: {
+          primary: 'red',
+          secondary: 'zinc',
+          neutral: 'zinc',
+          success: 'green',
+          info: 'blue',
+          warning: 'yellow',
+          error: 'orange',
+        },
+      },
+    }),
   ],
   resolve: {
     alias: {

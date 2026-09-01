@@ -12,11 +12,14 @@
 <script setup>
 import { computed } from "vue";
 import { useRouter } from "vue-router";
+import { useColorMode } from "@vueuse/core";
 
 import { useAuthStore } from "../stores/auth";
 
 const auth = useAuthStore();
 const router = useRouter();
+const colorMode = useColorMode();
+const isDark = computed(() => colorMode.value === "dark");
 
 const items = computed(() => [
   [
@@ -24,6 +27,13 @@ const items = computed(() => [
       type: "label",
       label: auth.user?.name || "User",
       description: auth.user?.email || "",
+    },
+  ],
+  [
+    {
+      label: isDark.value ? "Light mode" : "Dark mode",
+      icon: isDark.value ? "i-lucide-sun" : "i-lucide-moon",
+      onSelect: () => { colorMode.value = isDark.value ? "light" : "dark"; },
     },
   ],
   [
