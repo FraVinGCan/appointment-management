@@ -3,12 +3,12 @@ import { CalendarDate } from "@internationalized/date";
 import { computed, onMounted, reactive } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
-import AppDateTimePicker from "../components/AppDateTimePicker.vue";
-import AppError from "../components/AppError.vue";
-import AppLoading from "../components/AppLoading.vue";
-import AppPageHeader from "../components/AppPageHeader.vue";
-import { useAppointmentStore } from "../stores/appointments";
-import { useServiceStore } from "../stores/services";
+import AppDateTimePicker from "@/components/ui/AppDateTimePicker.vue";
+import AppError from "@/components/ui/AppError.vue";
+import AppLoading from "@/components/ui/AppLoading.vue";
+import AppPageHeader from "@/components/ui/AppPageHeader.vue";
+import { useAppointmentStore } from "@/stores/appointments";
+import { useServiceStore } from "@/stores/services";
 
 const appointments = useAppointmentStore();
 const services = useServiceStore();

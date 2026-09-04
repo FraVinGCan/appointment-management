@@ -2,13 +2,13 @@
 import { computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 
-import AppEmpty from "../components/AppEmpty.vue";
-import AppError from "../components/AppError.vue";
-import AppLoading from "../components/AppLoading.vue";
-import EnumBadge from "../components/EnumBadge.vue";
-import AdminDashboard from "./AdminDashboard.vue";
-import { useAuthStore } from "../stores/auth";
-import { useAppointmentStore } from "../stores/appointments";
+import AppEmpty from "@/components/ui/AppEmpty.vue";
+import AppError from "@/components/ui/AppError.vue";
+import AppLoading from "@/components/ui/AppLoading.vue";
+import EnumBadge from "@/components/EnumBadge.vue";
+import AdminDashboard from "@/pages/dashboard/AdminDashboard.vue";
+import { useAuthStore } from "@/stores/auth";
+import { useAppointmentStore } from "@/stores/appointments";
 
 const auth = useAuthStore();
 const appointments = useAppointmentStore();

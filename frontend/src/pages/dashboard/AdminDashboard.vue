@@ -2,13 +2,13 @@
 import { computed, h, onMounted } from "vue";
 import { RouterLink, useRouter } from "vue-router";
 
-import AppDataTable from "../components/AppDataTable.vue";
-import AppError from "../components/AppError.vue";
-import AppLoading from "../components/AppLoading.vue";
-import AppPageHeader from "../components/AppPageHeader.vue";
-import DashboardStatCard from "../components/dashboard/DashboardStatCard.vue";
-import EnumBadge from "../components/EnumBadge.vue";
-import { useDashboardStore } from "../stores/dashboard";
+import AppDataTable from "@/components/ui/AppDataTable.vue";
+import AppError from "@/components/ui/AppError.vue";
+import AppLoading from "@/components/ui/AppLoading.vue";
+import AppPageHeader from "@/components/ui/AppPageHeader.vue";
+import DashboardStatCard from "@/components/dashboard/DashboardStatCard.vue";
+import EnumBadge from "@/components/EnumBadge.vue";
+import { useDashboardStore } from "@/stores/dashboard";
 
 const dashboard = useDashboardStore();
 const router = useRouter();

@@ -3,11 +3,11 @@ import { computed, h, ref } from "vue";
 import { parseDate } from "@internationalized/date";
 import { RouterLink, useRouter } from "vue-router";
 
-import AppDataTable from "./AppDataTable.vue";
-import AppDateRangePicker from "./AppDateRangePicker.vue";
+import AppDataTable from "@/components/ui/AppDataTable.vue";
+import AppDateRangePicker from "@/components/ui/AppDateRangePicker.vue";
 import AppointmentTableActions from "./AppointmentTableActions.vue";
-import EnumBadge from "./EnumBadge.vue";
-import { useUrlState } from "../composables/useUrlState";
+import EnumBadge from "@/components/EnumBadge.vue";
+import { useUrlState } from "@/composables/useUrlState";
 
 const props = defineProps({
   appointments: { type: Array, default: () => [] },

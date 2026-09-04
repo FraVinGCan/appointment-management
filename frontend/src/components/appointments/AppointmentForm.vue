@@ -3,15 +3,15 @@ import { CalendarDate, Time } from "@internationalized/date";
 import { computed, onMounted, reactive, ref } from "vue";
 import { useRoute } from "vue-router";
 
-import AppDateTimePicker from "./AppDateTimePicker.vue";
-import AppError from "./AppError.vue";
-import AppLoading from "./AppLoading.vue";
-import { useAppointmentStore } from "../stores/appointments";
-import { useClientStore } from "../stores/clients";
-import { useServiceStore } from "../stores/services";
-import * as clientService from "../services/clientService";
-import * as serviceApi from "../services/serviceService";
-import { useDebouncedWatch } from "../composables/useDebouncedWatch";
+import AppDateTimePicker from "@/components/ui/AppDateTimePicker.vue";
+import AppError from "@/components/ui/AppError.vue";
+import AppLoading from "@/components/ui/AppLoading.vue";
+import { useAppointmentStore } from "@/stores/appointments";
+import { useClientStore } from "@/stores/clients";
+import { useServiceStore } from "@/stores/services";
+import * as clientService from "@/services/clientService";
+import * as serviceApi from "@/services/serviceService";
+import { useDebouncedWatch } from "@/composables/useDebouncedWatch";
 
 const props = defineProps({ appointment: { type: Object, default: null } });
 const emit = defineEmits(["saved"]);

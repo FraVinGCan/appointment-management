@@ -1,7 +1,7 @@
 <script setup>
 import { useRouter } from "vue-router";
-import AppPageHeader from "../components/AppPageHeader.vue";
-import ClientForm from "../components/ClientForm.vue";
+import AppPageHeader from "@/components/ui/AppPageHeader.vue";
+import ClientForm from "@/components/clients/ClientForm.vue";
 const router = useRouter();
 const toast = useToast();
 function saved() {

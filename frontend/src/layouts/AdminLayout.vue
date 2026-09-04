@@ -10,9 +10,14 @@
       title="Appointment Desk"
       description="Admin workspace"
     >
-      <template #header="{ close }">
+      <template #header="{ state, close }">
         <div class="flex w-full items-center justify-between">
-          <UIcon name="i-lucide-calendar-check" class="size-8 text-primary" />
+          <div class="flex items-center gap-2">
+            <UIcon name="i-lucide-calendar-check" class="size-8 shrink-0 text-primary" />
+            <span v-if="state === 'expanded'" class="truncate text-lg font-semibold">
+              Appointment Desk
+            </span>
+          </div>
           <UButton
             icon="i-lucide-x"
             color="neutral"
@@ -58,14 +63,12 @@
 </template>
 
 <script setup>
-import { ref, watch, onBeforeUnmount } from "vue";
-import { useRoute } from "vue-router";
+import { ref, onBeforeUnmount } from "vue";
+import { useStorage } from "@vueuse/core";
 
-import ProfileMenu from "../components/ProfileMenu.vue";
+import ProfileMenu from "@/components/ProfileMenu.vue";
 
-const route = useRoute();
-
-const sidebarOpen = ref(true);
+const sidebarOpen = useStorage("sidebar-open", true);
 
 const mediaQuery = window.matchMedia("(min-width: 1024px)");
 const isDesktop = ref(mediaQuery.matches);
@@ -100,10 +103,4 @@ function getLinks(state) {
   return state === "collapsed" ? collapsedLinks : adminLinks;
 }
 
-watch(
-  () => route.fullPath,
-  () => {
-    sidebarOpen.value = false;
-  },
-);
 </script>

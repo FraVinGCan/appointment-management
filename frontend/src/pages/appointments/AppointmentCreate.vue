@@ -1,8 +1,8 @@
 <script setup>
 import { useRouter } from "vue-router";
 
-import AppPageHeader from "../components/AppPageHeader.vue";
-import AppointmentForm from "../components/AppointmentForm.vue";
+import AppPageHeader from "@/components/ui/AppPageHeader.vue";
+import AppointmentForm from "@/components/appointments/AppointmentForm.vue";
 
 const router = useRouter();
 const toast = useToast();

@@ -1,13 +1,13 @@
 <script setup>
 import { onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import AppError from "../components/AppError.vue";
-import AppLoading from "../components/AppLoading.vue";
-import AppNotFound from "../components/AppNotFound.vue";
-import AppBreadcrumbs from "../components/AppBreadcrumbs.vue";
-import AppPageHeader from "../components/AppPageHeader.vue";
-import ServiceForm from "../components/ServiceForm.vue";
-import { useServiceStore } from "../stores/services";
+import AppError from "@/components/ui/AppError.vue";
+import AppLoading from "@/components/ui/AppLoading.vue";
+import AppNotFound from "@/components/ui/AppNotFound.vue";
+import AppBreadcrumbs from "@/components/ui/AppBreadcrumbs.vue";
+import AppPageHeader from "@/components/ui/AppPageHeader.vue";
+import ServiceForm from "@/components/services/ServiceForm.vue";
+import { useServiceStore } from "@/stores/services";
 const route = useRoute();
 const router = useRouter();
 const services = useServiceStore();

@@ -1,7 +1,7 @@
 <script setup>
 import { reactive } from "vue";
 
-import { useClientStore } from "../stores/clients";
+import { useClientStore } from "@/stores/clients";
 
 const props = defineProps({ client: { type: Object, default: null } });
 const emit = defineEmits(["saved"]);

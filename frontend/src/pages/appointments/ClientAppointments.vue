@@ -2,16 +2,16 @@
 import { computed, onMounted, ref } from "vue";
 import { parseDate } from "@internationalized/date";
 
-import AppConfirm from "../components/AppConfirm.vue";
-import AppDateRangePicker from "../components/AppDateRangePicker.vue";
-import AppEmpty from "../components/AppEmpty.vue";
-import AppError from "../components/AppError.vue";
-import AppLoading from "../components/AppLoading.vue";
-import AppPageHeader from "../components/AppPageHeader.vue";
-import AppPagination from "../components/AppPagination.vue";
-import { useAppointmentStore } from "../stores/appointments";
-import { useDebouncedWatch } from "../composables/useDebouncedWatch";
-import { useUrlState, dateOnly, integerRange, oneOf } from "../composables/useUrlState";
+import AppConfirm from "@/components/ui/AppConfirm.vue";
+import AppDateRangePicker from "@/components/ui/AppDateRangePicker.vue";
+import AppEmpty from "@/components/ui/AppEmpty.vue";
+import AppError from "@/components/ui/AppError.vue";
+import AppLoading from "@/components/ui/AppLoading.vue";
+import AppPageHeader from "@/components/ui/AppPageHeader.vue";
+import AppPagination from "@/components/ui/AppPagination.vue";
+import { useAppointmentStore } from "@/stores/appointments";
+import { useDebouncedWatch } from "@/composables/useDebouncedWatch";
+import { useUrlState, dateOnly, integerRange, oneOf } from "@/composables/useUrlState";
 
 const appointments = useAppointmentStore();
 const toast = useToast();

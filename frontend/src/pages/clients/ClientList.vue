@@ -2,16 +2,16 @@
 import { computed, h, onMounted, ref, resolveComponent } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
-import AppBreadcrumbs from "../components/AppBreadcrumbs.vue";
-import AppConfirm from "../components/AppConfirm.vue";
-import AppDataTable from "../components/AppDataTable.vue";
-import AppError from "../components/AppError.vue";
-import AppPageHeader from "../components/AppPageHeader.vue";
-import ClientActiveToggle from "../components/ClientActiveToggle.vue";
-import ClientTableActions from "../components/ClientTableActions.vue";
-import { useClientStore } from "../stores/clients";
-import { useDebouncedWatch } from "../composables/useDebouncedWatch";
-import { useUrlState, integerRange, oneOf } from "../composables/useUrlState";
+import AppBreadcrumbs from "@/components/ui/AppBreadcrumbs.vue";
+import AppConfirm from "@/components/ui/AppConfirm.vue";
+import AppDataTable from "@/components/ui/AppDataTable.vue";
+import AppError from "@/components/ui/AppError.vue";
+import AppPageHeader from "@/components/ui/AppPageHeader.vue";
+import ClientActiveToggle from "@/components/clients/ClientActiveToggle.vue";
+import ClientTableActions from "@/components/clients/ClientTableActions.vue";
+import { useClientStore } from "@/stores/clients";
+import { useDebouncedWatch } from "@/composables/useDebouncedWatch";
+import { useUrlState, integerRange, oneOf } from "@/composables/useUrlState";
 
 const clients = useClientStore();
 const UButton = resolveComponent("UButton");

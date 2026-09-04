@@ -2,19 +2,19 @@
 import { computed, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 
-import AppBreadcrumbs from "../components/AppBreadcrumbs.vue";
-import AppConfirm from "../components/AppConfirm.vue";
-import AppError from "../components/AppError.vue";
-import AppLoading from "../components/AppLoading.vue";
-import AppNotFound from "../components/AppNotFound.vue";
-import AppPageHeader from "../components/AppPageHeader.vue";
-import AppointmentRelationshipManager from "../components/AppointmentRelationshipManager.vue";
-import EnumBadge from "../components/EnumBadge.vue";
-import { useAppointmentStore } from "../stores/appointments";
-import { useServiceStore } from "../stores/services";
+import AppBreadcrumbs from "@/components/ui/AppBreadcrumbs.vue";
+import AppConfirm from "@/components/ui/AppConfirm.vue";
+import AppError from "@/components/ui/AppError.vue";
+import AppLoading from "@/components/ui/AppLoading.vue";
+import AppNotFound from "@/components/ui/AppNotFound.vue";
+import AppPageHeader from "@/components/ui/AppPageHeader.vue";
+import AppointmentRelationshipManager from "@/components/appointments/AppointmentRelationshipManager.vue";
+import EnumBadge from "@/components/EnumBadge.vue";
+import { useAppointmentStore } from "@/stores/appointments";
+import { useClientStore } from "@/stores/clients";
 
 const route = useRoute();
-const services = useServiceStore();
+const clients = useClientStore();
 const appointments = useAppointmentStore();
 const toast = useToast();
 const pendingAction = ref(null);
@@ -48,7 +48,7 @@ const pendingActionConfig = computed(
   () => appointmentActions[pendingAction.value?.action] ?? null,
 );
 
-onMounted(() => services.fetch(route.params.id));
+onMounted(() => clients.fetch(route.params.id));
 
 function formatDateTime(date) {
   if (!date) return "Not available";
@@ -69,15 +69,15 @@ async function runPendingAction() {
   try {
     if (action === "delete") {
       await appointments.remove(id);
-      services.current.appointments = services.current.appointments.filter(
+      clients.current.appointments = clients.current.appointments.filter(
         (item) => item.id !== id,
       );
     } else {
       const updated = await appointments[action](id);
-      const index = services.current.appointments.findIndex(
+      const index = clients.current.appointments.findIndex(
         (item) => item.id === id,
       );
-      if (index >= 0) services.current.appointments.splice(index, 1, updated);
+      if (index >= 0) clients.current.appointments.splice(index, 1, updated);
     }
 
     const pastTense = {
@@ -102,64 +102,64 @@ async function runPendingAction() {
 <template>
   <section class="space-y-6">
     <AppBreadcrumbs
-      :items="[{ label: 'Services', to: '/services' }, { label: 'View' }]"
+      :items="[{ label: 'Clients', to: '/clients' }, { label: 'View' }]"
     />
-    <AppPageHeader title="Service details">
-      <template v-if="services.current" #actions>
+    <AppPageHeader title="Client details">
+      <template v-if="clients.current" #actions>
         <UButton
           color="neutral"
           variant="outline"
           class="w-full sm:w-auto"
-          :to="`/services/${services.current.id}/edit`"
+          :to="`/clients/${clients.current.id}/edit`"
           >Edit</UButton
         >
       </template>
     </AppPageHeader>
-    <AppLoading v-if="services.isLoading" message="Loading service..." />
+    <AppLoading v-if="clients.isLoading" message="Loading client..." />
     <AppError
-      v-else-if="services.error && services.errorStatus !== 404"
-      :message="services.error"
+      v-else-if="clients.error && clients.errorStatus !== 404"
+      :message="clients.error"
     />
     <AppNotFound
-      v-else-if="services.errorStatus === 404"
-      resource="Service"
-      back-to="/services"
+      v-else-if="clients.errorStatus === 404"
+      resource="Client"
+      back-to="/clients"
     />
-    <div v-else-if="services.current" class="space-y-8">
+    <div v-else-if="clients.current" class="space-y-8">
       <div
         class="max-w-2xl rounded-2xl border border-default bg-default p-4 sm:p-6"
       >
-        <div class="flex flex-wrap items-start justify-between gap-3">
-          <h2 class="truncate text-xl font-semibold sm:text-2xl">
-            {{ services.current.name }}
-          </h2>
-          <EnumBadge
-            :value="services.current.active ? 'Active' : 'Inactive'"
-            kind="active"
-          />
-        </div>
-        <div class="mt-4 flex flex-wrap gap-2">
-          <UBadge v-if="services.current.category" color="primary" variant="subtle">
-            {{ services.current.category }}
-          </UBadge>
-        </div>
-        <p v-if="services.current.shortDescription" class="mt-4 text-default">
-          {{ services.current.shortDescription }}
-        </p>
-        <p class="mt-5 text-muted">
-          {{ services.current.description || "No description" }}
-        </p>
-        <dl class="mt-6 grid gap-5 border-t border-default pt-6 sm:grid-cols-2">
+        <h2 class="truncate text-xl font-semibold sm:text-2xl">
+          {{ clients.current.name }}
+        </h2>
+        <dl class="mt-6 space-y-4 border-t border-default pt-6">
+          <div>
+            <dt class="text-xs uppercase tracking-wide text-muted">Email</dt>
+            <dd class="mt-1 break-all truncate">{{ clients.current.email }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs uppercase tracking-wide text-muted">Phone</dt>
+            <dd class="mt-1">{{ clients.current.phone || "Not provided" }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs uppercase tracking-wide text-muted">Status</dt>
+            <dd class="mt-1">
+              <EnumBadge
+                :value="clients.current.active === false ? 'Inactive' : 'Active'"
+                kind="active"
+              />
+            </dd>
+          </div>
           <div>
             <dt class="text-xs uppercase tracking-wide text-muted">Created</dt>
             <dd class="mt-1 text-default">
-              {{ formatDateTime(services.current.createdAt) }}
+              {{ formatDateTime(clients.current.createdAt) }}
             </dd>
           </div>
           <div>
             <dt class="text-xs uppercase tracking-wide text-muted">Last updated</dt>
             <dd class="mt-1 text-default">
-              {{ formatDateTime(services.current.updatedAt) }}
+              {{ formatDateTime(clients.current.updatedAt) }}
             </dd>
           </div>
         </dl>
@@ -167,13 +167,13 @@ async function runPendingAction() {
 
       <div class="w-full">
         <AppointmentRelationshipManager
-          :appointments="services.current.appointments"
-          relationship="service"
+          :appointments="clients.current.appointments"
+          relationship="client"
           @action="handleAppointmentAction"
         >
           <template #actions>
             <UButton
-              :to="{ path: '/appointments/create', query: { serviceId: String(services.current.id) } }"
+              :to="{ path: '/appointments/create', query: { clientId: String(clients.current.id) } }"
               trailing-icon="i-lucide-plus"
             >
               Create appointment

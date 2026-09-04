@@ -2,14 +2,14 @@
 import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
-import AppConfirm from "../components/AppConfirm.vue";
-import AppError from "../components/AppError.vue";
-import AppLoading from "../components/AppLoading.vue";
-import AppNotFound from "../components/AppNotFound.vue";
-import AppBreadcrumbs from "../components/AppBreadcrumbs.vue";
-import AppPageHeader from "../components/AppPageHeader.vue";
-import EnumBadge from "../components/EnumBadge.vue";
-import { useAppointmentStore } from "../stores/appointments";
+import AppConfirm from "@/components/ui/AppConfirm.vue";
+import AppError from "@/components/ui/AppError.vue";
+import AppLoading from "@/components/ui/AppLoading.vue";
+import AppNotFound from "@/components/ui/AppNotFound.vue";
+import AppBreadcrumbs from "@/components/ui/AppBreadcrumbs.vue";
+import AppPageHeader from "@/components/ui/AppPageHeader.vue";
+import EnumBadge from "@/components/EnumBadge.vue";
+import { useAppointmentStore } from "@/stores/appointments";
 
 const route = useRoute();
 const router = useRouter();

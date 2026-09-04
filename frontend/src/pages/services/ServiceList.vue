@@ -1,12 +1,12 @@
 <script setup>
 import { computed, onMounted, ref } from "vue";
-import AppConfirm from "../components/AppConfirm.vue";
-import AppDataTable from "../components/AppDataTable.vue";
-import AppError from "../components/AppError.vue";
-import AppPageHeader from "../components/AppPageHeader.vue";
-import { useServiceStore } from "../stores/services";
-import { useDebouncedWatch } from "../composables/useDebouncedWatch";
-import { useUrlState, integerRange, oneOf } from "../composables/useUrlState";
+import AppConfirm from "@/components/ui/AppConfirm.vue";
+import AppDataTable from "@/components/ui/AppDataTable.vue";
+import AppError from "@/components/ui/AppError.vue";
+import AppPageHeader from "@/components/ui/AppPageHeader.vue";
+import { useServiceStore } from "@/stores/services";
+import { useDebouncedWatch } from "@/composables/useDebouncedWatch";
+import { useUrlState, integerRange, oneOf } from "@/composables/useUrlState";
 
 const services = useServiceStore();
 const toast = useToast();

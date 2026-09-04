@@ -2,11 +2,11 @@
 import { onMounted } from "vue";
 import { useRoute } from "vue-router";
 
-import AppError from "../components/AppError.vue";
-import AppLoading from "../components/AppLoading.vue";
-import AppNotFound from "../components/AppNotFound.vue";
-import { useAuthStore } from "../stores/auth";
-import { useServiceStore } from "../stores/services";
+import AppError from "@/components/ui/AppError.vue";
+import AppLoading from "@/components/ui/AppLoading.vue";
+import AppNotFound from "@/components/ui/AppNotFound.vue";
+import { useAuthStore } from "@/stores/auth";
+import { useServiceStore } from "@/stores/services";
 
 const route = useRoute();
 const auth = useAuthStore();

@@ -1,27 +1,27 @@
 import { createRouter, createWebHistory } from "vue-router";
 
-import { useAuthStore } from "../stores/auth";
+import { useAuthStore } from "@/stores/auth";
 
-import Home from "../pages/Home.vue";
-import Login from "../pages/Login.vue";
-import Register from "../pages/Register.vue";
-import Marketplace from "../pages/Marketplace.vue";
-import BookAppointment from "../pages/BookAppointment.vue";
-import ClientAppointments from "../pages/ClientAppointments.vue";
-import AdminAppointments from "../pages/AdminAppointments.vue";
-import AppointmentCreate from "../pages/AppointmentCreate.vue";
-import AppointmentDetails from "../pages/AppointmentDetails.vue";
-import AppointmentEdit from "../pages/AppointmentEdit.vue";
-import ClientList from "../pages/ClientList.vue";
-import ClientCreate from "../pages/ClientCreate.vue";
-import ClientDetails from "../pages/ClientDetails.vue";
-import ClientEdit from "../pages/ClientEdit.vue";
-import ServiceList from "../pages/ServiceList.vue";
-import ServiceCreate from "../pages/ServiceCreate.vue";
-import ServiceDetails from "../pages/ServiceDetails.vue";
-import ServiceEdit from "../pages/ServiceEdit.vue";
-import PublicServiceDetails from "../pages/PublicServiceDetails.vue";
-import NotFound from "../pages/NotFound.vue";
+import Home from "@/pages/Home.vue";
+import Login from "@/pages/auth/Login.vue";
+import Register from "@/pages/auth/Register.vue";
+import Marketplace from "@/pages/services/Marketplace.vue";
+import BookAppointment from "@/pages/appointments/BookAppointment.vue";
+import ClientAppointments from "@/pages/appointments/ClientAppointments.vue";
+import AdminAppointments from "@/pages/appointments/AdminAppointments.vue";
+import AppointmentCreate from "@/pages/appointments/AppointmentCreate.vue";
+import AppointmentDetails from "@/pages/appointments/AppointmentDetails.vue";
+import AppointmentEdit from "@/pages/appointments/AppointmentEdit.vue";
+import ClientList from "@/pages/clients/ClientList.vue";
+import ClientCreate from "@/pages/clients/ClientCreate.vue";
+import ClientDetails from "@/pages/clients/ClientDetails.vue";
+import ClientEdit from "@/pages/clients/ClientEdit.vue";
+import ServiceList from "@/pages/services/ServiceList.vue";
+import ServiceCreate from "@/pages/services/ServiceCreate.vue";
+import ServiceDetails from "@/pages/services/ServiceDetails.vue";
+import ServiceEdit from "@/pages/services/ServiceEdit.vue";
+import PublicServiceDetails from "@/pages/services/PublicServiceDetails.vue";
+import NotFound from "@/pages/NotFound.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),

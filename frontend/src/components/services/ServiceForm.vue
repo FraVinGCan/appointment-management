@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, reactive } from "vue";
-import { useServiceStore } from "../stores/services";
-import { useDebouncedWatch } from "../composables/useDebouncedWatch";
+import { useServiceStore } from "@/stores/services";
+import { useDebouncedWatch } from "@/composables/useDebouncedWatch";
 
 const props = defineProps({ service: { type: Object, default: null } });
 const emit = defineEmits(["saved"]);

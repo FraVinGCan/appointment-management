@@ -1,13 +1,13 @@
 <script setup>
 import { onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import ClientForm from "../components/ClientForm.vue";
-import AppError from "../components/AppError.vue";
-import AppLoading from "../components/AppLoading.vue";
-import AppNotFound from "../components/AppNotFound.vue";
-import AppBreadcrumbs from "../components/AppBreadcrumbs.vue";
-import AppPageHeader from "../components/AppPageHeader.vue";
-import { useClientStore } from "../stores/clients";
+import ClientForm from "@/components/clients/ClientForm.vue";
+import AppError from "@/components/ui/AppError.vue";
+import AppLoading from "@/components/ui/AppLoading.vue";
+import AppNotFound from "@/components/ui/AppNotFound.vue";
+import AppBreadcrumbs from "@/components/ui/AppBreadcrumbs.vue";
+import AppPageHeader from "@/components/ui/AppPageHeader.vue";
+import { useClientStore } from "@/stores/clients";
 const route = useRoute();
 const router = useRouter();
 const clients = useClientStore();

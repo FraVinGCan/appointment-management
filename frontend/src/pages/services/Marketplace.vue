@@ -1,13 +1,13 @@
 <script setup>
 import { computed, onMounted, ref } from "vue";
-import { useAuthStore } from "../stores/auth";
+import { useAuthStore } from "@/stores/auth";
 
-import AppError from "../components/AppError.vue";
-import AppLoading from "../components/AppLoading.vue";
-import AppPagination from "../components/AppPagination.vue";
-import { useServiceStore } from "../stores/services";
-import { useDebouncedWatch } from "../composables/useDebouncedWatch";
-import { useUrlState, integerRange } from "../composables/useUrlState";
+import AppError from "@/components/ui/AppError.vue";
+import AppLoading from "@/components/ui/AppLoading.vue";
+import AppPagination from "@/components/ui/AppPagination.vue";
+import { useServiceStore } from "@/stores/services";
+import { useDebouncedWatch } from "@/composables/useDebouncedWatch";
+import { useUrlState, integerRange } from "@/composables/useUrlState";
 
 const services = useServiceStore();
 const auth = useAuthStore();

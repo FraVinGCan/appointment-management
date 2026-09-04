@@ -25,7 +25,7 @@
 </template>
 
 <script setup>
-import ProfileMenu from "../components/ProfileMenu.vue";
+import ProfileMenu from "@/components/ProfileMenu.vue";
 
 const links = [
   { label: "Overview", to: "/" },
