@@ -9,6 +9,7 @@ import AppDateRangePicker from "@/components/ui/AppDateRangePicker.vue";
 import AppError from "@/components/ui/AppError.vue";
 import AppBreadcrumbs from "@/components/ui/AppBreadcrumbs.vue";
 import AppPageHeader from "@/components/ui/AppPageHeader.vue";
+import AppointmentCalendar from "@/components/appointments/AppointmentCalendar.vue";
 import AppointmentTableActions from "@/components/appointments/AppointmentTableActions.vue";
 import EnumBadge from "@/components/EnumBadge.vue";
 import { useAppointmentStore } from "@/stores/appointments";
@@ -88,6 +89,7 @@ const sortDirection = computed(() => urlState.sort_direction.value);
 
 const clientSearchTerm = ref("");
 const serviceSearchTerm = ref("");
+const view = ref("list");
 const draftStatus = ref("");
 const draftPriority = ref("");
 const draftClientId = ref("");
@@ -410,24 +412,44 @@ function selectRow(_event, row) {
     />
     <AppPageHeader title="Appointments">
       <template #actions>
-        <UButton
-          to="/appointments/create"
-          trailing-icon="i-lucide-plus"
-          class="w-full sm:w-auto"
-          >Create appointment</UButton
-        >
+        <div class="flex items-center gap-2">
+          <UFieldGroup>
+            <UButton
+              icon="i-lucide-list"
+              :variant="view === 'list' ? 'solid' : 'outline'"
+              color="neutral"
+              @click="view = 'list'"
+            />
+            <UButton
+              icon="i-lucide-calendar"
+              :variant="view === 'calendar' ? 'solid' : 'outline'"
+              color="neutral"
+              @click="view = 'calendar'"
+            />
+          </UFieldGroup>
+          <UButton
+            to="/appointments/create"
+            trailing-icon="i-lucide-plus"
+            class="w-full sm:w-auto"
+            >Create appointment</UButton
+          >
+        </div>
       </template>
     </AppPageHeader>
 
 
     <AppError
-      v-if="appointments.error"
+      v-if="appointments.error && view === 'list'"
       :message="appointments.error"
       :retry="true"
       @retry="appointments.fetchList(query())"
     />
 
-    <div v-else class="space-y-4">
+    <div v-if="view === 'calendar'" class="space-y-4">
+      <AppointmentCalendar />
+    </div>
+
+    <div v-else-if="view === 'list'" class="space-y-4">
       <AppDataTable
         :data="tableRows"
         :columns="columns"

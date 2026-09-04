@@ -5,6 +5,11 @@ export async function list(params = {}) {
   return data;
 }
 
+export async function calendar(params = {}) {
+  const { data } = await api.get("/appointments/calendar", { params });
+  return data;
+}
+
 export async function get(id) {
   const { data } = await api.get(`/appointments/${id}`);
   return data.data;

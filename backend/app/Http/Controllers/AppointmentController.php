@@ -12,7 +12,9 @@ use App\Models\Appointment;
 use App\Models\Client;
 use App\Models\Service;
 use App\Services\AppointmentWorkflowService;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class AppointmentController extends Controller
 {
@@ -68,6 +70,59 @@ class AppointmentController extends Controller
         $appointments = $appointments->paginate((int) ($filters['per_page'] ?? 10));
 
         return AppointmentResource::collection($appointments)->response();
+    }
+
+    public function calendar(Request $request): JsonResponse
+    {
+        $this->authorize('viewAny', Appointment::class);
+
+        $request->validate([
+            'start' => ['required', 'date'],
+            'end' => ['required', 'date', 'after_or_equal:start'],
+        ]);
+
+        $start = Carbon::parse($request->input('start'));
+        $end = Carbon::parse($request->input('end'));
+
+        if ($start->diffInDays($end) > 90) {
+            $end = $start->copy()->addDays(90);
+        }
+
+        $appointments = Appointment::query()
+            ->with(['client', 'service'])
+            ->whereDate('appointment_date', '>=', $start->toDateString())
+            ->whereDate('appointment_date', '<=', $end->toDateString())
+            ->orderBy('appointment_date')
+            ->orderBy('start_time')
+            ->get();
+
+        $statusColors = [
+            AppointmentStatus::Requested->value => '#f59e0b',
+            AppointmentStatus::Confirmed->value => '#3b82f6',
+            AppointmentStatus::Completed->value => '#22c55e',
+            AppointmentStatus::Cancelled->value => '#6b7280',
+        ];
+
+        $events = $appointments->map(function (Appointment $appointment) use ($statusColors) {
+            $clientName = $appointment->client?->name ?? 'Unknown client';
+            $serviceName = $appointment->service?->name ?? 'Unknown service';
+
+            return [
+                'id' => $appointment->id,
+                'title' => "{$clientName} — {$serviceName}",
+                'start' => "{$appointment->appointment_date->format('Y-m-d')}T{$appointment->start_time}",
+                'end' => "{$appointment->appointment_date->format('Y-m-d')}T{$appointment->end_time}",
+                'color' => $statusColors[$appointment->status?->value] ?? '#6b7280',
+                'extendedProps' => [
+                    'status' => $appointment->status?->value,
+                    'priority' => $appointment->priority?->value,
+                    'clientId' => $appointment->client_id,
+                    'serviceId' => $appointment->service_id,
+                ],
+            ];
+        });
+
+        return response()->json(['data' => $events]);
     }
 
     public function show(Appointment $appointment): AppointmentResource

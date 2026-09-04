@@ -7,6 +7,7 @@ import AppError from "@/components/ui/AppError.vue";
 import AppLoading from "@/components/ui/AppLoading.vue";
 import AppPageHeader from "@/components/ui/AppPageHeader.vue";
 import DashboardStatCard from "@/components/dashboard/DashboardStatCard.vue";
+import DashboardMiniCalendar from "@/components/dashboard/DashboardMiniCalendar.vue";
 import EnumBadge from "@/components/EnumBadge.vue";
 import { useDashboardStore } from "@/stores/dashboard";
 
@@ -246,7 +247,7 @@ function selectRow(_event, row) {
         />
       </div>
 
-      <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <UCard variant="subtle" class="border-default bg-default">
           <h3 class="text-base font-semibold text-default">
             Appointment status
@@ -269,6 +270,11 @@ function selectRow(_event, row) {
             :series="dashboard.stats.priorityDistribution.series"
             height="320"
           />
+        </UCard>
+
+        <UCard variant="subtle" class="border-default bg-default">
+          <h3 class="text-base font-semibold text-default">Calendar</h3>
+          <DashboardMiniCalendar />
         </UCard>
       </div>
 

@@ -21,6 +21,7 @@ Route::middleware(['auth:sanctum', 'throttle:authenticated'])->group(function ()
     Route::post('/logout', [AuthController::class, 'logout']);
 
     Route::middleware('admin')->group(function (): void {
+        Route::get('/appointments/calendar', [AppointmentController::class, 'calendar']);
         Route::apiResource('appointments', AppointmentController::class);
         Route::post('/appointments/{appointment}/confirm', [AppointmentController::class, 'confirm']);
         Route::post('/appointments/{appointment}/complete', [AppointmentController::class, 'complete']);

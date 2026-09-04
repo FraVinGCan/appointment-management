@@ -8,6 +8,7 @@ export const useAppointmentStore = defineStore("appointments", {
     items: [],
     pagination: null,
     clientDashboard: null,
+    calendarEvents: [],
     current: null,
     isLoading: false,
     isSaving: false,
@@ -26,6 +27,14 @@ export const useAppointmentStore = defineStore("appointments", {
         this.items = response.data;
         this.pagination = response.meta;
         return this.items;
+      });
+    },
+
+    async fetchCalendar(params = {}) {
+      return this.run(async () => {
+        const response = await appointmentService.calendar(params);
+        this.calendarEvents = response.data;
+        return this.calendarEvents;
       });
     },
 
